@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "P42.Utils.NetStandard": {
+      "commandName": "Project"
+    }
+  }
+}

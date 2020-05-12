@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Enums\" />
+    <Folder Include="StyleAttributes\" />
+    <Folder Include="PathCommands\" />
+    <Folder Include="Elements\" />
+    <Folder Include="Paint\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Path.cs" />
+  </ItemGroup>
+</Project>

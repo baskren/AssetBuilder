@@ -1,0 +1,217 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="AssetBuilder.Views.IconPage"
+    BackgroundColor="Gray"
+    >
+        <StackLayout>
+            <Frame
+                Margin="3"
+                BorderColor="#555"
+                CornerRadius="3"
+                BackgroundColor="LightGray"
+                Padding="5"
+                >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                    </Grid.RowDefinitions>
+
+                    <Label
+                        Text="Platform Project Folders:"
+                        Grid.ColumnSpan="2"
+                        VerticalOptions="Center"
+                        FontAttributes="Bold"/>
+
+                    <Label
+                        Grid.Row="1"
+                        VerticalOptions="Center"
+                        Text="iOS: "
+                        HorizontalTextAlignment="End"
+                        />
+                    <Entry
+                        x:Name="_iosProjectFolderEntry"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        VerticalTextAlignment="Center"
+                        HorizontalOptions="FillAndExpand"
+                        Placeholder="drag and drop iOS AppIcon.appiconset folder here"
+                        />
+
+                    <Label
+                        Grid.Row="2"
+                        VerticalOptions="Center"
+                        HorizontalTextAlignment="End"
+                        Text="Android: "/>
+                    <Entry
+                        x:Name="_androidProjectFolderEntry"
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        VerticalTextAlignment="Center"
+                        HorizontalOptions="FillAndExpand"
+                        Placeholder="drag and drop Android Resources folder here"
+                        />
+
+                    <Label
+                        Grid.Row="3"
+                        VerticalOptions="Center"
+                        HorizontalTextAlignment="End"
+                        Text="UWP: "/>
+                    <Entry
+                        x:Name="_uwpProjectFolderEntry"
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        VerticalTextAlignment="Center"
+                        HorizontalOptions="FillAndExpand"
+                        Placeholder="drag and drop UWP Assets folder here"
+                        />
+
+                </Grid>
+            </Frame>
+
+            <Frame
+                Margin="3"
+                BorderColor="#555"
+                CornerRadius="3"
+                BackgroundColor="LightGray"
+                Padding="5"
+                >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="50"/>
+                    </Grid.RowDefinitions>
+
+                    <Label
+                        Text="App Icons:"
+                        Grid.ColumnSpan="2"
+                        VerticalOptions="Center"
+                        FontAttributes="Bold"/>
+
+                    <Label
+                        Text="Icon SVG file: "
+                        Grid.Row="1"
+                        VerticalOptions="Center"
+                        HorizontalTextAlignment="End"
+                        FontFamily="MaterialIcons"
+                        />
+                    <Entry
+                        x:Name="_iconSvgFileEntry"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        VerticalTextAlignment="Center"
+                        HorizontalOptions="FillAndExpand"
+                        Placeholder="drag and drop SVG file here"
+                        />
+
+                    <Button
+                        x:Name="_generateIconsButton"
+                        Text="Generate Icons"
+                        Grid.Row="2"
+                        Grid.ColumnSpan="2"
+                        BackgroundColor="Blue"
+                        TextColor="White"
+                        CornerRadius="4"
+                        BorderColor="Transparent"
+                        Clicked="OnGenerateIconsButtonClicked"/>
+
+                </Grid>
+            </Frame>
+
+            <Frame
+                Margin="3"
+                BorderColor="#555"
+                CornerRadius="3"
+                BackgroundColor="LightGray"
+                Padding="5"
+                >
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="40"/>
+                        <RowDefinition Height="50"/>
+                    </Grid.RowDefinitions>
+
+                    <Label
+                        Text="Spash Screens:"
+                        Grid.ColumnSpan="3"
+                        VerticalOptions="Center"
+                        FontAttributes="Bold"/>
+
+                    <Label
+                        Text="Background Color: "
+                        Grid.Row="1"
+                        HorizontalTextAlignment="End"
+                        VerticalOptions="Center"
+                        />
+                    <Label
+                        x:Name="_splashPageBackgroundColorEntry"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Fill"
+                        HorizontalTextAlignment="Start"
+                        VerticalTextAlignment="Center"
+                        BackgroundColor="White"
+                        Text="#FFFFFF"
+                        />
+                    <Button
+                        x:Name="_selectSplashBackgroundColorButton"
+                        TextColor="White"
+                        BackgroundColor="Blue"
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Clicked="OnSelectSplashBackgroundColorButtonClicked"
+                        Text="Select"/>
+
+                    <Label
+                        Text="1:1 Splash Image: "
+                        Grid.Row="2"
+                        HorizontalTextAlignment="End"
+                        VerticalOptions="Center"
+                        />
+                    <Entry
+                        x:Name="_squareSvgLaunchImageEntry"
+                        Grid.Row="2"
+                        Grid.Column="1"
+                        Grid.ColumnSpan="2"
+                        VerticalTextAlignment="Center"
+                        HorizontalOptions="FillAndExpand"
+                        Placeholder="drag and drop SVG file here"
+                        />
+
+                    <Button
+                        x:Name="_generateLaunchImagesButton"
+                        Text="Generate Splash Screens"
+                        Grid.Row="3"
+                        Grid.ColumnSpan="3"
+                        BackgroundColor="Blue"
+                        TextColor="White"
+                        CornerRadius="4"
+                        BorderColor="Transparent"
+                        Clicked="OnGenerateLaunchImageButtonClicked"/>
+                </Grid>
+            </Frame>
+
+
+        </StackLayout>
+</ContentPage>

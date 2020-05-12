@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <LangVersion>8.0</LangVersion>
+    <NoWarn></NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <LangVersion>8.0</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Xamarin.Forms" Version="4.5.0.617" />  
+    <PackageReference Include="Xamarin.Essentials" Version="1.5.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />
+    <PackageReference Include="Amporis.Xamarin.Forms.ColorPicker" Version="1.0.23" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
+    <Folder Include="ViewModels\" />
+    <Folder Include="Models\" />
+    <Folder Include="Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\P42.Utils\P42.Utils\P42.Utils.csproj" />
+    <ProjectReference Include="..\AndroidVector\AndroidVector.csproj" />
+    <ProjectReference Include="..\Svg2AndroidVector\Svg2AndroidVector.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Resources\Svg2VectorAndroid-1.0.1.jar" />
+    <None Remove="Resources\background_splash.xml" />
+    <None Remove="Resources\Contents.json" />
+    <None Remove="Resources\LaunchScreen.storyboard" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Svg2VectorAndroid-1.0.1.jar" />
+    <EmbeddedResource Include="Resources\SplashActivity.cs" />
+    <EmbeddedResource Include="Resources\background_splash.xml" />
+    <EmbeddedResource Include="Resources\Contents.json" />
+    <EmbeddedResource Include="Resources\LaunchScreen.storyboard" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Resources\SplashActivity.cs" />
+  </ItemGroup>
+</Project>
