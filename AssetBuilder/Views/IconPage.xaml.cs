@@ -170,6 +170,8 @@ namespace AssetBuilder.Views
 
             GenerateIosIcons(pict);
             GenerateAndroidIcons(pict);
+
+            DisplayAlert("Complate", "App Icons have been generated.", "ok");
         }
 
         void OnGenerateLaunchImageButtonClicked(object sender, EventArgs e)
@@ -182,6 +184,8 @@ namespace AssetBuilder.Views
             }
             GenerateAndroidSpashImage();
             GenerateIosSplashScreen();
+
+            DisplayAlert("Complete", "Launch Screens have been generated.", "ok");
         }
         #endregion
 
@@ -371,12 +375,11 @@ namespace AssetBuilder.Views
 
 
 
-            if (Svg2.GenerateAndroidVector(Preferences.Current.SquareSvgSplashImageFile, Path.Combine(drawableFolder, "ic_launchimage.xml")) is List<string> warnings)
+            if (Svg2.GenerateAndroidVector(Preferences.Current.SquareSvgSplashImageFile, Path.Combine(drawableFolder, "ic_launchimage.xml")) is List<string> warnings && warnings.Count > 0)
             {
-                DisplayAlert("Warnings", string.Join("\n", warnings), "ok");
+                DisplayAlert("Warnings", string.Join("\n\n", warnings), "ok");
                 return;
             }
-
 
             //DisplayAlert(null, "Don't forget to set MainLauncher=\"false\" in " + Path.Combine(Preferences.Current.AndroidProjectFolder + "MainActivity.cs") + ".", "ok");
             string namespaceLine = null;
@@ -509,139 +512,6 @@ namespace AssetBuilder.Views
             var text = xmlHeader + document;
             File.WriteAllText(launchScreenPath, text);
             return null;
-
-
-            /*
-            var resourcesFolder = Path.Combine(Preferences.Current.IosOProjectFolder, "Resources");
-            var launchScreenPath = Path.Combine(resourcesFolder, "LaunchScreen.storyboard");
-            if (File.Exists(launchScreenPath))
-            {
-                string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n";
-
-                XDocument document = null;
-                using (var stream = File.OpenRead(launchScreenPath))
-                {
-                    document = XDocument.Load(stream);
-
-                    var idInts = new List<int>();
-                    if (document.Descendants()?.Attributes("id").Select(a => a.Value).ToList() is List<string> idStrings)
-                    {
-                        foreach (var idString in idStrings)
-                        {
-                            if (int.TryParse(idString, out int value))
-                                idInts.Add(value);
-                        }
-                    }
-                    var maxId = idInts.Max();
-
-                    string topLayoutGuideId = null;
-                    if (document.Descendants("viewControllerLayoutGuide")?.FirstOrDefault(e => e.Attribute("type").Value == "top") is XElement topLayoutGuide)
-                        topLayoutGuideId = topLayoutGuide.Attribute("id").Value;
-                    if (string.IsNullOrWhiteSpace(topLayoutGuideId))
-                        return "Cannot find id for top layout guide";
-
-                    string bottomLayoutGuideId = null;
-                    if (document.Descendants("viewControllerLayoutGuide")?.FirstOrDefault(e => e.Attribute("type").Value == "bottom") is XElement bottomLayoutGuide)
-                        bottomLayoutGuideId = bottomLayoutGuide.Attribute("id").Value;
-                    if (string.IsNullOrWhiteSpace(bottomLayoutGuideId))
-                        return "Cannot find id for bottom layout guide";
-
-                    if (document.Descendants("view") is IEnumerable<XElement> views)
-                    {
-                        if (views.Count() != 1)
-                            return "Expecting only one view in viewController.  Found [" + views.Count() + "]";
-                        var view = views.First();
-                        var viewId = view.Attribute("id").Value;
-
-                        string imageViewId = null;
-                        if (view.Element("subviews") is XElement subviews)
-                        {
-                            if (subviews.Element("imageView") is XElement imageView)
-                            {
-                                if (imageView.Attribute("id") is XAttribute idAttribute)
-                                    imageViewId = idAttribute.Value;
-                                if (imageView.Attribute("image") is XAttribute imageAttribute)
-                                    imageAttribute.Value = "Splash";
-                                if (imageView.Attribute("contentMode") is XAttribute contentModeAttribute)
-                                    contentModeAttribute.Value = "scaleAspectFit";
-                            }
-                        }
-                        if (string.IsNullOrWhiteSpace(imageViewId))
-                            return "Cannot find id of imageView in " + launchScreenPath;
-                        if (view.Element("constraints") is XElement constraints)
-                        {
-                            if (!constraints.Elements().Any(e => e.Attribute("multiplier") is XAttribute))
-                            {
-                                // aspect ratio
-                                var constraint = new XElement("constraint");
-                                constraint.SetAttributeValue("id", ++maxId);
-                                constraint.SetAttributeValue("firstItem", imageViewId);
-                                constraint.SetAttributeValue("firstAttribute", "leading");
-                                constraint.SetAttributeValue("secondItem", viewId);
-                                constraint.SetAttributeValue("secondAttribute", "leadingMargin");
-                                constraint.SetAttributeValue("constant", "40");
-                                constraint.SetAttributeValue("relation", "greaterThanOrEqual");
-                                constraints.Add(constraint);
-
-                                // horizontal start
-                                constraint = new XElement("constraint");
-                                constraint.SetAttributeValue("id", ++maxId);
-                                constraint.SetAttributeValue("firstItem", imageViewId);
-                                constraint.SetAttributeValue("firstAttribute", "top");
-                                constraint.SetAttributeValue("secondItem", topLayoutGuideId);
-                                constraint.SetAttributeValue("secondAttribute", "bottom");
-                                constraint.SetAttributeValue("constant", 40);
-                                constraint.SetAttributeValue("relation", "greaterThanOrEqual");
-                                constraints.Add(constraint);
-
-                                // horizontal end
-                                constraint = new XElement("constraint");
-                                constraint.SetAttributeValue("id", ++maxId);
-                                constraint.SetAttributeValue("firstItem", bottomLayoutGuideId);
-                                constraint.SetAttributeValue("firstAttribute", "top");
-                                constraint.SetAttributeValue("secondItem", imageViewId);
-                                constraint.SetAttributeValue("secondAttribute", "bottom");
-                                constraint.SetAttributeValue("constant", 40);
-                                constraint.SetAttributeValue("relation", "greaterThanOrEqual");
-                                constraints.Add(constraint);
-
-                                // vertical start
-                                constraint = new XElement("constraint");
-                                constraint.SetAttributeValue("id", ++maxId);
-                                constraint.SetAttributeValue("firstAttribute", "trailingMargin");
-                                constraint.SetAttributeValue("secondItem", imageViewId);
-                                constraint.SetAttributeValue("secondAttribute", "trailing");
-                                constraint.SetAttributeValue("constant", 40);
-                                constraint.SetAttributeValue("relation", "greaterThanOrEqual");
-                                constraints.Add(constraint);
-
-                            }
-                        }
-
-
-
-                        if (view.Elements("color")?.Where(e=>e.Attribute("key").Value== "backgroundColor").FirstOrDefault() is XElement backgroundColor)
-                        {
-                            backgroundColor.SetAttributeValue("red", Preferences.Current.SplashBackgroundColor.R);
-                            backgroundColor.SetAttributeValue("green", Preferences.Current.SplashBackgroundColor.G);
-                            backgroundColor.SetAttributeValue("blue", Preferences.Current.SplashBackgroundColor.B);
-                            backgroundColor.SetAttributeValue("alpha", Preferences.Current.SplashBackgroundColor.A);
-                        }
-                    }
-                    else
-                        document = null;
-                }
-
-                if (document is null)
-                    return "Unexpected content in [" + launchScreenPath + "].";
-
-                var text = xmlHeader + document;
-                File.WriteAllText(launchScreenPath, text);
-                return null;
-            }
-            else
-                return "Cannot find LaunchScreen.storyboard in " + launchScreenPath;
-                */
         }
 
         public string UpdateIosCsproj()

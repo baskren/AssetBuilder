@@ -57,8 +57,8 @@ namespace AndroidVector
 
         public Vector() : base("vector")
         {
-            //SetAttributeValue(XNamespace.Xml + "android", avNs);
-            //SetAttributeValue(XNamespace.Xml + "aapt", aaptNs);
+            Add(new XAttribute(XNamespace.Xmlns + "android", Namespace.AndroidVector));
+            Add(new XAttribute(XNamespace.Xmlns + "aapt", Namespace.Aapt));
         }
     }
 }

@@ -19,5 +19,10 @@ namespace AndroidVector.PathElement
             IsRelative = false;
             return start;
         }
+
+        public override RectangleF GetBounds()
+        {
+            return new RectangleF(float.NaN, float.NaN, float.NaN, float.NaN);
+        }
     }
 }

@@ -16,12 +16,7 @@ namespace AndroidVector.Extensions
             bool started = false;
             foreach (var element in pathList)
             {
-                if (element is Arc arc)
-                {
-                    newList.AddRange(arc.ToBezierCurves(cursor));
-                    cursor = new SizeF(arc.End);
-                }
-                else if (element is HorzLineTo horz)
+                if (element is HorzLineTo horz)
                 {
                     var lineTo = horz.ToLine(cursor);
                     newList.Add(lineTo);
@@ -39,6 +34,13 @@ namespace AndroidVector.Extensions
                     newList.Add(close);
                     started = false;
                 }
+                /*
+                else if (element is Arc arc)
+                {
+                    newList.AddRange(arc.ToBezierCurves(cursor));
+                    cursor = new SizeF(arc.End);
+                }
+                */
                 else
                 {
                     cursor = element.ToAbsolute(cursor);
@@ -66,7 +68,7 @@ namespace AndroidVector.Extensions
             int start = 0;
             for (int i = 1; i <= pathDataText.Length; i++)
             {
-                if (i == pathDataText.Length || (pathDataText[i]!='E' && char.IsLetter(pathDataText[i])))
+                if (i == pathDataText.Length || (char.ToLower(pathDataText[i])!='e' && char.IsLetter(pathDataText[i])))
                 {
                     strings.Add(pathDataText[start..i]);
                     start = i;

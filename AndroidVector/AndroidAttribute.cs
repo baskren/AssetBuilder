@@ -5,6 +5,6 @@ namespace AndroidVector
 {
     public class AndroidAttribute : XAttribute
     {
-        public AndroidAttribute(string name, object value) : base(BaseElement.avNs + name, value) { }
+        public AndroidAttribute(string name, object value) : base(Namespace.AndroidVector + name, value) { }
     }
 }

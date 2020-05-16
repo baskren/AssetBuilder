@@ -8,7 +8,6 @@ namespace AndroidVector
 
 		static float[] _identity = new float[] { 1, 0, 0, 1, 0, 0 };
 		MatrixTypes _type = MatrixTypes.Identity;
-		int _padding = 0;
 
 		float[] _elements = new float[] { 1, 0, 0, 1, 0, 0 };
 		public float[] Elements => _elements;
@@ -68,6 +67,14 @@ namespace AndroidVector
 		public float OffsetX => Elements[4];
 
 		public float OffsetY => Elements[5];
+
+		public float ScaleX => (float)Math.Sqrt(A * A + C * C);
+
+		public float ScaleY => (float)Math.Sqrt(B * B + D * D);
+
+		public float RotationRadians => (float)Math.Atan2(B, A);
+
+		public float RotationDegrees => (float)(180 * RotationRadians / Math.PI);
 
 		public Matrix()
 		{
@@ -129,6 +136,10 @@ namespace AndroidVector
 			var sin = (float)Math.Sin(radians);
 			return new Matrix(cos, sin, -sin, cos, px - px * cos + py * sin, py - py * cos - px * sin);
 		}
+
+		public static Matrix CreateScale(float scale)
+			=> new Matrix(scale, 0, 0, scale, 0, 0);
+
 		public static Matrix CreateScale(float scaleX, float scaleY)
 		    => new Matrix(scaleX, 0, 0, scaleY, 0, 0);
 
@@ -140,7 +151,6 @@ namespace AndroidVector
 
 		public static Matrix CreateShear(float shearX, float shearY)
 			=> new Matrix(1, shearY, shearX, 1, 0, 0);
-
 
 
 
@@ -277,6 +287,9 @@ namespace AndroidVector
 				F = m[4] * sin + m[5] * cos + e5;
 			}
 		}
+
+		public void Scale(float scale)
+			=> Scale(scale, scale, MatrixOrder.Prepend);
 
 		public void Scale(float scaleX, float scaleY)
 			=> Scale(scaleX, scaleY, MatrixOrder.Prepend);

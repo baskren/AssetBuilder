@@ -35,6 +35,8 @@ namespace AndroidVector
             set => SetPropertyAttribute(value);
         }
 
+        public bool UserSpaceUnits { get; set; } = false;
+
         public BaseGradient() : base("gradient")
         {
         }

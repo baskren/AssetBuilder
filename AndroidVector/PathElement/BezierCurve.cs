@@ -31,19 +31,11 @@ namespace AndroidVector.PathElement
         {
             if (char.ToUpper(s[0]) != Symbol)
                 throw new ArgumentException("Invalid use of BezierCurve.FromString(" + s + ").");
-            var relative = char.IsLower(s[0]);
-            var terms = s.Substring(1).Trim().Split(new char[] { ',', ' ' });
+            int i = 0;
+            var v = s.Substring(1).ToFloatList();
             var result = new List<BezierCurve>();
-            for (int i = 0; i < terms.Length;)
-            {
-                if (float.TryParse(terms[i++], out float c1X) &&
-                    float.TryParse(terms[i++], out float c1Y) &&
-                    float.TryParse(terms[i++], out float c2X) &&
-                    float.TryParse(terms[i++], out float c2Y) &&
-                    float.TryParse(terms[i++], out float endX) &&
-                    float.TryParse(terms[i++], out float endY))
-                    result.Add( new BezierCurve(c1X, c1Y, c2X, c2Y, endX, endY, relative));
-            }
+            while (v.Count >= i + 6)
+                result.Add(new BezierCurve(v[i++], v[i++], v[i++], v[i++], v[i++], v[i++], char.IsLower(s[0])));
             return result;
         }
 
@@ -72,6 +64,15 @@ namespace AndroidVector.PathElement
             Control1 = matrix.TransformPoint(Control1);
             Control2 = matrix.TransformPoint(Control2);
             End = matrix.TransformPoint(End);
+        }
+
+        public override RectangleF GetBounds()
+        {
+            var left = Math.Min(Control1.X, Math.Min(Control2.X,End.X));
+            var right = Math.Max(Control1.X, Math.Max(Control2.X, End.X));
+            var top = Math.Min(Control1.Y, Math.Min(Control2.Y, End.Y));
+            var bottom = Math.Max(Control1.Y, Math.Max(Control2.Y, End.Y));
+            return new RectangleF(left, top, right - left, bottom - top);
         }
     }
 }

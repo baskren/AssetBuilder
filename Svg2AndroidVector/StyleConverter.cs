@@ -2,14 +2,15 @@
 using System.Xml.Linq;
 using System.Collections.Generic;
 using AndroidVector;
+using System.Linq;
 
 namespace Svg2AndroidVector
 {
     public static class StyleConverter
     {
-        public static Dictionary<string, string> CssStyles = new Dictionary<string, string>();
+        static Dictionary<string, string> StoredCssStyles = new Dictionary<string, string>();
 
-        public static void AddCssStyles(XElement stylesElement, List<string> warnings)
+        public static void StoreCssStyles(XElement stylesElement, List<string> warnings)
         {
             var text = stylesElement.Value;
             var lines = text.Split(new[] { '\r', '\n' });
@@ -24,7 +25,7 @@ namespace Svg2AndroidVector
                     {
                         if (!string.IsNullOrWhiteSpace(selector))
                         {
-                            CssStyles[selector.Trim()] = styles;
+                            StoredCssStyles[selector.Trim()] = styles;
                         }
                     }
                 }
@@ -47,100 +48,251 @@ namespace Svg2AndroidVector
 
         public static List<string> IgnoreAttributeMap = new List<string>
         {
-            "font-size",
-            "line-height",
+            "style",
+            "font-style",
+            "font-variant",
+            "font-weight",
             "font-family",
+            "font-stretch",
+            "font-size",
+            "font-variant-ligatures",
+            "font-variant-caps",
+            "font-variant-numeric",
+            "font-variant-east-asian",
+            "font-feature-settings",
+            "letter-spacing",
+            "word-spacing",
+            "line-height",
             "-inkscape-font-specification",
             "text-align",
+            "text-anchor",
             "white-space",
             "shape-inside",
-            "clip-rule"
+            //"clip-rule",   // folks will want to know about this!
+            "writing-mode",
+
+            "opacity",
+            "display",
+            "visibility",
+
+            "cursor",
+            "title",
+
+            "onclick",
+            "onmouseover",
+            "onmouseout",
+            "target",
+            "pointer-events",
+
         };
 
-        public static void ProcessStyleAttribute(XAttribute styleAttribute, BaseElement avElement, List<string> warnings)
+        const string DefaultStyles = "fill:#000;fill-opacity:1;fill-rule:nonzero;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;";
+
+        public static void ProcessStyleAttributes(XElement svgElement, BaseElement avElement, List<string> warnings)
         {
-            ProcessStyleValue(styleAttribute.Parent, styleAttribute.Value, avElement, warnings);
-        }
-        public static void ProcessStyleValue(XElement svgElement, string styleText, BaseElement avElement, List<string> warnings)
-        {
-            if (string.IsNullOrWhiteSpace(styleText))
+            // setup defaults
+            ProcessStyleValue(svgElement, DefaultStyles, avElement, warnings);
+
+            // process ancestor styles
+            var ancestors = svgElement.Ancestors().ToList();
+            ancestors.Reverse();
+            foreach (var ancestor in ancestors)
+                ProcessLocalStyleAttributes(ancestor, avElement, warnings);
+
+            // process Css Style
+            if (StoredCssStyles.TryGetValue(svgElement.Name.LocalName, out string typeStyleText))
+                ProcessStyleValue(svgElement, typeStyleText, avElement, warnings);
+
+            // process Css Class
+            if (svgElement.Attribute("class") is XAttribute classAttribute)
             {
-                if (svgElement.Parent?.Attribute("style") is XAttribute parentStyleAttribute && !string.IsNullOrWhiteSpace(parentStyleAttribute.Value))
-                    styleText = parentStyleAttribute.Value;
-                else
-                {
-                    warnings.Add("style text is null, empty or whitespace");
-                    return;
-                }
+                if (StoredCssStyles.TryGetValue("." + classAttribute.Value, out string classStyleText))
+                    ProcessStyleValue(svgElement, classStyleText, avElement, warnings);
+                if (StoredCssStyles.TryGetValue(svgElement.Name.LocalName + "." + classAttribute.Value, out string typeClassStyleText))
+                    ProcessStyleValue(svgElement, typeClassStyleText, avElement, warnings);
             }
 
-            var styleParts = styleText.Split(';');
-            foreach (var part in styleParts)
+            // process Css id
+            if (svgElement.Attribute("id") is XAttribute idAttribute &&
+                !string.IsNullOrWhiteSpace(idAttribute.Value) &&
+                StoredCssStyles.TryGetValue("#" + idAttribute.Value, out string localStyleText))
+                ProcessStyleValue(svgElement, localStyleText, avElement, warnings);
+
+            ProcessLocalStyleAttributes(svgElement, avElement, warnings);
+        }
+
+        static void ProcessLocalStyleAttributes(XElement svgElement, BaseElement avElement, List<string> warnings)
+        {
+            if (svgElement.Attribute("style") is XAttribute styleAttribute && !string.IsNullOrWhiteSpace(styleAttribute.Value))
+                ProcessStyleValue(svgElement, styleAttribute.Value, avElement, warnings);
+            foreach (var attribute in svgElement.Attributes())
             {
-                if (string.IsNullOrWhiteSpace(part))
-                    continue;
-                var tokens = part.Split(':');
-                if (tokens.Length == 2)
+                if (AttributeMap.ContainsKey(attribute.Name.ToString()) || attribute.Name == "opacity")
                 {
-                    var cmd = tokens[0].Trim();
-                    var value = tokens[1].Trim();
-                    if (AttributeMap.TryGetValue(cmd, out string avAtrName))
-                    {
-                        if (cmd == "fill" || cmd == "stroke")
-                        {
-                            if (value == "none")
-                            {
-                                avElement.SetAndroidAttributeValue(avAtrName, null);
-                                avElement.SetAndroidAttributeValue(cmd + "Alpha", null);
-                            }
-                            else
-                            {
-                                var (hexColor, opacity) = GetHexColorAndFloatOpacity(value, warnings);
-                                avElement.SetAndroidAttributeValue(avAtrName, hexColor);
-                                if (!float.IsNaN(opacity))
-                                    avElement.SetAndroidAttributeValue(cmd + "Alpha", opacity);
-                            }
-                        }
-                        else if (cmd == "stroke-width")
-                        {
-                            AttributeExtensions.TryGetValueInPx(svgElement, value, Orientation.Unknown, out float strokeWidth);
-                            avElement.SetAndroidAttributeValue(avAtrName, strokeWidth);
-                        }
-                        else if (cmd == "fill-rule")
-                        {
-                            if (value == "evenodd")
-                                avElement.SetAndroidAttributeValue(avAtrName, "evenOdd");
-                            else if (value == "nonzero")
-                                avElement.SetAndroidAttributeValue(avAtrName, "nonZero");
-                            else
-                                warnings.Add("unknown SVG style fill-rule [" + value + "] in <" + svgElement?.Name + " id='" + svgElement?.Attribute("id")?.Value + "'> ");
-                        }
-                        else
-                            avElement.SetAndroidAttributeValue(avAtrName, value);
-                    }
-                    else if (cmd == "display")
-                    {
-                        avElement.DisplayStyle = value;
-                    }
-                    else if (!IgnoreAttributeMap.Contains(cmd))
-                        warnings.Add("could not find matching Android attribute for style [" + part + "]");
+                    var styleText = attribute.Name + ":" + attribute.Value;
+                    ProcessStyleValue(svgElement, styleText, avElement, warnings);
                 }
-                else
-                    warnings.Add("could not parse style [" + part + "]");
+            }
+        }
+
+
+
+        public static void ProcessStyleValue(XElement svgElement, string styleText, BaseElement avElement, List<string> warnings)
+        {
+            if (!string.IsNullOrWhiteSpace(styleText))
+            {
+                var styleParts = styleText.Split(';');
+                foreach (var part in styleParts)
+                {
+                    if (string.IsNullOrWhiteSpace(part))
+                        continue;
+                    var tokens = part.Split(':');
+                    if (tokens.Length == 2)
+                    {
+                        var cmd = tokens[0].Trim();
+                        var value = tokens[1].Trim();
+                        if (AttributeMap.TryGetValue(cmd, out string avAtrName))
+                        {
+                            /*
+                            if (value == "inherit" && svgElement.InheritedAttributeValue(cmd) is string inheritedValue)
+                            {
+                                // do nothing because style attributes are already inherited (and thus, should have already been set before reaching here)
+                            }
+                            else */
+                            if (cmd == "fill" || cmd == "stroke")
+                            {
+                                if (value == "none")
+                                {
+                                    avElement.SetAndroidAttributeValue(avAtrName, value);
+                                }
+                                else if (value.StartsWith("url("))
+                                {
+                                    if (!value.StartsWith("url(#"))
+                                        throw new Exception("Only anchor URLs are supported at this time.");
+
+                                    var iri = value.Substring("url(#".Length).Trim(')').Trim();
+                                    if (svgElement.GetRoot() is XElement root)
+                                    {
+                                        if (root.Descendants(Namespace.Svg + "linearGradient").FirstOrDefault(e => e.Attribute("id").Value == iri) is XElement svgLinearGradient)
+                                        {
+                                            if (PaintConverter.ConvertLinearGradient(svgLinearGradient, warnings) is LinearGradient avGradient)
+                                            {
+                                                if (avElement.Element(AndroidVector.Namespace.Aapt + "attr") is XElement aaptAttr)
+                                                    aaptAttr.Remove();
+                                                var aapt = new AaptAttr(cmd+"Color", avGradient);
+                                                avElement.Add(aapt);
+                                                avElement.SetAndroidAttributeValue(avAtrName, null);
+                                                return;
+                                            }
+                                        }
+                                        if (root.Descendants(Namespace.Svg + "radialGradient").FirstOrDefault(e => e.Attribute("id").Value == iri) is XElement svgRadialGradient)
+                                        {
+                                            if (PaintConverter.ConvertRadialGradient(svgRadialGradient, warnings) is RadialGradient avGradient)
+                                            {
+                                                if (avElement.Element(AndroidVector.Namespace.Aapt + "attr") is XElement aaptAttr)
+                                                    aaptAttr.Remove();
+                                                var aapt = new AaptAttr(cmd+"Color", avGradient);
+                                                avElement.Add(aapt);
+                                                avElement.SetAndroidAttributeValue(avAtrName, null);
+                                                return;
+                                            }
+                                        }
+                                        warnings.AddWarning("Ignoring gradient because no element found to complete link [" + value + "].");
+                                        return;
+                                    }
+                                    throw new Exception("Could not find document root");
+
+                                }
+                                else
+                                {
+                                    var (hexColor, opacity) = GetHexColorAndFloatOpacity(value, warnings);
+                                    avElement.SetAndroidAttributeValue(avAtrName, hexColor);
+                                    if (!float.IsNaN(opacity))
+                                        avElement.SetAndroidAttributeValue(cmd + "Alpha", opacity);
+                                }
+                            }
+                            else if (cmd == "stroke-width")
+                            {
+                                ElementExtensions.TryGetValueInPx(svgElement, value, Orientation.Unknown, out float strokeWidth);
+                                avElement.SetAndroidAttributeValue(avAtrName, strokeWidth);
+                            }
+                            else if (cmd == "fill-rule")
+                            {
+                                if (value == "evenodd")
+                                    avElement.SetAndroidAttributeValue(avAtrName, "evenOdd");
+                                else if (value == "nonzero")
+                                    avElement.SetAndroidAttributeValue(avAtrName, "nonZero");
+                                else
+                                    warnings.AddWarning("Ignoring fill-rule because value [" + value + "] in <" + svgElement?.Name + " id='" + svgElement?.Attribute("id")?.Value + "'> is unexpected.");
+                            }
+                            else if (cmd == "stroke-linecap" || cmd == "stroke-linejoin")
+                            {
+                                avElement.SetAndroidAttributeValue(avAtrName, value.ToCamelCase());
+                                var attr = avElement.AndroidAttribute(avAtrName);
+                                if (avElement is AndroidVector.Path path)
+                                {
+                                    var cap = path.StrokeLineCap;
+                                    var join = path.StrokeLineJoin;
+                                }
+                            }
+                            else
+                                avElement.SetAndroidAttributeValue(avAtrName, value);
+                        }
+                        else if (cmd == "display")
+                        {
+                            avElement.SvgDisplayStyle = value;
+                        }
+                        else if (cmd == "visibility")
+                        {
+                            avElement.SvgDisplayStyle = (value == "hidden" || value == "collapse")
+                                ? "none"
+                                : "visible";
+                        }
+                        else if (cmd == "opacity")
+                        {
+                            if (float.TryParse(value, out float opacity))
+                                avElement.SvgOpacity = opacity;
+                                /*
+                            {
+                                if (avElement.AndroidAttribute("fillAlpha") is XAttribute fillAlphaAttribute &&
+                                float.TryParse(fillAlphaAttribute.Value, out float fillAlpha))
+                                    avElement.SetAndroidAttributeValue("fillAlpha", fillAlpha * opacity);
+                                else
+                                    avElement.SetAndroidAttributeValue("fillAlpha", opacity);
+                                if (avElement.AndroidAttribute("strokeAlpha") is XAttribute strokeAlphaAttribute &&
+                                float.TryParse(strokeAlphaAttribute.Value, out float strokeAlpha))
+                                    avElement.SetAndroidAttributeValue("strokeAlpha", strokeAlpha * opacity);
+                                else
+                                    avElement.SetAndroidAttributeValue("strokeAlpha", opacity);
+                            }
+                            */
+                        }
+                        else if (!IgnoreAttributeMap.Contains(cmd))
+                        {
+                            warnings.AddWarning("Ignoring SVG style ["+part+ "] in <" + svgElement?.Name + " id='" + svgElement?.Attribute("id")?.Value + "'> because could not find matching Android attribute.");
+                        }
+                    }
+                    else
+                        warnings.AddWarning("Ignoring SVG style [" + part + "] in <" + svgElement?.Name + " id='" + svgElement?.Attribute("id")?.Value + "'> because could not parce into a style and a value.");
+                }
             }
         }
 
         public static (string hexColor, float opacity) GetHexColorAndFloatOpacity(string colorText, List<string>warnings)
         {
             colorText = colorText.Trim();
-            if (colorText.StartsWith("rbg"))
+
+            if (colorText.StartsWith("url("))
+                throw new ArgumentException("Need to handle URL colors before getting to this point!");
+
+            if (colorText.StartsWith("rgb"))
             {
-                colorText.Trim(')');
+                colorText = colorText.Trim(')');
                 var tokens = colorText.Split(new char[] { '(', ' ', ',' });
                 if (tokens.Length < 4)
                 {
-                    warnings.Add("Could not parse color text [" + colorText + "]");
-                    return ("#000", 1);
+                    warnings.AddWarning("Assuming color is black because could not parse color text [" + colorText + "]");
+                    return ("#000", float.NaN);
                 }
                 string hexColor = "#";
                 if (tokens.Length > 3)
@@ -150,8 +302,8 @@ namespace Svg2AndroidVector
                         hexColor += rHex;
                     else
                     {
-                        warnings.Add("Could not parse red token [" + rToken + "] in color text [" + colorText + "]");
-                        return ("#000", 1);
+                        warnings.AddWarning("Assuming color is black because could not parse red token [" + rToken + "] in color text [" + colorText + "]");
+                        return ("#000", float.NaN);
                     }
 
                     var gToken = tokens[2].Trim();
@@ -159,17 +311,17 @@ namespace Svg2AndroidVector
                         hexColor += gHex;
                     else
                     {
-                        warnings.Add("Could not parse green token [" + gToken + "] in color text [" + colorText + "]");
-                        return ("#000", 1);
+                        warnings.AddWarning("Assuming color is black because could not parse green token [" + gToken + "] in color text [" + colorText + "]");
+                        return ("#000", float.NaN);
                     }
 
                     var bToken = tokens[3].Trim();
-                    if (ParseColorNumberToken(gToken) is string bHex)
+                    if (ParseColorNumberToken(bToken) is string bHex)
                         hexColor += bHex;
                     else
                     {
-                        warnings.Add("Could not parse blue token [" + bToken + "] in color text [" + colorText + "]");
-                        return ("#000", 1);
+                        warnings.AddWarning("Assuming color is black because could not parse blue token [" + bToken + "] in color text [" + colorText + "]");
+                        return ("#000", float.NaN);
                     }
 
                     if (tokens.Length > 4)
@@ -182,7 +334,7 @@ namespace Svg2AndroidVector
                         }
                         else if (float.TryParse(aToken, out float alpha))
                             return (hexColor, alpha / 255f);
-                        warnings.Add("Could not parse alpha token [" + aToken + "] in color text [" + colorText + "]");
+                        warnings.AddWarning("Ignoring opacity because could not parse alpha token [" + aToken + "] in color text [" + colorText + "]");
                     }
                     return (hexColor, float.NaN);
                 }
@@ -190,7 +342,7 @@ namespace Svg2AndroidVector
 
             if (colorText.StartsWith("#"))
             {
-                if (colorText.Length ==  4 || colorText.Length == 7)
+                if (colorText.Length == 4 || colorText.Length == 7)
                     return (colorText, float.NaN);
                 if (colorText.Length == 5)
                 {
@@ -210,10 +362,13 @@ namespace Svg2AndroidVector
             else if (colorText == "transparent")
                 return ("#000", 0);
             else if (CssColors.TryGetValue(colorText, out string cssHexColor))
-                return (cssHexColor, 1);
+                return (cssHexColor, float.NaN);
+            else if (colorText == "inherit")
+                return ("inherit", float.NaN);
 
-            warnings.Add("Could not parse color text [" + colorText + "]");
-            return ("#000", 1);
+            
+            warnings.AddWarning("Could not parse color text [" + colorText + "] so assuming black.");
+            return ("#000", float.NaN);
 
         }
 

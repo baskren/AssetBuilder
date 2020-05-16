@@ -17,8 +17,16 @@ namespace AndroidVector
             set => SetPropertyAttribute(value);
         }
 
-        public GradientItem() : base ("item")
+        public GradientItem(float offset, Color color) : base ("item")
         {
+            Offset = offset;
+            Color = color;
+        }
+
+        public GradientItem(string offset, string color) : base ("item")
+        {
+            SetPropertyAttribute(offset, nameof(Offset));
+            SetPropertyAttribute(color, nameof(Color));
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Xml.Linq;
 
 namespace AndroidVector
 {
@@ -62,5 +63,33 @@ namespace AndroidVector
 
             GradientRadius = length;
         }
+
+        bool hasGradientsBeenMapped;
+        public override void MapGradients()
+        {
+            if (hasGradientsBeenMapped || UserSpaceUnits)
+                return;
+            if (Parent is AaptAttr aaptElement)
+            {
+                if (Parent.Parent is Group)
+                    aaptElement.Remove();
+                else if (Parent.Parent is BaseElement geometryElement)
+                {
+                    var bounds = geometryElement.GetBounds();
+                    if (this.AndroidAttribute("centerX") is XAttribute)
+                        CenterX = bounds.Width * CenterX + bounds.Left;
+                    else
+                        CenterX = bounds.Width * 0.5f + bounds.Left;
+
+                    if (this.AndroidAttribute("centerY") is XAttribute)
+                        CenterY = bounds.Height * CenterY + bounds.Top;
+                    else
+                        CenterY = bounds.Height * 0.5f + bounds.Top;
+
+                    hasGradientsBeenMapped = true;
+                }
+            }
+        }
+
     }
 }

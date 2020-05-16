@@ -25,21 +25,16 @@ namespace AndroidVector.PathElement
         {
             if (char.ToUpper(s[0]) != Symbol)
                 throw new ArgumentException("Invalid use of MoveTo.FromString(" + s + ").");
-            var relative = char.IsLower(s[0]);
-            var terms = s.Substring(1).Trim().Split(new char[] { ',', ' ' });
+
+            int i = 0;
+            var v = s.Substring(1).ToFloatList();
             var result = new List<Base>();
-            bool isFirst = true;
-            for (int i = 0; i < terms.Length;)
+            while (v.Count >= i + 2)
             {
-                if (float.TryParse(terms[i++], out float pX) &&
-                    float.TryParse(terms[i++], out float pY))
-                {
-                    if (isFirst)
-                        result.Add(new MoveTo(pX, pY, relative));
-                    else
-                        result.Add(new LineTo(pX, pY, relative));
-                    isFirst = false;
-                }
+                if (i==0)
+                    result.Add(new MoveTo(v[i++], v[i++], char.IsLower(s[0])));
+                else
+                    result.Add(new LineTo(v[i++], v[i++], char.IsLower(s[0])));
             }
             return result;
         }
@@ -64,5 +59,11 @@ namespace AndroidVector.PathElement
         {
             End = matrix.TransformPoint(End);
         }
+
+        public override RectangleF GetBounds()
+        {
+            return new RectangleF(End.X, End.Y, 0, 0);
+        }
+
     }
 }

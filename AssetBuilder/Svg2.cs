@@ -18,7 +18,11 @@ namespace AssetBuilder
 
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
-            XDocument xdoc = XDocument.Load(svgPath);
+            var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, IgnoreProcessingInstructions=true,  };
+            XmlReader reader = XmlReader.Create(svgPath, settings);
+            XDocument xdoc = XDocument.Load(reader);
+
+            //XDocument xdoc = XDocument.Load(svgPath);
 
             var warnings = new List<string>();
             var vector = Svg2AndroidVector.Converter.ConvertSvg(xdoc, warnings);

@@ -13,29 +13,79 @@ namespace AndroidVector
 {
     public class BaseElement : XElement
     {
-        public static XNamespace avNs = "http://schemas.android.com/apk/res/android";
-        public static XNamespace aaptNs = "http://schemas.android.com/aapt";
-
+        #region Properties
         public List<Matrix> SvgTransforms { get; } = new List<Matrix>();
 
-        public string DisplayStyle { get; set; }
+        public string SvgDisplayStyle { get; set; }
+
+        float _svgOpacity = 1;
+        public float SvgOpacity
+        {
+            get => _svgOpacity;
+            set
+            {
+                _svgOpacity = value;
+                _svgOpacity = Math.Min(1, Math.Max(0, _svgOpacity));
+            } 
+        } 
 
         public new string Name
         {
             get => GetPropertyAttribute<string>();
             set => SetPropertyAttribute(value);
         }
+        #endregion
 
 
+        #region Constructors
         public BaseElement(XName name) : base(name) { }
 
         public BaseElement(XName name, object content) : base(name, content) { }
 
         public BaseElement(XName name, params object[] content) : base(name, content) { }
+        #endregion
 
+
+        #region Bounds
+        public virtual RectangleF GetBounds()
+        {
+            //if (SvgTransforms.Any())
+            //    throw new Exception("Cannot get bounds before SVG Transforms have been applied.");
+
+            float left = float.NaN, right = float.NaN, top = float.NaN, bottom = float.NaN;
+            foreach (var element in Elements())
+            {
+                if (element is BaseElement baseElement)
+                {
+                    var b = baseElement.GetBounds();
+                    if (!float.IsNaN(b.Left))
+                    {
+                        if (float.IsNaN(left))
+                        {
+                            left = b.Left;
+                            right = b.Right;
+                            top = b.Top;
+                            bottom = b.Bottom;
+                        }
+                        else
+                        {
+                            left = Math.Min(left, b.Left);
+                            top = Math.Min(top, b.Top);
+                            right = Math.Max(right, b.Right);
+                            bottom = Math.Max(bottom, b.Bottom);
+                        }
+                    }
+                }
+            }
+            return new RectangleF(left, top, float.IsNaN(left) ? float.NaN : right - left, float.IsNaN(left) ? float.NaN : bottom - top);
+        }
+        #endregion
+
+
+        #region SvgTransform Handlers
         public virtual void ApplySvgTransform(Matrix matrix)
         {
-            foreach (var element in Elements())
+            foreach (var element in Elements().ToArray())
             {
                 if (element is BaseElement baseElement)
                     baseElement.ApplySvgTransform(matrix);
@@ -44,23 +94,17 @@ namespace AndroidVector
 
         public void ApplySvgTransforms()
         {
-            System.Diagnostics.Debug.WriteLine("this ["+this.Name+"] Count =["+this.Elements().Count()+"]");
-
             foreach (var element in Elements().ToArray())
             {
-                System.Diagnostics.Debug.WriteLine("this [" + this.Name + "] element = [" + element.GetType()+"] ["+"]");
-
                 if (element is BaseElement baseElement)
                 {
-                    System.Diagnostics.Debug.WriteLine("this [" + this.Name + "] baseElement.Name [" + baseElement.Name+"]");
-
-                    if (baseElement.DisplayStyle == "none") //&& baseElement is Path)
+                    if (baseElement.SvgDisplayStyle == "none") //&& baseElement is Path)
                         baseElement.Remove();
                     else
                         baseElement.ApplySvgTransforms();
-
                 }
             }
+            SvgTransforms.Reverse();
             foreach (var transform in SvgTransforms)
             {
                 ApplySvgTransform(transform);
@@ -68,6 +112,46 @@ namespace AndroidVector
             SvgTransforms.Clear();
         }
 
+        public virtual void ApplySvgOpacity(float parentOpacity = 1)
+        {
+            foreach (var element in Elements().ToArray())
+            {
+                if (element is BaseElement baseElement)
+                    baseElement.ApplySvgOpacity(parentOpacity * SvgOpacity);
+            }
+            SvgOpacity = 1;
+        }
+
+        public virtual void PurgeDefaults()
+        {
+            foreach (var element in Elements().ToArray())
+            {
+                if (element is BaseElement baseElement)
+                    baseElement.PurgeDefaults();
+            }
+            this.SetAndroidAttributeValue("strokeWidth", null);
+            this.SetAndroidAttributeValue("strokeAlpha", null);
+            this.SetAndroidAttributeValue("fillAlpha", null);
+            this.SetAndroidAttributeValue("trimPathStart", null);
+            this.SetAndroidAttributeValue("trimPathStart", null);
+            this.SetAndroidAttributeValue("trimPathOffset", null);
+            this.SetAndroidAttributeValue("strokeLineCap", null);
+            this.SetAndroidAttributeValue("strokeLineJoin", null);
+            this.SetAndroidAttributeValue("strokeMiterLimit", null);
+            this.SetAndroidAttributeValue("fillType", null);
+        }
+
+        public virtual void MapGradients()
+        {
+            foreach (var child in Elements().ToArray())
+                if (child is BaseElement baseElement)
+                    baseElement.MapGradients();
+        }
+
+        #endregion
+
+
+        #region Property to Attribute connector
         protected T GetPropertyAttribute<T>([CallerMemberName] string propertyName = null) 
         {
             if (string.IsNullOrWhiteSpace(propertyName))
@@ -77,7 +161,7 @@ namespace AndroidVector
             if (typeof(T).IsEnum)
                 throw new ArgumentException("Use GetEnumPropertyAttribute");
 
-            if (Attribute(avNs + propertyName.ToCamelCase()) is XAttribute attribute)
+            if (Attribute(Namespace.AndroidVector + propertyName.ToCamelCase()) is XAttribute attribute)
             {
                 var s = attribute.Value;
                 try
@@ -97,7 +181,7 @@ namespace AndroidVector
             if (string.IsNullOrWhiteSpace(propertyName))
                 throw new ArgumentException(nameof(propertyName));
 
-            if (Attribute(avNs + propertyName.ToCamelCase()) is XAttribute attribute)
+            if (Attribute(Namespace.AndroidVector + propertyName.ToCamelCase()) is XAttribute attribute)
                 return attribute.Value.ToColor();
             return default;
         }
@@ -108,9 +192,9 @@ namespace AndroidVector
             if (string.IsNullOrWhiteSpace(propertyName))
                 throw new ArgumentException(nameof(propertyName));
 
-            if (Attribute(avNs + propertyName.ToCamelCase()) is XAttribute attribute && typeof(T).IsEnum)
+            if (Attribute(Namespace.AndroidVector + propertyName.ToCamelCase()) is XAttribute attribute && typeof(T).IsEnum)
             {
-                if (Enum.TryParse<T>(attribute.Value, out T value))
+                if (Enum.TryParse<T>(attribute.Value.ToPascalCase(), out T value))
                     return value;
             }
             return default;
@@ -128,7 +212,7 @@ namespace AndroidVector
             else
                 this.SetAndroidAttributeValue(propertyName.ToCamelCase(), value);
         }
-
+        #endregion
 
 
     }

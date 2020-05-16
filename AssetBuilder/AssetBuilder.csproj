@@ -34,13 +34,11 @@
     <ProjectReference Include="..\Svg2AndroidVector\Svg2AndroidVector.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Resources\Svg2VectorAndroid-1.0.1.jar" />
     <None Remove="Resources\background_splash.xml" />
     <None Remove="Resources\Contents.json" />
     <None Remove="Resources\LaunchScreen.storyboard" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Svg2VectorAndroid-1.0.1.jar" />
     <EmbeddedResource Include="Resources\SplashActivity.cs" />
     <EmbeddedResource Include="Resources\background_splash.xml" />
     <EmbeddedResource Include="Resources\Contents.json" />

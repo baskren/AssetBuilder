@@ -7,6 +7,8 @@ namespace AndroidVector
 {
     public static class ColorExtensions
     {
+        public static string ToHexString(this Color c) => $"#{c.A:X2}{c.R:X2}{c.G:X2}{c.B:X2}";
+
         public static Color ToColor(this string s)
         {
             if (s.StartsWith("#"))
@@ -19,7 +21,7 @@ namespace AndroidVector
             return default;
         }
 
-        static Color FromHexString(string s)
+        public static Color FromHexString(this string s)
         {
             int r, g, b;
             s = s.Substring(1);
@@ -47,7 +49,7 @@ namespace AndroidVector
             }
         }
 
-        static Color FromRGBString(string s)
+        public static Color FromRGBString(this string s)
         {
 #pragma warning disable CC0021 // Use nameof
             int r, g, b;

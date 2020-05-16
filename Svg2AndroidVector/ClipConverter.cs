@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using AndroidVector;
 
 namespace Svg2AndroidVector
 {
@@ -17,7 +18,7 @@ namespace Svg2AndroidVector
         public static void ConvertClipAttribute(XElement svgSvgElement, AndroidVector.BaseElement av, List<string> warnings)
         {
             const string svgTypeName = "svg";
-            if (svgSvgElement.Name != NameSpace.Svg + svgTypeName)
+            if (svgSvgElement.Name != Namespace.Svg + svgTypeName)
                 throw new ArgumentException("Only applicable to SVG <svg> element");
 
             if (av.Name != "vector" && av.Name != "group")
@@ -30,24 +31,24 @@ namespace Svg2AndroidVector
                     if (svgSvgElement.Attribute("viewBox") is XAttribute svgViewBoxAttribute)
                     {
                         var args = svgViewBoxAttribute.Value.Split(new char[] { ' ', ',' });
-                        if (args.Length < 1 || !AttributeExtensions.TryGetValueInPx(svgSvgElement, args[0], Orientation.Horizontal, out float x))
+                        if (args.Length < 1 || !ElementExtensions.TryGetValueInPx(svgSvgElement, args[0], Orientation.Horizontal, out float x))
                         {
-                            warnings.Add("Ignoring <svg clip='auto'> because 'viewBox' does not contain x coordinate.");
+                            warnings.AddWarning("Ignoring <svg clip='auto'> because 'viewBox' does not contain x coordinate.");
                             return;
                         }
-                        if (args.Length < 2 || !AttributeExtensions.TryGetValueInPx(svgSvgElement, args[1], Orientation.Vertical, out float y))
+                        if (args.Length < 2 || !ElementExtensions.TryGetValueInPx(svgSvgElement, args[1], Orientation.Vertical, out float y))
                         {
-                            warnings.Add("Ignoring <svg clip='auto'> because 'viewBox' does not contain y coordinate.");
+                            warnings.AddWarning("Ignoring <svg clip='auto'> because 'viewBox' does not contain y coordinate.");
                             return;
                         }
-                        if (args.Length < 3 || !AttributeExtensions.TryGetValueInPx(svgSvgElement, args[2], Orientation.Horizontal, out float w))
+                        if (args.Length < 3 || !ElementExtensions.TryGetValueInPx(svgSvgElement, args[2], Orientation.Horizontal, out float w))
                         {
-                            warnings.Add("Ignoring <svg clip='auto'> because 'viewBox' does not contain width.");
+                            warnings.AddWarning("Ignoring <svg clip='auto'> because 'viewBox' does not contain width.");
                             return;
                         }
-                        if (args.Length < 4 || !AttributeExtensions.TryGetValueInPx(svgSvgElement, args[3], Orientation.Vertical, out float h))
+                        if (args.Length < 4 || !ElementExtensions.TryGetValueInPx(svgSvgElement, args[3], Orientation.Vertical, out float h))
                         {
-                            warnings.Add("Ignoring <svg clip='auto'> because 'viewBox' does not contain height.");
+                            warnings.AddWarning("Ignoring <svg clip='auto'> because 'viewBox' does not contain height.");
                             return;
                         }
                         string pathData = " M " + x + "," + y;
@@ -59,7 +60,7 @@ namespace Svg2AndroidVector
                     }
                     else
                     {
-                        warnings.Add("Ignoring <svg clip='auto'> because 'viewBox' attribute is not present.");
+                        warnings.AddWarning("Ignoring <svg clip='auto'> because 'viewBox' attribute is not present.");
                         return;
                     }
                 }
@@ -67,24 +68,24 @@ namespace Svg2AndroidVector
                 {
                     // top, right, bottom, left
                     var args = clipAttribute.Value.Split(new char[] { ' ', ',', '(', ')' });
-                    if (args.Length < 2 || !AttributeExtensions.TryGetValueInPx(svgSvgElement, args[1], Orientation.Vertical, out float top))
+                    if (args.Length < 2 || !ElementExtensions.TryGetValueInPx(svgSvgElement, args[1], Orientation.Vertical, out float top))
                     {
-                        warnings.Add("Ignoring <svg clip='rect(...)'> because 'rect' does not contain top coordinate.");
+                        warnings.AddWarning("Ignoring <svg clip='rect(...)'> because 'rect' does not contain top coordinate.");
                         return;
                     }
-                    if (args.Length < 3 || !AttributeExtensions.TryGetValueInPx(svgSvgElement, args[2], Orientation.Horizontal, out float right))
+                    if (args.Length < 3 || !ElementExtensions.TryGetValueInPx(svgSvgElement, args[2], Orientation.Horizontal, out float right))
                     {
-                        warnings.Add("Ignoring <svg clip='rect(...)'> because 'rect' does not contain right coordinate.");
+                        warnings.AddWarning("Ignoring <svg clip='rect(...)'> because 'rect' does not contain right coordinate.");
                         return;
                     }
-                    if (args.Length < 4 || !AttributeExtensions.TryGetValueInPx(svgSvgElement, args[3], Orientation.Vertical, out float bottom))
+                    if (args.Length < 4 || !ElementExtensions.TryGetValueInPx(svgSvgElement, args[3], Orientation.Vertical, out float bottom))
                     {
-                        warnings.Add("Ignoring <svg clip='rect(...)'> because 'rect' does not contain bottom coordinate.");
+                        warnings.AddWarning("Ignoring <svg clip='rect(...)'> because 'rect' does not contain bottom coordinate.");
                         return;
                     }
-                    if (args.Length < 5 || !AttributeExtensions.TryGetValueInPx(svgSvgElement, args[4], Orientation.Horizontal, out float left))
+                    if (args.Length < 5 || !ElementExtensions.TryGetValueInPx(svgSvgElement, args[4], Orientation.Horizontal, out float left))
                     {
-                        warnings.Add("Ignoring <svg clip='rect(...)'> because 'rect' does not contain left coordinate.");
+                        warnings.AddWarning("Ignoring <svg clip='rect(...)'> because 'rect' does not contain left coordinate.");
                         return;
                     }
                     string pathData = " M " + top + "," + left;
@@ -96,7 +97,7 @@ namespace Svg2AndroidVector
                 }
                 else
                 {
-                    warnings.Add("Ignoring <svg clip='"+clipAttribute.Value+"'> because '"+clipAttribute.Value+"' is an unexpected attribute value.");
+                    warnings.AddWarning("Ignoring <svg clip='"+clipAttribute.Value+"'> because '"+clipAttribute.Value+"' is an unexpected attribute value.");
                     return;
                 }
             }
@@ -109,18 +110,22 @@ namespace Svg2AndroidVector
             if (svgElement.Attribute("clip-path") is XAttribute svgAttribute)
             {
                 var svgAttributeValue = svgAttribute.Value.Trim();
-                if (svgAttribute.Name == "inherit")
+                if (svgAttributeValue == "inherit")
                 {
                     var parent = svgAttribute.Parent.Parent;
                     while (parent != null)
                     {
-                        if (parent.Attribute(svgAttribute.Name) is XAttribute parentAttribute && parentAttribute.Value != "inherit")
+                        if (parent.Attribute(svgAttribute.Name) is XAttribute parentAttribute && parentAttribute.Value.Trim() != "inherit")
                         {
-                            svgAttributeValue = parentAttribute.Value;
-                            break;
+                            svgAttributeValue = parentAttribute.Value.Trim();
+                            return avGroup;
                         }
                     }
                 }
+
+                if (svgElement.Name != Namespace.Svg + "g" || svgElement.Name != Namespace.Svg + "clipPath")
+                    avGroup = Converter.NestGroup(avGroup);
+
                 if (svgAttributeValue.StartsWith("url("))
                 {
                     if (!svgAttributeValue.StartsWith("url(#"))
@@ -129,25 +134,95 @@ namespace Svg2AndroidVector
                     var iri = svgAttributeValue.Substring("url(#".Length).Trim(')').Trim();
                     if (svgElement.GetRoot() is XElement root)
                     {
-                        if (root.Descendants(NameSpace.Svg + "clipPath").FirstOrDefault(e=>e.Attribute("id").Value == iri) is XElement svgClipPathElement)
+                        if (root.Descendants(Namespace.Svg + "clipPath").FirstOrDefault(e=>e.Attribute("id").Value == iri) is XElement svgClipPathElement)
                         {
-                            AndroidVector.Group result = avGroup is AndroidVector.Group ? avGroup : new AndroidVector.Group();
-                            result = svgClipPathElement.ConvertClipPathAttribute(result, warnings);
-                            foreach (var child in svgClipPathElement.Elements())
-                            {
-                                if (GeometryConverter.ConvertToPathData(child, warnings) is string pathData)
-                                    result.Add(new AndroidVector.ClipPath(pathData));
-                            }
-                            return result;
+                            //AndroidVector.Group result = avGroup is AndroidVector.Group ? avGroup : new AndroidVector.Group();
+                            avGroup = AddClipPathElement(svgClipPathElement, avGroup, warnings);
+                            return avGroup;
                         }
-                        warnings.Add("No element found to complete clipPath link to " + svgAttributeValue + ".");
+                        warnings.AddWarning("Ignoring clip-path because no element found to complete clipPath link to " + svgAttributeValue + ".");
                         return avGroup;
                     }
                     throw new Exception("could not find document root");
                 }
-                //result.Add(new AndroidVector.ClipPath(clipPathAttribute.Value));
-                
+                else if (GeometryConverter.ConvertCssShapeToPathData(svgElement, svgAttributeValue, warnings) is string pathData)
+                {
+                    avGroup.Add(new ClipPath(pathData));
+                }
+                else
+                {
+                    warnings.AddWarning("Ignoring clip-path attribute because could not interpret value : " + svgAttributeValue + ".");
+                }
             }
+            return avGroup;
+        }
+
+
+        public static AndroidVector.Group AddClipPathElement(this XElement svgElement, AndroidVector.Group avGroup, List<string> warnings)
+        {
+            string typeName = svgElement.Name.LocalName;
+
+            avGroup = ClipConverter.ConvertClipPathAttribute(svgElement, avGroup, warnings);
+            CommonAttributes.ProcessAttributes(svgElement, avGroup, null, warnings);
+            var avClip = new AndroidVector.ClipPath();
+            foreach (var child in svgElement.Elements())
+            {
+                if (child.Name == Namespace.Svg + "use")
+                {
+                    float tx = 0, ty = 0;
+                    if (child.Attribute("x") is XAttribute xAttribute)
+                        AttributeExtensions.TryGetValueInPx(xAttribute, out tx);
+                    if (child.Attribute("y") is XAttribute yAttribute)
+                        AttributeExtensions.TryGetValueInPx(yAttribute, out ty);
+                    if (tx != 0 || ty != 0)
+                        avGroup.SvgTransforms.Add(Matrix.CreateTranslate(tx, ty));
+
+                    if (child.Attribute(Namespace.xlinkNs + "href") is XAttribute hrefAttribute)
+                    {
+                        if (hrefAttribute.Value.StartsWith("#"))
+                        {
+                            var href = hrefAttribute.Value.Trim(new char[] { '#', ' ' });
+                            var root = child.GetRoot();
+                            if (root.Descendants().Where(e => e.Attribute("id")?.Value == href).FirstOrDefault() is XElement useElement)
+                            {
+                                if (useElement.Name == Namespace.Svg + "clipPath")
+                                {
+                                    avGroup = ClipConverter.ConvertClipPathAttribute(useElement, avGroup, warnings);
+                                    CommonAttributes.ProcessAttributes(useElement, avGroup, new List<string> { "x", "y" }, warnings);
+                                    AddClipPathElement(useElement, avGroup, warnings);
+                                }
+                                else if (GeometryConverter.ConvertElementToPathData(useElement, warnings) is string pathData)
+                                    avClip.PathData += pathData;
+                                else
+                                    warnings.AddWarning("Ignoring <"+ useElement.Name.LocalName+ " id='" + useElement.Attribute("id")?.Value + "'> inside of <"+child.Name.LocalName+" id='"+child.Attribute("id")?.Value+"' xlink:href='" + hrefAttribute.Value + "' because could not find element referenced by xlink:href attribute.");
+                            }
+                            else
+                            {
+                                warnings.AddWarning("Ignoring <use id='" + svgElement.Attribute("id")?.Value + "' xlink:href='" + hrefAttribute.Value + "' because could not find element referenced by xlink:href attribute.");
+                            }
+                        }
+                        else
+                        {
+                            warnings.AddWarning("Ignoring <use id='" + svgElement.Attribute("id")?.Value + "' xlink:href='" + hrefAttribute.Value + "' because xlink:href attribute is not a local anchor.");
+                        }
+                    }
+                    else
+                    {
+                        warnings.AddWarning("Ignoring <use id='" + svgElement.Attribute("id")?.Value + "'> because cannot find xlink:href attribute.");
+                    }
+                    //    var tmpGroup = new AndroidVector.Group();
+                    
+                }
+                else if (GeometryConverter.ConvertElementToPathData(child, warnings) is string pathData)
+                    avClip.PathData += pathData;
+            }
+
+            if (!string.IsNullOrWhiteSpace(avClip.PathData))
+            {
+                CommonAttributes.SetTransforms(svgElement, avClip, warnings);
+                avGroup.Add(avClip);
+            }
+
             return avGroup;
         }
 

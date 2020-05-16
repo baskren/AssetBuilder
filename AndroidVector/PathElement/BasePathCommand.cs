@@ -32,5 +32,8 @@ namespace AndroidVector.PathElement
 
         public virtual void ApplySvgTransform(Matrix matrix)
             => throw new NotImplementedException();
+
+        public virtual RectangleF GetBounds()
+            => throw new NotImplementedException();
     }
 }

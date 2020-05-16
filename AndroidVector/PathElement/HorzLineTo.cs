@@ -19,16 +19,15 @@ namespace AndroidVector.PathElement
         {
             if (char.ToUpper(s[0]) != Symbol)
                 throw new ArgumentException("Invalid use of HorzLineTo.FromString(" + s + ").");
+
             var relative = char.IsLower(s[0]);
-            var terms = s.Substring(1).Trim().Split(new char[] { ',', ' ' });
+            int i = 0;
+            var v = s.Substring(1).ToFloatList();
             float result = 0;
-            foreach (var term in terms)
-            {
-                if (float.TryParse(term, out float x))
-                    result += x;
-            }
+            while (v.Count >= i + 1)
+                result += v[i++];
             if (result != 0 || !relative)
-                return new HorzLineTo(result, relative);
+                return new HorzLineTo(result, char.IsLower(s[0]));
             return null;
         }
 
@@ -46,5 +45,6 @@ namespace AndroidVector.PathElement
         {
             return base.ToString() + X.ToString("0.###");
         }
+
     }
 }

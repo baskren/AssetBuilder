@@ -41,27 +41,19 @@ namespace AndroidVector.PathElement
         {
             if (char.ToUpper(s[0]) != Symbol)
                 throw new ArgumentException("Invalid use of Arc.FromString(" + s + ").");
-            var relative = char.IsLower(s[0]);
-            var terms = s.Substring(1).Trim().Split(new char[] { ',', ' ' });
+
+            int i = 0;
+            var v = s.Substring(1).ToFloatList();
             var result = new List<Arc>();
-            for (int i=0;i<terms.Length;)
-            {
-                if (float.TryParse(terms[i++], out float rx) &&
-                    float.TryParse(terms[i++], out float ry) &&
-                    float.TryParse(terms[i++], out float rotX) &&
-                    int.TryParse(terms[i++], out int longArc) &&
-                    int.TryParse(terms[i++], out int sweep) &&
-                    float.TryParse(terms[i++], out float endX) &&
-                    float.TryParse(terms[i++], out float endY))
-                    result.Add(new Arc(rx, ry, rotX, longArc > 0, sweep > 0, endX, endY, relative));
-            }
+            while (v.Count >= i + 7)
+                result.Add(new Arc(v[i++], v[i++], v[i++], v[i++] > 0, v[i++] > 0, v[i++], v[i++], char.IsLower(s[0])));
             return result;
         }
 
         public override string ToString()
         {
             return base.ToString() +
-                Radii.Width.ToString("0.###") + "," + Radii.Height.ToString("0.###") + "," + " " +
+                Radii.Width.ToString("0.###") + "," + Radii.Height.ToString("0.###") + " " +
                 XAxisRotation.ToString("0.###") + " " + (IsLongArc ? 1 : 0) + " " + (IsSweep ? 1 : 0) + " " +
                 End.X.ToString("0.###") + "," + End.Y.ToString("0.###");
         }
@@ -77,7 +69,24 @@ namespace AndroidVector.PathElement
         }
 
 
+        public override void ApplySvgTransform(Matrix matrix)
+        {
+            var rx = Radii.Width * matrix.ScaleX;
+            var ry = Radii.Height * matrix.ScaleY;
+            Radii = new SizeF(rx, ry);
 
+            XAxisRotation += matrix.RotationDegrees;
+
+            End = matrix.TransformPoint(End);
+        }
+
+        public override RectangleF GetBounds()
+        {
+            return new RectangleF(End.X - Radii.Width, End.Y - Radii.Height, 2 * Radii.Width,  2 * Radii.Height);
+        }
+
+
+        /*
         public List<BezierCurve> ToBezierCurves(SizeF cursor)
         {
             if (IsRelative)
@@ -184,6 +193,6 @@ namespace AndroidVector.PathElement
             }
             return result;
         }
-
+        */
     }
 }

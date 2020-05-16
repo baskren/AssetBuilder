@@ -6,10 +6,10 @@ namespace AndroidVector
     public static class ElementExtensions
     {
         public static void SetAndroidAttributeValue(this XElement xElement, string name, object value)
-            => xElement.SetAttributeValue(BaseElement.avNs + name, value);
+            => xElement.SetAttributeValue(Namespace.AndroidVector + name, value);
 
         public static XAttribute AndroidAttribute(this XElement xElement, string name)
-            => xElement.Attribute(BaseElement.avNs + name);
+            => xElement.Attribute(Namespace.AndroidVector + name);
 
     }
 }

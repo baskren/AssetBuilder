@@ -10,5 +10,6 @@
     <Folder Include="Elements\" />
     <Folder Include="Matrix\" />
     <Folder Include="PathElement\" />
+    <Folder Include="UnitizedFloat\" />
   </ItemGroup>
 </Project>

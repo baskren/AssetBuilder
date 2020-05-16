@@ -28,17 +28,12 @@ namespace AndroidVector.PathElement
         {
             if (char.ToUpper(s[0]) != Symbol)
                 throw new ArgumentException("Invalid use of QuadraticCurve.FromString(" + s + ").");
-            var relative = char.IsLower(s[0]);
-            var terms = s.Substring(1).Trim().Split(new char[] { ',', ' ' });
+
+            int i = 0;
+            var v = s.Substring(1).ToFloatList();
             var result = new List<QuadraticCurve>();
-            for (int i = 0; i < terms.Length;)
-            {
-                if (float.TryParse(terms[i++], out float c1X) &&
-                    float.TryParse(terms[i++], out float c1Y) &&
-                    float.TryParse(terms[i++], out float endX) &&
-                    float.TryParse(terms[i++], out float endY))
-                    result.Add( new QuadraticCurve(c1X, c1Y, endX, endY, relative));
-            }
+            while (v.Count >= i + 4)
+                result.Add(new QuadraticCurve(v[i++], v[i++], v[i++], v[i++], char.IsLower(s[0])));
             return result;
         }
 
@@ -65,5 +60,15 @@ namespace AndroidVector.PathElement
             Control1 = matrix.TransformPoint(Control1);
             End = matrix.TransformPoint(End);
         }
+
+        public override RectangleF GetBounds()
+        {
+            var left = Math.Min(Control1.X, End.X);
+            var right = Math.Max(Control1.X, End.X);
+            var top = Math.Min(Control1.Y, End.Y);
+            var bottom = Math.Max(Control1.Y, End.Y);
+            return new RectangleF(left, top, right - left, bottom - top);
+        }
+
     }
 }

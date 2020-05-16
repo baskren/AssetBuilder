@@ -28,17 +28,12 @@ namespace AndroidVector.PathElement
         {
             if (char.ToUpper(s[0]) != Symbol)
                 throw new ArgumentException("Invalid use of ShortcutBezierCurve.FromString(" + s + ").");
-            var relative = char.IsLower(s[0]);
-            var terms = s.Substring(1).Trim().Split(new char[] { ',', ' ' });
+
+            int i = 0;
+            var v = s.Substring(1).ToFloatList();
             var result = new List<ShortcutBezierCurve>();
-            for (int i = 0; i < terms.Length;)
-            {
-                if (float.TryParse(terms[i++], out float c2X) &&
-                    float.TryParse(terms[i++], out float c2Y) &&
-                    float.TryParse(terms[i++], out float endX) &&
-                    float.TryParse(terms[i++], out float endY))
-                    result.Add(new ShortcutBezierCurve(c2X, c2Y, endX, endY, relative));
-            }
+            while (v.Count >= i + 4)
+                result.Add(new ShortcutBezierCurve(v[i++], v[i++], v[i++], v[i++], char.IsLower(s[0])));
             return result;
         }
 
@@ -65,5 +60,15 @@ namespace AndroidVector.PathElement
             Control2 = matrix.TransformPoint(Control2);
             End = matrix.TransformPoint(End);
         }
+
+        public override RectangleF GetBounds()
+        {
+            var left = Math.Min(Control2.X, End.X);
+            var right = Math.Max(Control2.X, End.X);
+            var top = Math.Min(Control2.Y, End.Y);
+            var bottom = Math.Max(Control2.Y, End.Y);
+            return new RectangleF(left, top, right - left, bottom - top);
+        }
+
     }
 }
