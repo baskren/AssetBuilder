@@ -32,6 +32,7 @@ namespace AndroidVector
 
         public LinearGradient()
         {
+            this.SetAndroidAttributeValue("type", "linear");
         }
 
         public override void ApplySvgTransform(Matrix matrix)

@@ -16,76 +16,41 @@ namespace Svg2AndroidVector
             { "fill", "fillColor" },
             { "stroke", "strokeColor" },
         };
-        /*
-        public static void ConvertPaint(XAttribute svgAttribute, BaseElement avElement, List<string> warnings)
-        {
-            if (svgAttribute.Parent is XElement svgElement)
-            {
-                var svgAttributeValue = svgAttribute.Value.Trim();
-                if (svgAttribute.Name == "inherit")
-                {
-                    var parent = svgAttribute.Parent.Parent;
-                    while (parent != null)
-                    {
-                        if (parent.Attribute(svgAttribute.Name) is XAttribute parentAttribute && parentAttribute.Value != "inherit")
-                        {
-                            svgAttributeValue = parentAttribute.Value;
-                            break;
-                        }
-                    }
-                }
-                if (svgAttributeValue.StartsWith("url("))
-                {
-                    if (!svgAttributeValue.StartsWith("url(#"))
-                        throw new Exception("Only anchor URLs are supported at this time.");
 
-                    var iri = svgAttributeValue.Substring("url(#".Length).Trim(')').Trim();
-                    if (svgElement.GetRoot() is XElement root)
-                    {
-                        if (root.Descendants(Namespace.Svg + "linearGradient").FirstOrDefault(e=>e.Attribute("id").Value == iri) is XElement svgLinearGradient)
-                        {
-                            if (ConvertLinearGradient(svgLinearGradient, warnings) is LinearGradient avGradient)
-                            {
-                                var aapt = new AaptAttr("fill", avGradient);
-                                avElement.Add(aapt);
-                                return;
-                            }
-                        }
-                        if (root.Descendants(Namespace.Svg + "radialGradient").FirstOrDefault(e => e.Attribute("id").Value == iri) is XElement svgRadialGradient)
-                        {
-                            if (ConvertRadialGradient(svgRadialGradient, warnings) is RadialGradient avGradient)
-                            {
-                                var aapt = new AaptAttr("fill", avGradient);
-                                avElement.Add(aapt);
-                                return;
-                            }
-                        }
-                        warnings.AddWarning("Ignoring gradient because no element found to complete link [" + svgAttributeValue + "].");
-                        return;
-                    }
-                    throw new Exception("Could not find document root");
-                }
-                else if (PaintAttributeMap.TryGetValue(svgAttribute.Name.ToString(), out string avAttributeName))
+        static XElement GetGradientHrefElement(XElement svgGradient, List<string> warnings)
+        {
+            XElement hrefElement = null;
+            if (svgGradient.Attribute(Namespace.xlinkNs + "href") is XAttribute hrefAttribute)
+            {
+                if (hrefAttribute.Value.StartsWith("#"))
                 {
-                    var (hexColor, opacity) = StyleConverter.GetHexColorAndFloatOpacity(svgAttribute.Value, warnings);
-                    avElement.SetAndroidAttributeValue(avAttributeName, hexColor);
-                    if (!float.IsNaN(opacity))
-                        avElement.SetAndroidAttributeValue("alpha", opacity);
-                    return;
+                    var iri = hrefAttribute.Value.Substring(1).Trim(')').Trim();
+                    if (svgGradient.GetRoot() is XElement root)
+                    {
+                        if (root.Descendants(svgGradient.Name).FirstOrDefault(e => e.Attribute("id").Value == iri) is XElement hrefGradient)
+                            hrefElement = hrefGradient;
+                        else
+                            warnings.AddWarning("Ignoring gradient because no element of same type found to complete link [" + hrefAttribute + "].");
+                    }
+                    else
+                        throw new Exception("Could not find document root");
                 }
-                throw new Exception("Somehow, a SVG attribute of [" + svgAttribute.Name + "] was passed to GradientConverter.ConvertPaint.");
+                else
+                    warnings.AddWarning("Only anchor URLs are supported at this time.");
             }
-            throw new Exception("No parent for paint attribute");
+            return hrefElement;
         }
-        */
+
         public static LinearGradient ConvertLinearGradient(XElement svgGradient, List<string> warnings)
         {
             const string typeName = "linearGradient";
             if (svgGradient.Name != Namespace.Svg + typeName)
                 throw new ArgumentException("Argument is not the expected <" + typeName + "> SVG element");
 
+            var hrefElement = GetGradientHrefElement(svgGradient, warnings);
+
             float x1 = 0, y1 = 0, x2 = 0, y2 = 0;
-            if (svgGradient.Attribute("x1") is XAttribute x1Attribute)
+            if (GetAttribute("x1", svgGradient, hrefElement) is XAttribute x1Attribute)
             {
                 var f = x1Attribute.Value.ToPathOffset();
                 if (!float.IsNaN(f))
@@ -93,7 +58,7 @@ namespace Svg2AndroidVector
                 else
                     warnings.AddWarning("Could not parse x1 parameter of <" + typeName + " id='" + svgGradient.Attribute("id")?.Value + "'>");
             }
-            if (svgGradient.Attribute("y1") is XAttribute y1Attribute)
+            if (GetAttribute("y1", svgGradient, hrefElement) is XAttribute y1Attribute)
             {
                 var f = y1Attribute.Value.ToPathOffset();
                 if (!float.IsNaN(f))
@@ -101,7 +66,7 @@ namespace Svg2AndroidVector
                 else
                     warnings.AddWarning("Could not parse y1 parameter of <" + typeName + " id='" + svgGradient.Attribute("id")?.Value + "'>");
             }
-            if (svgGradient.Attribute("x2") is XAttribute x2Attribute)
+            if (GetAttribute("x2", svgGradient, hrefElement) is XAttribute x2Attribute)
             {
                 var f = x2Attribute.Value.ToPathOffset();
                 if (!float.IsNaN(f))
@@ -109,7 +74,7 @@ namespace Svg2AndroidVector
                 else
                     warnings.AddWarning("Could not parse x2 parameter of <" + typeName + " id='" + svgGradient.Attribute("id")?.Value + "'>");
             }
-            if (svgGradient.Attribute("y2") is XAttribute y2Attribute)
+            if (GetAttribute("y2", svgGradient, hrefElement) is XAttribute y2Attribute)
             {
                 var f = y2Attribute.Value.ToPathOffset();
                 if (!float.IsNaN(f))
@@ -129,8 +94,7 @@ namespace Svg2AndroidVector
             avGradient.SetAndroidAttributeValue("startY", y1);
             avGradient.SetAndroidAttributeValue("endX", x2);
             avGradient.SetAndroidAttributeValue("endY", y2);
-            avGradient.SetAndroidAttributeValue("type", "linear");
-            SetCommonGradientAttributes(svgGradient, avGradient, warnings);
+            SetCommonGradientAttributes(svgGradient, hrefElement, avGradient, warnings);
 
             
 
@@ -160,8 +124,10 @@ namespace Svg2AndroidVector
             if (svgGradient.Name != Namespace.Svg + typeName)
                 throw new ArgumentException("Argument is not the expected <" + typeName + "> SVG element");
 
+            var hrefElement = GetGradientHrefElement(svgGradient, warnings);
+
             float cx = 0, cy = 0, r = 0;
-            if (svgGradient.Attribute("cx") is XAttribute cxAttribute)
+            if (GetAttribute("cx", svgGradient, hrefElement) is XAttribute cxAttribute)
             {
                 var f = cxAttribute.Value.ToPathOffset();
                 if (!float.IsNaN(f))
@@ -169,7 +135,8 @@ namespace Svg2AndroidVector
                 else
                     warnings.AddWarning("Could not parse cx parameter of <" + typeName + " id='" + svgGradient.Attribute("id")?.Value + "'>");
             }
-            if (svgGradient.Attribute("cy") is XAttribute cyAttribute)
+
+            if (GetAttribute("cy", svgGradient, hrefElement) is XAttribute cyAttribute)
             {
                 var f = cyAttribute.Value.ToPathOffset();
                 if (!float.IsNaN(f))
@@ -181,7 +148,7 @@ namespace Svg2AndroidVector
                 warnings.AddWarning("Ignoring 'fx' attribute in SVG " + typeName + " because it is not mappable to AndroidVector.");
             if (svgGradient.Attribute("fy") is XAttribute)
                 warnings.AddWarning("Ignoring 'fy' attribute in SVG " + typeName + " because it is not mappable to AndroidVector.");
-            if (svgGradient.Attribute("r") is XAttribute rAttribute)
+            if (GetAttribute("r", svgGradient, hrefElement) is XAttribute rAttribute)
             {
                 var f = rAttribute.Value.ToPathOffset();
                 if (!float.IsNaN(f))
@@ -202,22 +169,31 @@ namespace Svg2AndroidVector
             avGradient.SetAndroidAttributeValue("centerX", cx);
             avGradient.SetAndroidAttributeValue("centerY", cy);
             avGradient.SetAndroidAttributeValue("gradientRadius", r);
-            avGradient.SetAndroidAttributeValue("type", "linear");
-            SetCommonGradientAttributes(svgGradient, avGradient, warnings);
+            SetCommonGradientAttributes(svgGradient, hrefElement, avGradient, warnings);
             return avGradient;
         }
 
-        static void SetCommonGradientAttributes(XElement svgGradient, BaseGradient avGradient, List<string> warnings)
+        static XAttribute GetAttribute(string name, XElement source, XElement href)
+        {
+            XAttribute attribute = null;
+            if (source.Attribute(name) is XAttribute sourceAttribute)
+                attribute = sourceAttribute;
+            else if (href!=null && href.Attribute(name) is XAttribute hrefAttribute)
+                attribute = hrefAttribute;
+            return attribute;
+        }
+
+        static void SetCommonGradientAttributes(XElement svgGradient, XElement hrefElement, BaseGradient avGradient, List<string> warnings)
         {
             var typeName = svgGradient.Name;
 
-            if (svgGradient.Attribute("gradientUnits") is XAttribute unitsAttribute)
+            if (GetAttribute("gradientUnits", svgGradient, hrefElement) is XAttribute unitsAttribute)
                 avGradient.UserSpaceUnits = unitsAttribute.Value == "userSpaceOnUse";
 
-            if (svgGradient.Attribute("gradientTransform") is XAttribute transformAttribute)
+            if (GetAttribute("gradientTransform", svgGradient, hrefElement) is XAttribute transformAttribute)
                 CommonAttributes.SetTransforms(svgGradient, avGradient, warnings);
 
-            if (svgGradient.Attribute("spreadMethod") is XAttribute spreadMethodAttribute)
+            if (GetAttribute("spreadMethod", svgGradient, hrefElement) is XAttribute spreadMethodAttribute)
             {
                 switch (spreadMethodAttribute.Value)
                 {
@@ -236,42 +212,66 @@ namespace Svg2AndroidVector
                 }
             }
 
-            foreach (var stop in svgGradient.Elements(Namespace.Svg + "stop"))
+            var stops = hrefElement?.Elements(Namespace.Svg + "stop").ToList() ?? new List<XElement>();
+            stops.AddRange(svgGradient.Elements(Namespace.Svg + "stop"));
+           
+            foreach (var stop in stops)
             {
-                if (stop.Attribute("stop-color") is XAttribute colorAttribute)
+                var color = Color.Black;
+                var styles = new Dictionary<string, string>();
+
+                if (stop.Attribute("style") is XAttribute styleAttribute)
                 {
-                    var color = colorAttribute.Value.FromHexString();
-                    if (stop.Attribute("stop-opacity") is XAttribute opacityAttribute)
+                    var parts = styleAttribute.Value.Split(';');
+                    foreach (var style in parts)
                     {
-                        var text = opacityAttribute.Value.Trim();
-                        bool percent = false;
-                        if (text.EndsWith('%'))
-                        {
-                            percent = true;
-                            text.Trim('%');
-                        }
-                        if (float.TryParse(text, out float value))
-                        {
-                            if (percent)
-                                value /= 100f;
-                            int alpha = (int)Math.Round(255 * value);
-                            color = Color.FromArgb(alpha, color.R, color.G, color.B);
-                        }
-                        else
-                        {
-                            warnings.AddWarning("Ignoring opacity because could not parse stop-opaticy in " + stop + ".");
-                        }
+                        var styleParts = style.Split(':');
+                        if (styleParts.Length > 1)
+                            styles.Add(styleParts[0], styleParts[1]);
                     }
-                    if (stop.Attribute("offset") is XAttribute offsetAttribute)
+                }
+
+                if (stop.Attribute("stop-color") is XAttribute colorAttribute)
+                    color = colorAttribute.Value.ToColor();
+                else if (styles.TryGetValue("stop-color", out string colorText))
+                    color = colorText.ToColor();
+
+                string opacityText = null;
+                if (stop.Attribute("stop-opacity") is XAttribute opacityAttribute)
+                    opacityText = opacityAttribute.Value;
+                else
+                    styles.TryGetValue("stop-opacity", out opacityText);
+
+                if (!string.IsNullOrWhiteSpace(opacityText))
+                {
+                    bool percent = false;
+                    if (opacityText.EndsWith('%'))
                     {
-                        //avGradient.Add(new XElement(Namespace.Svg + "item", new AndroidAttribute("color", colorAttribute.Value), new AndroidAttribute("offset", offsetAttribute.Value)));
-                        avGradient.Add(new GradientItem(offsetAttribute.Value, color.ToHexString()));
+                        percent = true;
+                        opacityText.Trim('%');
+                    }
+                    if (float.TryParse(opacityText, out float value))
+                    {
+                        if (percent)
+                            value /= 100f;
+                        int alpha = (int)Math.Round(255 * value);
+                        color = Color.FromArgb(alpha, color.R, color.G, color.B);
                     }
                     else
-                        warnings.AddWarning("Ignoring " + typeName + " stop because no offset attribute for SVG <stop id='" + stop.Attribute("id")?.Value + "'>.");
+                    {
+                        warnings.AddWarning("Ignoring opacity because could not parse stop-opaticy in " + stop + ".");
+                    }
                 }
-                warnings.AddWarning("Ignoring " + typeName + " stop because no stop-color attribute for SVG <stop id='" + stop.Attribute("id")?.Value + "'>.");
+
+
+                string offsetText = "0";
+                if (stop.Attribute("offset") is XAttribute offsetAttribute)
+                    offsetText = offsetAttribute.Value;
+                else
+                    styles.TryGetValue("offset", out offsetText);
+                avGradient.Add(new GradientItem(offsetText, color.ToHexString()));
             }
+
 
         }
     }

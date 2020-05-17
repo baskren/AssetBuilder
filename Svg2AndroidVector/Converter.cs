@@ -49,7 +49,7 @@ namespace Svg2AndroidVector
             else
                 viewBoxAttribute = null;
 
-            ReplaceUseElements(svgElement, warnings);
+            InsertUseElements(svgElement, warnings);
             ProcessGroupContents(svgElement, avGroup, warnings);
 
             avGroup.MapGradients();
@@ -136,7 +136,7 @@ namespace Svg2AndroidVector
             return vector;
         }
 
-        public static void ReplaceUseElements(XElement svgElement, List<string> warnings)
+        public static void InsertUseElements(XElement svgElement, List<string> warnings)
         {
             foreach (var child in svgElement.Elements().ToArray())
             {
@@ -164,7 +164,8 @@ namespace Svg2AndroidVector
                                 }
                                 var newTarget = new XElement(targetElement);
                                 newTarget.SetAttributeValue("id", href + "_" + (index + 1));
-                                child.ReplaceWith(newTarget);
+                                child.AddAfterSelf(newTarget);
+                                //child.ReplaceWith(newTarget);
 
                                 string x = null, y = null;
                                 foreach (var useAttribute in child.Attributes())
@@ -196,14 +197,15 @@ namespace Svg2AndroidVector
                                         else
                                             newTarget.SetAttributeValue("class", useAttribute.Value);
                                     }
-
+                                    else if (useAttribute.Name == "id")
+                                    { }
                                     else if (newTarget.Attribute(useAttribute.Name) is XAttribute unknownAttribute && unknownAttribute.Value != "inherit")
-                                        warnings.AddWarning("Ignoring unanticipated <use> attribute " + useAttribute + " because it was expected to be found ["+unknownAttribute+"] in the target element.");
+                                        warnings.AddWarning("Ignoring unanticipated <use> attribute " + useAttribute + " because it was expected to be found [" + unknownAttribute + "] in the target element.");
                                     else
                                         newTarget.SetAttributeValue(useAttribute.Name, useAttribute.Value);
                                 }
 
-                                ReplaceUseElements(newTarget , warnings);
+                                InsertUseElements(newTarget , warnings);
                             }
                             else
                                 warnings.AddWarning("Ignoring <use id='" + svgElement.Attribute("id")?.Value + "' xlink:href='" + hrefAttribute.Value + "' because could not find element referenced by xlink:href attribute.");
@@ -222,7 +224,7 @@ namespace Svg2AndroidVector
                 else if (child.Name == Namespace.Svg + "defs")
                 { }
                 else if (child.HasElements)
-                    ReplaceUseElements(child, warnings);
+                    InsertUseElements(child, warnings);
             }
         }
 
@@ -429,8 +431,6 @@ namespace Svg2AndroidVector
                     if (child.HasElements)
                         AddGroup(child, avGroup, warnings);
                 }
-                else if (child.Name == Namespace.Svg + "use")
-                    throw new Exception("all use elements should have been replaced by now.");
                 else if (child.Name == Namespace.Svg + "svg")
                 {
                     if (child.HasElements)
@@ -452,6 +452,12 @@ namespace Svg2AndroidVector
                 else if (child.Name == Namespace.Svg + "script")
                 { }
                 else if (child.Name == Namespace.Svg + "title")
+                { }
+                else if (child.Name == Namespace.Svg + "linearGradient")
+                { }
+                else if (child.Name == Namespace.Svg + "radialGradient")
+                { }
+                else if (child.Name == Namespace.Svg + "use")
                 { }
                 else if (child.Name == Namespace.Svg + "text")
                 {

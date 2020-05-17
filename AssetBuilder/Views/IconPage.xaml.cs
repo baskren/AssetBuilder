@@ -435,26 +435,36 @@ namespace AssetBuilder.Views
                 || !File.Exists(Preferences.Current.SquareSvgSplashImageFile))
                 return "Cannot open SVG file [" + Preferences.Current.SquareSvgSplashImageFile + "]";
             
-            var svg = new SkiaSharp.Extended.Svg.SKSvg();
-            var pict = svg.Load(Preferences.Current.SquareSvgSplashImageFile);
-
-            if (pict.CullRect.Width != pict.CullRect.Height)
-                return "SVG image Width != Height [" + pict.CullRect.Width + ", " + pict.CullRect.Height + "]";
-
-
-            if (string.IsNullOrWhiteSpace(Preferences.Current.IosOProjectFolder) || !Directory.Exists(Preferences.Current.IosOProjectFolder))
-                return "Invaide iOS Project Folder";
-
-            var destDir = Path.Combine(new string[] { Preferences.Current.IosOProjectFolder, "Assets.xcassets", "Splash.imageset" });
-            if (!Directory.Exists(destDir))
+            try
             {
-                Directory.CreateDirectory(destDir);
-                GetType().Assembly.TryCopyResource("AssetBuilder.Resources.Contents.json", Path.Combine(destDir, "Contents.json"));
-            }
+                var svg = new SkiaSharp.Extended.Svg.SKSvg();
+                var pict = svg.Load(Preferences.Current.SquareSvgSplashImageFile);
 
-            var pdfPath = Path.Combine(destDir, "LaunchImage.pdf");
-            if (File.Exists(pdfPath))
-                File.Delete(pdfPath);
+                if (pict.CullRect.Width != pict.CullRect.Height)
+                    return "SVG image Width != Height [" + pict.CullRect.Width + ", " + pict.CullRect.Height + "]";
+
+
+                if (string.IsNullOrWhiteSpace(Preferences.Current.IosOProjectFolder) || !Directory.Exists(Preferences.Current.IosOProjectFolder))
+                    return "Invaide iOS Project Folder";
+
+                var destDir = Path.Combine(new string[] { Preferences.Current.IosOProjectFolder, "Assets.xcassets", "Splash.imageset" });
+                if (!Directory.Exists(destDir))
+                {
+                    Directory.CreateDirectory(destDir);
+                    GetType().Assembly.TryCopyResource("AssetBuilder.Resources.Contents.json", Path.Combine(destDir, "Contents.json"));
+                }
+
+                var pdfPath = Path.Combine(destDir, "LaunchImage.pdf");
+                if (File.Exists(pdfPath))
+                    File.Delete(pdfPath);
+
+                return Svg2.GeneratePdf(Preferences.Current.SquareSvgSplashImageFile, pdfPath);
+
+            }
+            catch (Exception e)
+            {
+                return "Could not generate PDF due to exception: " + e.Message;
+            }
 
             /*
             var metadata = new SKDocumentPdfMetadata
@@ -487,7 +497,6 @@ namespace AssetBuilder.Views
             return null;
             */
 
-            return Svg2.GeneratePdf(Preferences.Current.SquareSvgSplashImageFile, pdfPath);
         }
 
         public string UpdateIosLaunchScreenStoryboard()

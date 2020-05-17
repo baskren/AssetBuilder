@@ -26,6 +26,7 @@ namespace AndroidVector
 
         public RadialGradient()
         {
+            this.SetAndroidAttributeValue("type", "radial");
         }
 
         public override void ApplySvgTransform(Matrix matrix)

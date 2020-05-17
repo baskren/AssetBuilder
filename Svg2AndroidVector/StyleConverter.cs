@@ -288,7 +288,8 @@ namespace Svg2AndroidVector
             if (colorText.StartsWith("rgb"))
             {
                 colorText = colorText.Trim(')');
-                var tokens = colorText.Split(new char[] { '(', ' ', ',' });
+                var tokens = colorText.Split(new char[] { '(', ' ', ',' }).ToArray();
+                tokens = tokens.Where(t => !string.IsNullOrWhiteSpace(t)).ToArray();
                 if (tokens.Length < 4)
                 {
                     warnings.AddWarning("Assuming color is black because could not parse color text [" + colorText + "]");
