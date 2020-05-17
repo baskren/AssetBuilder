@@ -219,9 +219,9 @@ namespace Svg2AndroidVector
                             else if (cmd == "fill-rule")
                             {
                                 if (value == "evenodd")
-                                    avElement.SetAndroidAttributeValue(avAtrName, "evenOdd");
+                                    avElement.SetAndroidAttributeValue(avAtrName, AndroidVector.FillType.EvenOdd.ToString().ToCamelCase());
                                 else if (value == "nonzero")
-                                    avElement.SetAndroidAttributeValue(avAtrName, "nonZero");
+                                    avElement.SetAndroidAttributeValue(avAtrName, AndroidVector.FillType.NonZero.ToString().ToCamelCase());
                                 else
                                     warnings.AddWarning("Ignoring fill-rule because value [" + value + "] in <" + svgElement?.Name + " id='" + svgElement?.Attribute("id")?.Value + "'> is unexpected.");
                             }

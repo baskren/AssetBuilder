@@ -81,8 +81,8 @@ namespace AndroidVector
 
         public FillType Fill
         {
-            get => GetEnumPropertyAttribute<FillType>();
-            set => SetPropertyAttribute(value);
+            get => GetEnumPropertyAttribute<FillType>("FillType");
+            set => SetPropertyAttribute(value, "FillType");
         }
         #endregion
 
