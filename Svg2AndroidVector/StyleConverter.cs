@@ -170,7 +170,8 @@ namespace Svg2AndroidVector
                                     if (!value.StartsWith("url(#"))
                                         throw new Exception("Only anchor URLs are supported at this time.");
 
-                                    var iri = value.Substring("url(#".Length).Trim(')').Trim();
+                                    //var iri = value.Substring("url(#".Length).Trim(')').Trim();
+                                    var iri = value.SubstringWithTerminator("url(#".Length, ')').Trim();
                                     if (svgElement.GetRoot() is XElement root)
                                     {
                                         if (root.Descendants(Namespace.Svg + "linearGradient").FirstOrDefault(e => e.Attribute("id").Value == iri) is XElement svgLinearGradient)
@@ -269,7 +270,7 @@ namespace Svg2AndroidVector
                         }
                         else if (!IgnoreAttributeMap.Contains(cmd))
                         {
-                            warnings.AddWarning("Ignoring SVG style ["+part+ "] in <" + svgElement?.Name + " id='" + svgElement?.Attribute("id")?.Value + "'> because could not find matching Android attribute.");
+                            warnings.AddWarning("Ignoring SVG style [" + cmd + "] because could not map to an AndroidVector attribute.");
                         }
                     }
                     else

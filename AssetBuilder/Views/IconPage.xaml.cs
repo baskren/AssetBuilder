@@ -162,12 +162,6 @@ namespace AssetBuilder.Views
             var svg = new SkiaSharp.Extended.Svg.SKSvg();
             var pict = svg.Load(Preferences.Current.SvgIconFile);
 
-            if (pict.CullRect.Width != pict.CullRect.Height)
-            {
-                DisplayAlert(null, "SVG image Width != Height [" + pict.CullRect.Width + ", " + pict.CullRect.Height + "]", "cancel");
-                return;
-            }
-
             GenerateIosIcons(pict);
             GenerateAndroidIcons(pict);
 
@@ -440,12 +434,9 @@ namespace AssetBuilder.Views
                 var svg = new SkiaSharp.Extended.Svg.SKSvg();
                 var pict = svg.Load(Preferences.Current.SquareSvgSplashImageFile);
 
-                if (pict.CullRect.Width != pict.CullRect.Height)
-                    return "SVG image Width != Height [" + pict.CullRect.Width + ", " + pict.CullRect.Height + "]";
-
 
                 if (string.IsNullOrWhiteSpace(Preferences.Current.IosOProjectFolder) || !Directory.Exists(Preferences.Current.IosOProjectFolder))
-                    return "Invaide iOS Project Folder";
+                    return "Invalid iOS Project Folder";
 
                 var destDir = Path.Combine(new string[] { Preferences.Current.IosOProjectFolder, "Assets.xcassets", "Splash.imageset" });
                 if (!Directory.Exists(destDir))
@@ -463,7 +454,7 @@ namespace AssetBuilder.Views
             }
             catch (Exception e)
             {
-                return "Could not generate PDF due to exception: " + e;
+                return "Could not generate iOS Splash PDF due to SkiaSharp exception: " + e.Message;
             }
 
             /*

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
+using AndroidVector;
 using P42.Utils;
 
 namespace AssetBuilder

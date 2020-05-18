@@ -42,5 +42,13 @@ namespace AndroidVector
             return result;
         }
 
+        public static string SubstringWithTerminator(this string s, int startIndex, char terminator)
+        {
+            var terminatorIndex = s.IndexOf(terminator, startIndex);
+            if (terminatorIndex > startIndex)
+                return s.Substring(startIndex, terminatorIndex - startIndex);
+            return null;
+        }
+
     }
 }

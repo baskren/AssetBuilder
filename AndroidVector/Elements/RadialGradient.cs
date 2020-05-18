@@ -87,6 +87,11 @@ namespace AndroidVector
                     else
                         CenterY = bounds.Height * 0.5f + bounds.Top;
 
+                    if (this.AndroidAttribute("gradientRadius") is XAttribute)
+                        GradientRadius = Math.Min(bounds.Width, bounds.Height) * GradientRadius;
+                    else
+                        GradientRadius = Math.Min(bounds.Width, bounds.Height) * 0.5f;
+
                     hasGradientsBeenMapped = true;
                 }
             }

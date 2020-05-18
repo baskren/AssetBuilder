@@ -12,7 +12,9 @@ namespace Svg2AndroidVector
             "clip-path",
             "transform",
             "width",
-            "height"
+            "height",
+            "x",
+            "y"
         };
 
         static CommonAttributes()
@@ -126,6 +128,18 @@ namespace Svg2AndroidVector
                         }
                     }
                 }
+            }
+
+            if (svgElement.Name != Namespace.Svg + "use" && svgElement.Name != Namespace.Svg + "rect")
+            {
+                float x = 0, y = 0;
+                if (svgElement.Attribute("x") is XAttribute xAttribute)
+                    float.TryParse(xAttribute.Value, out x);
+                if (svgElement.Attribute("y") is XAttribute yAttribute)
+                    float.TryParse(yAttribute.Value, out y);
+
+                if (x != 0 || y != 0)
+                    avElement.SvgTransforms.Add(Matrix.CreateTranslate(x, y));
             }
         }
 

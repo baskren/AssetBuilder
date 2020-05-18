@@ -34,11 +34,12 @@ namespace Svg2AndroidVector
                 if (args.Length > 1)
                     ElementExtensions.TryGetValueInPx(svgElement, args[1], Orientation.Vertical, out y);
                 if (args.Length > 2 && ElementExtensions.TryGetValueInPx(svgElement, args[2], Orientation.Horizontal, out float portW))
-                    vector.ViewportWidth = portW;
+                    vector.ViewportWidth = portW + x;
                 if (args.Length > 3 && ElementExtensions.TryGetValueInPx(svgElement, args[3], Orientation.Vertical, out float portH))
-                    vector.ViewportHeight = portH;
+                    vector.ViewportHeight = portH + y;
                 if (x != 0 || y != 0)
                 {
+                    warnings.AddWarning("SVG viewBox has an x and/or y value.  This may result in part of your image being clipped.  Suggestion: use a vector image editor (like InkScape) to create the document boundaries for your SVG file.");
                     avGroup = NestGroup(avGroup);
                     if (x != 0)
                         avGroup.TranslateX = -x;
@@ -69,29 +70,29 @@ namespace Svg2AndroidVector
                     warnings.AddWarning("SVG element does not contain viewBox attribute.  Making best guess for AndroidVector.ViewPort but you're likely not going to like the result. Suggestion: use a vector image editor (like InkScape) to create the document boundaries for your SVG file. ");
                     if ((widthAttribute == null && heightAttribute == null) || (bounds.Width == 0 || bounds.Height == 0))
                     {
-                        vector.ViewportHeight = bounds.Height;
-                        vector.ViewportWidth = bounds.Width;
+                        vector.ViewportHeight = bounds.Height + bounds.X;
+                        vector.ViewportWidth = bounds.Width + bounds.Y;
                     }
                     else if (heightAttribute == null)
                     {
-                        vector.ViewportWidth = bounds.Width;
+                        vector.ViewportWidth = bounds.Width + bounds.X;
                         var aspect = bounds.Width / bounds.Height;
                         height = vector.Width.Value / aspect;
-                        vector.ViewportHeight = height;
+                        vector.ViewportHeight = height + bounds.Y;
                     }
                     else if (widthAttribute == null)
                     {
-                        vector.ViewportHeight = bounds.Height;
+                        vector.ViewportHeight = bounds.Height + bounds.Y;
                         var aspect = bounds.Width / bounds.Height;
                         width = vector.Height.Value * aspect;
-                        vector.ViewportWidth = width;
+                        vector.ViewportWidth = width + bounds.X;
                     }
                     else
                     {
                         var contentAspect = bounds.Width / bounds.Height;
                         var providedAspect = width / height;
-                        vector.ViewportWidth = bounds.Width;
-                        vector.ViewportHeight = bounds.Height;
+                        vector.ViewportWidth = bounds.Width + bounds.X;
+                        vector.ViewportHeight = bounds.Height + bounds.Y;
                         if (contentAspect > providedAspect)
                             heightAttribute = null;
                         else
@@ -102,8 +103,8 @@ namespace Svg2AndroidVector
                         var elements = vector.Elements().ToArray();
                         if (elements.Length == 1 && elements[0] is AndroidVector.Group group)
                         {
-                            group.TranslateX -= bounds.Left;
-                            group.TranslateY -= bounds.Top;
+                            group.TranslateX -= bounds.X;
+                            group.TranslateY -= bounds.Y;
                         }
                         else
                         {

@@ -144,10 +144,24 @@ namespace Svg2AndroidVector
                 else
                     warnings.AddWarning("Could not parse cy parameter of <" + typeName + " id='" + svgGradient.Attribute("id")?.Value + "'>");
             }
-            if (svgGradient.Attribute("fx") is XAttribute)
-                warnings.AddWarning("Ignoring 'fx' attribute in SVG " + typeName + " because it is not mappable to AndroidVector.");
-            if (svgGradient.Attribute("fy") is XAttribute)
-                warnings.AddWarning("Ignoring 'fy' attribute in SVG " + typeName + " because it is not mappable to AndroidVector.");
+            if (svgGradient.Attribute("fx") is XAttribute fxAttribute)
+            {
+                var f = fxAttribute.Value.ToPathOffset();
+                if (!float.IsNaN(f))
+                {
+                    cx = f;
+                    warnings.AddWarning("Found 'fx' attribute in SVG " + typeName + ".  Emulating AndroidStudio VectorAsset Generator by replacing 'rx' with 'fx'.");
+                }
+            }
+            if (svgGradient.Attribute("fy") is XAttribute fyAttribute)
+            {
+                var f = fyAttribute.Value.ToPathOffset();
+                if (!float.IsNaN(f))
+                {
+                    cy = f;
+                    warnings.AddWarning("Found 'fy' attribute in SVG " + typeName + ".  Emulating AndroidStudio VectorAsset Generator by replacing 'ry' with 'fy'.");
+                }
+            }
             if (GetAttribute("r", svgGradient, hrefElement) is XAttribute rAttribute)
             {
                 var f = rAttribute.Value.ToPathOffset();
@@ -196,7 +210,7 @@ namespace Svg2AndroidVector
                         avGradient.SetAndroidAttributeValue("tileMode", "clamp");
                         break;
                     case "reflect":
-                        avGradient.SetAndroidAttributeValue("tileMode", "mirrow");
+                        avGradient.SetAndroidAttributeValue("tileMode", "mirror");
                         break;
                     case "repeat":
                         avGradient.SetAndroidAttributeValue("tileMode", "repeat");
