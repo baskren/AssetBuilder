@@ -27,7 +27,7 @@ namespace Svg2AndroidVector
                     var iri = hrefAttribute.Value.Substring(1).Trim(')').Trim();
                     if (svgGradient.GetRoot() is XElement root)
                     {
-                        if (root.Descendants(svgGradient.Name).FirstOrDefault(e => e.Attribute("id").Value == iri) is XElement hrefGradient)
+                        if (root.Descendants().FirstOrDefault(e => e.Attribute("id")?.Value == iri) is XElement hrefGradient)
                             hrefElement = hrefGradient;
                         else
                             warnings.AddWarning("Ignoring gradient because no element of same type found to complete link [" + hrefAttribute + "].");
@@ -49,7 +49,7 @@ namespace Svg2AndroidVector
 
             var hrefElement = GetGradientHrefElement(svgGradient, warnings);
 
-            float x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+            float x1 = 0, y1 = 0, x2 = 1, y2 = 0;
             if (GetAttribute("x1", svgGradient, hrefElement) is XAttribute x1Attribute)
             {
                 var f = x1Attribute.Value.ToPathOffset();
@@ -158,12 +158,7 @@ namespace Svg2AndroidVector
             }
 
             if (r <= 0)
-            {
-                //warnings.AddWarning("Ignoring SVG " + typeName + " element because radius <= 0 in element <" + typeName + " id=\"" + svgGradient.Attribute("id")?.Value + "\".");
-                warnings.AddWarning("Could not find r (radius) arguement in element <" + typeName + " id=\"" + svgGradient.Attribute("id")?.Value + "\".   Assuming 0.5");
                 r = 0.5f;
-                //return null;
-            }
 
             var avGradient = new RadialGradient();
             avGradient.SetAndroidAttributeValue("centerX", cx);
@@ -239,8 +234,9 @@ namespace Svg2AndroidVector
                 string opacityText = null;
                 if (stop.Attribute("stop-opacity") is XAttribute opacityAttribute)
                     opacityText = opacityAttribute.Value;
-                else
-                    styles.TryGetValue("stop-opacity", out opacityText);
+                else if (styles.ContainsKey("stop-opacity"))
+                    //styles.TryGetValue("stop-opacity", out opacityText);
+                    opacityText = styles["stop-opacity"];
 
                 if (!string.IsNullOrWhiteSpace(opacityText))
                 {
@@ -267,8 +263,8 @@ namespace Svg2AndroidVector
                 string offsetText = "0";
                 if (stop.Attribute("offset") is XAttribute offsetAttribute)
                     offsetText = offsetAttribute.Value;
-                else
-                    styles.TryGetValue("offset", out offsetText);
+                else if (styles.ContainsKey("offset"))
+                    offsetText = styles["offset"];
                 avGradient.Add(new GradientItem(offsetText, color.ToHexString()));
             }
 

@@ -463,7 +463,7 @@ namespace AssetBuilder.Views
             }
             catch (Exception e)
             {
-                return "Could not generate PDF due to exception: " + e.Message;
+                return "Could not generate PDF due to exception: " + e;
             }
 
             /*

@@ -74,15 +74,17 @@ namespace Svg2AndroidVector
                     }
                     else if (heightAttribute == null)
                     {
+                        vector.ViewportWidth = bounds.Width;
                         var aspect = bounds.Width / bounds.Height;
                         height = vector.Width.Value / aspect;
-                        vector.Height = new AndroidVector.UnitizedFloat(height, AndroidVector.Unit.Px);
+                        vector.ViewportHeight = height;
                     }
                     else if (widthAttribute == null)
                     {
+                        vector.ViewportHeight = bounds.Height;
                         var aspect = bounds.Width / bounds.Height;
                         width = vector.Height.Value * aspect;
-                        vector.Width = new AndroidVector.UnitizedFloat(width, AndroidVector.Unit.Px);
+                        vector.ViewportWidth = width;
                     }
                     else
                     {
@@ -443,6 +445,8 @@ namespace Svg2AndroidVector
                     else
                         StyleConverter.StoreCssStyles(child, warnings);
                 }
+                else if (child.Name == Namespace.Svg + "desc")
+                { }
                 else if (child.Name == Namespace.Svg + "defs")
                 { }
                 else if (child.Name == Namespace.Svg + "metadata")

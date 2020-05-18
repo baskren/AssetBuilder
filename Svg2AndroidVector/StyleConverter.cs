@@ -362,8 +362,8 @@ namespace Svg2AndroidVector
             }
             else if (colorText == "transparent")
                 return ("#000", 0);
-            else if (CssColors.TryGetValue(colorText, out string cssHexColor))
-                return (cssHexColor, float.NaN);
+            else if (CssColors.ContainsKey(colorText.ToLower()))// (CssColors.TryGetValue(colorText, out string cssHexColor))
+                return (CssColors[colorText.ToLower()], float.NaN);
             else if (colorText == "inherit")
                 return ("inherit", float.NaN);
 

@@ -18,6 +18,36 @@ namespace AssetBuilder
 
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
+            if (File.ReadAllText(svgPath) is string text)
+            {
+                Dictionary<string, string> entities = new Dictionary<string, string>();
+                int index = 0;
+                while ((index = text.IndexOf("<!ENTITY ", index))>0)
+                {
+                    index += "<!ENTITY ".Length;
+                    var name = text.SubstringWithTerminator(index, '\"');
+                    index += name.Length + 1;
+                    name = name.Trim();
+
+                    var content = text.SubstringWithTerminator(index, '\"');
+
+                    index += content.Length;
+                    content.Trim('\"');
+                    content = content.Replace('\'', '\"');
+
+                    entities.Add(name, content);
+                }
+
+                if (entities.Count > 0)
+                {
+                    foreach (var kvp in entities)
+                        text = text.Replace("&" + kvp.Key + ";", kvp.Value);
+
+                    svgPath = System.IO.Path.GetTempFileName();
+                    File.WriteAllText(svgPath, text);
+                }
+            }
+
             var settings = new XmlReaderSettings { DtdProcessing = DtdProcessing.Ignore, IgnoreProcessingInstructions=true,  };
             XmlReader reader = XmlReader.Create(svgPath, settings);
             XDocument xdoc = XDocument.Load(reader);
@@ -26,7 +56,7 @@ namespace AssetBuilder
 
             var warnings = new List<string>();
             var vector = Svg2AndroidVector.Converter.ConvertSvg(xdoc, warnings);
-            var text = xmlHeader + vector;
+            text = xmlHeader + vector;
 
             File.WriteAllText(destPath, text);
             return warnings;

@@ -263,7 +263,7 @@ namespace Svg2AndroidVector
                         {
                             var points = ElementExtensions.ToFloatList(element, parts[1]);
                             if (points.Count > 2)
-                                return PolygonToPathData(points, warnings);
+                                return PolygonToPathData(points);
                         }
                         warnings.AddWarning("Ignoring CssShape '" + cssShapeText + "' in <" + element?.Name + " id='" + element.Attribute("id")?.Value + "'> because it doesn't have the right number of arguments.");
                         return null;
@@ -476,14 +476,14 @@ namespace Svg2AndroidVector
                 if (points.Count % 2 != 0)
                     warnings.AddWarning("Ignoring last point in points attribute for <" + typeName + " id=\"" + svgPolygon.Attribute("id")?.Value + "\" because it is missing Y coordinate.");
 
-                return PolylineToPathData(points);
+                return PolygonToPathData(points);
                 
             }
                 warnings.AddWarning("Ignoring SVG element because no points attribute found for <" + typeName + " id=\"" + svgPolygon.Attribute("id")?.Value + "\".");
             return null;
         }
 
-        public static string PolygonToPathData(List<float> points, List<string> warnings)
+        public static string PolygonToPathData(List<float> points)
         {
             var pathData = "M" + points[0] + "," + points[1];
             for (int i = 4; i <= points.Count; i += 2)
