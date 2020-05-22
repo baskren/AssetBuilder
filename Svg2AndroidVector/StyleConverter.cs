@@ -118,26 +118,26 @@ namespace Svg2AndroidVector
                 StoredCssStyles.TryGetValue("#" + idAttribute.Value, out string localStyleText))
                 ProcessStyleValue(svgElement, localStyleText, avElement, warnings);
 
-            ProcessLocalStyleAttributes(svgElement, avElement, warnings);
+            ProcessLocalStyleAttributes(svgElement, avElement, warnings, true);
         }
 
-        static void ProcessLocalStyleAttributes(XElement svgElement, BaseElement avElement, List<string> warnings)
+        static void ProcessLocalStyleAttributes(XElement svgElement, BaseElement avElement, List<string> warnings, bool local = false)
         {
             if (svgElement.Attribute("style") is XAttribute styleAttribute && !string.IsNullOrWhiteSpace(styleAttribute.Value))
-                ProcessStyleValue(svgElement, styleAttribute.Value, avElement, warnings);
+                ProcessStyleValue(svgElement, styleAttribute.Value, avElement, warnings, true);
             foreach (var attribute in svgElement.Attributes())
             {
                 if (AttributeMap.ContainsKey(attribute.Name.ToString()) || attribute.Name == "opacity")
                 {
                     var styleText = attribute.Name + ":" + attribute.Value;
-                    ProcessStyleValue(svgElement, styleText, avElement, warnings);
+                    ProcessStyleValue(svgElement, styleText, avElement, warnings, local);
                 }
             }
         }
 
 
 
-        public static void ProcessStyleValue(XElement svgElement, string styleText, BaseElement avElement, List<string> warnings)
+        public static void ProcessStyleValue(XElement svgElement, string styleText, BaseElement avElement, List<string> warnings, bool local = false)
         {
             if (!string.IsNullOrWhiteSpace(styleText))
             {
@@ -249,7 +249,7 @@ namespace Svg2AndroidVector
                                 ? "none"
                                 : "visible";
                         }
-                        else if (cmd == "opacity")
+                        else if (cmd == "opacity" && local)
                         {
                             if (float.TryParse(value, out float opacity))
                                 avElement.SvgOpacity = opacity;

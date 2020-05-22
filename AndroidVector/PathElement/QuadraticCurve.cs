@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using AndroidVector.Extensions;
+using PdfSharpCore.Drawing;
 
 namespace AndroidVector.PathElement
 {
@@ -70,5 +72,10 @@ namespace AndroidVector.PathElement
             return new RectangleF(left, top, right - left, bottom - top);
         }
 
+        public override XPoint AddToPath(XGraphicsPath path, XPoint cursor, Base lastPathCommand = null)
+        {
+            path.AddBezier(cursor, Control1.ToXPoint(), Control1.ToXPoint(), End.ToXPoint());
+            return End.ToXPoint();
+        }
     }
 }

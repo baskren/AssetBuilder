@@ -42,6 +42,30 @@ namespace AndroidVector
                 return new UnitizedFloat(value, unitResult);
             return null;
         }
+
+        public float As(Unit unit)
+        {
+            var value = Value;
+            switch (Unit)
+            {
+                case Unit.Px:
+                case Unit.Sp:
+                case Unit.Dp: value = Value / 160f; break;
+                case Unit.In: value = Value; break;
+                case Unit.Mm: value = Value / 25.4f; break;
+                case Unit.Pt: value = Value / 72; break;
+            }
+            switch (unit)
+            {
+                case Unit.Px:
+                case Unit.Sp:
+                case Unit.Dp: value *= 160; break;
+                case Unit.In: break;
+                case Unit.Mm: value *= 25.4f; break;
+                case Unit.Pt: value *= 72; break;
+            }
+            return value;
+        }
     }
 
     [TypeConverter(typeof(UnitizedFloatConverter))]

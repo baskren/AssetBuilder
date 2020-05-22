@@ -3,17 +3,17 @@ using System.Drawing;
 
 namespace AndroidVector
 {
-    public class GradientItem : BaseElement
+    public class GradientItem : BaseElement, IComparable
     {
         public float Offset
         {
-            get => GetPropertyAttribute<float>();
+            get => GetPropertyAttribute<float>(1.0f);
             set => SetPropertyAttribute(value);
         }
 
         public Color Color
         {
-            get => GetColorPropertyAttribute();
+            get => GetColorPropertyAttribute(Color.Black);
             set => SetPropertyAttribute(value);
         }
 
@@ -27,6 +27,13 @@ namespace AndroidVector
         {
             SetPropertyAttribute(offset, nameof(Offset));
             SetPropertyAttribute(color, nameof(Color));
+        }
+
+        public int CompareTo(object obj)
+        {
+            if (obj is GradientItem other)
+                return Offset.CompareTo(other.Offset);
+            return -1;
         }
     }
 }

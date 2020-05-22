@@ -14,19 +14,25 @@ namespace AndroidVector.Extensions
             var newList = new List<Base>();
             SizeF start = SizeF.Empty;
             bool started = false;
-            foreach (var element in pathList)
+            foreach (var element in pathList.ToArray())
             {
                 if (element is HorzLineTo horz)
                 {
                     var lineTo = horz.ToLine(cursor);
-                    newList.Add(lineTo);
-                    cursor = new SizeF(lineTo.End);
+                    if (lineTo.End.X != cursor.Width || lineTo.End.Y != cursor.Height)
+                    {
+                        newList.Add(lineTo);
+                        cursor = new SizeF(lineTo.End);
+                    }
                 }
                 else if (element is VertLineTo vert)
                 {
                     var lineTo = vert.ToLine(cursor);
-                    newList.Add(lineTo);
-                    cursor = new SizeF(lineTo.End);
+                    if (lineTo.End.X != cursor.Width || lineTo.End.Y != cursor.Height)
+                    {
+                        newList.Add(lineTo);
+                        cursor = new SizeF(lineTo.End);
+                    }
                 }
                 else if (element is ClosePath close)
                 {
@@ -34,22 +40,22 @@ namespace AndroidVector.Extensions
                     newList.Add(close);
                     started = false;
                 }
-                /*
-                else if (element is Arc arc)
-                {
-                    newList.AddRange(arc.ToBezierCurves(cursor));
-                    cursor = new SizeF(arc.End);
-                }
-                */
                 else
                 {
-                    cursor = element.ToAbsolute(cursor);
-                    if (!started)
+                    var newCursor = element.ToAbsolute(cursor);
+                    if (newCursor != cursor || !started)
                     {
-                        start = cursor;
-                        started = true;
+                        if (!started)
+                        {
+                            start = newCursor;
+                            started = true;
+                        }
+                        if (element is Arc arc)
+                            newList.AddRange(arc.ToSmallArcs(cursor));
+                        else
+                            newList.Add(element);
+                        cursor = newCursor;
                     }
-                    newList.Add(element);
                 }
             }
             return newList;

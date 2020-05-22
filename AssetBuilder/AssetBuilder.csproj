@@ -32,6 +32,7 @@
     <ProjectReference Include="..\P42.Utils\P42.Utils\P42.Utils.csproj" />
     <ProjectReference Include="..\AndroidVector\AndroidVector.csproj" />
     <ProjectReference Include="..\Svg2AndroidVector\Svg2AndroidVector.csproj" />
+    <ProjectReference Include="..\PdfSharpCore\PdfSharpCore\PdfSharpCore.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Resources\background_splash.xml" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using PdfSharpCore.Drawing;
 
 namespace AndroidVector.Extensions
 {
@@ -11,5 +12,11 @@ namespace AndroidVector.Extensions
             var y = (float)(point.X * Math.Sin(radians) + point.Y * Math.Cos(radians));
             return new PointF(x, y);
         }
+
+        public static XPoint ToXPoint(this PointF pointF)
+            => new XPoint(pointF.X, pointF.Y);
+
+        public static XSize ToXSize(this SizeF sizeF)
+            => new XSize(sizeF.Width, sizeF.Height);
     }
 }

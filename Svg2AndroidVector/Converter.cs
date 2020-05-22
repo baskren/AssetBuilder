@@ -34,17 +34,21 @@ namespace Svg2AndroidVector
                 if (args.Length > 1)
                     ElementExtensions.TryGetValueInPx(svgElement, args[1], Orientation.Vertical, out y);
                 if (args.Length > 2 && ElementExtensions.TryGetValueInPx(svgElement, args[2], Orientation.Horizontal, out float portW))
-                    vector.ViewportWidth = portW + x;
+                    vector.ViewportWidth = portW;
                 if (args.Length > 3 && ElementExtensions.TryGetValueInPx(svgElement, args[3], Orientation.Vertical, out float portH))
-                    vector.ViewportHeight = portH + y;
+                    vector.ViewportHeight = portH;
                 if (x != 0 || y != 0)
                 {
                     warnings.AddWarning("SVG viewBox has an x and/or y value.  This may result in part of your image being clipped.  Suggestion: use a vector image editor (like InkScape) to create the document boundaries for your SVG file.");
+                    /*
                     avGroup = NestGroup(avGroup);
                     if (x != 0)
                         avGroup.TranslateX = -x;
                     if (y != 0)
                         avGroup.TranslateY = -y;
+                    */
+                    if (x != 0 || y != 0)
+                        vector.SvgTransforms.Add(AndroidVector.Matrix.CreateTranslate(-x, -y));
                 }
             }
             else

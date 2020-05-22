@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Drawing;
+using PdfSharpCore.Drawing;
+using PdfSharpCore.Pdf;
 
 namespace AndroidVector.PathElement
 {
@@ -34,6 +36,9 @@ namespace AndroidVector.PathElement
             => throw new NotImplementedException();
 
         public virtual RectangleF GetBounds()
+            => throw new NotImplementedException();
+
+        public virtual XPoint AddToPath(XGraphicsPath path, XPoint cursor, Base lastPathCommand = null)
             => throw new NotImplementedException();
     }
 }

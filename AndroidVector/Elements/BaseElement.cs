@@ -105,6 +105,8 @@ namespace AndroidVector
                 }
             }
             SvgTransforms.Reverse();
+            if (SvgTransforms.Count == 0)
+                ApplySvgTransform(new Matrix(1, 0, 0, 1, 0, 0));
             foreach (var transform in SvgTransforms)
             {
                 ApplySvgTransform(transform);
@@ -152,7 +154,7 @@ namespace AndroidVector
 
 
         #region Property to Attribute connector
-        protected T GetPropertyAttribute<T>([CallerMemberName] string propertyName = null) 
+        protected T GetPropertyAttribute<T>(T defaultValue = default, [CallerMemberName] string propertyName = null) 
         {
             if (string.IsNullOrWhiteSpace(propertyName))
                 throw new ArgumentException(nameof(propertyName));
@@ -173,21 +175,30 @@ namespace AndroidVector
                 {
                 }
             }
-            return default;
+            return defaultValue;
         }
 
-        protected Color GetColorPropertyAttribute([CallerMemberName] string propertyName = null)
+        protected Color GetColorPropertyAttribute(Color defaultColor = default, [CallerMemberName] string propertyName = null)
         {
             if (string.IsNullOrWhiteSpace(propertyName))
                 throw new ArgumentException(nameof(propertyName));
 
             if (Attribute(Namespace.AndroidVector + propertyName.ToCamelCase()) is XAttribute attribute)
                 return attribute.Value.ToColor();
-            return default;
+            return defaultColor;
         }
 
+        protected float GetAlphaPropertyAttribute([CallerMemberName] string propertyName = null)
+        {
+            if (string.IsNullOrWhiteSpace(propertyName))
+                throw new ArgumentException(nameof(propertyName));
 
-        protected T GetEnumPropertyAttribute<T>([CallerMemberName] string propertyName = null) where T : struct, Enum
+            if (Attribute(Namespace.AndroidVector + propertyName.ToCamelCase()) is XAttribute attribute && float.TryParse(attribute.Value, out float result))
+                return result;
+            return 1;
+        }
+
+        protected T GetEnumPropertyAttribute<T>(T defaultValue = default, [CallerMemberName] string propertyName = null) where T : struct, Enum
         {
             if (string.IsNullOrWhiteSpace(propertyName))
                 throw new ArgumentException(nameof(propertyName));
@@ -197,7 +208,7 @@ namespace AndroidVector
                 if (Enum.TryParse<T>(attribute.Value.ToPascalCase(), out T value))
                     return value;
             }
-            return default;
+            return defaultValue;
         }
 
         protected void SetPropertyAttribute(object value, [CallerMemberName] string propertyName = null)
@@ -215,5 +226,20 @@ namespace AndroidVector
         #endregion
 
 
+        public virtual void AddToPdf(PdfSharpCore.Drawing.XGraphics gfx)
+        {
+            if (SvgOpacity != 1)
+                throw new Exception("Cannot convert to PDF before ApplySvgOpacity has been called.");
+
+            if (SvgTransforms.Count > 0)
+                throw new Exception("Cannot convert to PDF before ApplySvgTransforms has been called.");
+
+            foreach (var element in Elements().ToArray())
+            {
+                if (element is BaseElement baseElement)
+                    baseElement.AddToPdf(gfx);
+            }
+
+        }
     }
 }

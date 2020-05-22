@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using AndroidVector.Extensions;
+using PdfSharpCore.Drawing;
 
 namespace AndroidVector.PathElement
 {
@@ -10,6 +12,8 @@ namespace AndroidVector.PathElement
         public new const char Symbol = 'T';
 
         public PointF End { get; internal set; }
+
+        internal PointF Control2 { get; set; }
 
         public ShortcutQuadraticCurve(PointF end, bool relative = false) : base(Symbol, relative)
         {
@@ -58,6 +62,25 @@ namespace AndroidVector.PathElement
         public override RectangleF GetBounds()
         {
             return new RectangleF(End.X, End.Y, 0, 0);
+        }
+
+        public override XPoint AddToPath(XGraphicsPath path, XPoint cursor, Base lastPathCommand = null)
+        {
+            var previousControlPoint = new PointF((float)cursor.X, (float)cursor.Y);
+            if (lastPathCommand is BezierCurve bezierCurve)
+                previousControlPoint = bezierCurve.Control2;
+            else if (lastPathCommand is QuadraticCurve quadraticCurve)
+                previousControlPoint = quadraticCurve.Control1;
+            else if (lastPathCommand is ShortcutBezierCurve shortcutBezierCurve)
+                previousControlPoint = shortcutBezierCurve.Control2;
+            else if (lastPathCommand is ShortcutQuadraticCurve shortcutQuadraticCurve)
+                previousControlPoint = shortcutQuadraticCurve.Control2;
+            var deltaX = cursor.X - previousControlPoint.X;
+            var deltaY = cursor.Y - previousControlPoint.Y;
+            var control1 = new XPoint(cursor.X + deltaX, cursor.Y + deltaY);
+            path.AddBezier(cursor, control1, control1, End.ToXPoint());
+            Control2 = new PointF((float)control1.X, (float)control1.Y);
+            return End.ToXPoint();
         }
 
     }

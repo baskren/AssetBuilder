@@ -60,6 +60,10 @@ namespace AssetBuilder
             text = xmlHeader + vector;
 
             File.WriteAllText(destPath, text);
+
+            var pdfPath = destPath.Replace(".xml", ".pdf");
+            vector.ToPdfDocument(pdfPath);
+
             return warnings;
         }
 

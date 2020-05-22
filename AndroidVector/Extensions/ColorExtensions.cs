@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using PdfSharpCore.Drawing;
 
 namespace AndroidVector
 {
@@ -23,8 +24,9 @@ namespace AndroidVector
 
         public static Color FromHexString(this string s)
         {
-            int r, g, b;
-            s = s.Substring(1);
+            int a, r, g, b;
+            if(s.StartsWith("#"))
+                s = s.Substring(1);
 
             if (s.Length == 3)
             {
@@ -43,10 +45,28 @@ namespace AndroidVector
                 b = int.Parse(s.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                 return Color.FromArgb(r, g, b);
             }
-            else
+            else if (s.Length == 4)
             {
-                throw new ArgumentException("Invalid SvgColor", s);
+                a = int.Parse(s.Substring(0, 1), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                r = int.Parse(s.Substring(1, 1), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                g = int.Parse(s.Substring(2, 1), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                b = int.Parse(s.Substring(3, 1), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                a += a * 16;
+                r += r * 16;
+                g += g * 16;
+                b += b * 16;
+                return Color.FromArgb(a, r, g, b);
             }
+            else if (s.Length == 8)
+            {
+                a = int.Parse(s.Substring(0, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                r = int.Parse(s.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                g = int.Parse(s.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                b = int.Parse(s.Substring(6, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
+                return Color.FromArgb(r, g, b);
+            }
+            else
+                throw new ArgumentException($"Invalid hex color string [{s}]");
         }
 
         public static Color FromRGBString(this string s)
@@ -79,6 +99,7 @@ namespace AndroidVector
             throw new ArgumentException("Invalid SvgColor", s);
         }
 
-
+        public static XColor ToXColor(this Color c)
+            => XColor.FromArgb(c.ToArgb());
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using PdfSharpCore.Drawing;
 
 namespace AndroidVector.PathElement
 {
@@ -23,6 +24,12 @@ namespace AndroidVector.PathElement
         public override RectangleF GetBounds()
         {
             return new RectangleF(float.NaN, float.NaN, float.NaN, float.NaN);
+        }
+
+        public override XPoint AddToPath(XGraphicsPath path, XPoint cursor, Base lastPathCommand = null)
+        {
+            path.CloseFigure();
+            return cursor;
         }
     }
 }

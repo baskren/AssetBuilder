@@ -38,29 +38,11 @@ namespace AndroidVector
             CenterX = newCenter.X;
             CenterY = newCenter.Y;
 
-            var radius = new PointF(center.X + GradientRadius, center.Y + GradientRadius);
+            var radius = new PointF(center.X + GradientRadius, center.Y);
             radius = matrix.TransformPoint(radius);
-            var dx = radius.X - center.X;
-            var dy = radius.Y - center.Y;
+            var dx = radius.X - CenterX;
+            var dy = radius.Y - CenterY;
             var length = (float)Math.Sqrt(dx * dx + dy * dy);
-
-            radius = new PointF(center.X + GradientRadius, center.Y - GradientRadius);
-            radius = matrix.TransformPoint(radius);
-            dx = radius.X - center.X;
-            dy = radius.Y - center.Y;
-            length = (float)Math.Max(Math.Sqrt(dx * dx + dy * dy), length);
-
-            radius = new PointF(center.X - GradientRadius, center.Y - GradientRadius);
-            radius = matrix.TransformPoint(radius);
-            dx = radius.X - center.X;
-            dy = radius.Y - center.Y;
-            length = (float)Math.Max(Math.Sqrt(dx * dx + dy * dy), length);
-
-            radius = new PointF(center.X - GradientRadius, center.Y + GradientRadius);
-            radius = matrix.TransformPoint(radius);
-            dx = radius.X - center.X;
-            dy = radius.Y - center.Y;
-            length = (float)Math.Max(Math.Sqrt(dx * dx + dy * dy), length);
 
             GradientRadius = length;
         }

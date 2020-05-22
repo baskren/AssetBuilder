@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using AndroidVector.Extensions;
+using PdfSharpCore.Drawing;
 
 namespace AndroidVector.PathElement
 {
@@ -60,5 +62,10 @@ namespace AndroidVector.PathElement
             return new RectangleF(End.X, End.Y, 0, 0);
         }
 
+        public override XPoint AddToPath(XGraphicsPath path, XPoint cursor, Base lastPathCommand = null)
+        {
+            path.AddLine(cursor, End.ToXPoint());
+            return End.ToXPoint();
+        }
     }
 }

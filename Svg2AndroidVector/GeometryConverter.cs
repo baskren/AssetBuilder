@@ -346,13 +346,18 @@ namespace Svg2AndroidVector
         }
 
         public static string CirclePathData(float cx, float cy, float r)
+            => EllipsePathData(cx, cy, r, r);
+        /*
         {
             var pathData = "M" + (cx - r) + "," + cy;
+            pathData += " A" + r + "," + r + " 0 0 0 " +  cx     + ","  + (cy - r);
             pathData += " A" + r + "," + r + " 0 0 0 " + (cx + r) + "," + cy;
+            pathData += " A" + r + "," + r + " 0 0 0 " +  cx      + "," + (cy + r);
             pathData += " A" + r + "," + r + " 0 0 0 " + (cx - r) + "," + cy;
             pathData += " Z";
             return pathData;
         }
+        */
 
         public static string ConvertEllipseElementToPathData(XElement svgEllipse, List<string> warnings)
         {
@@ -386,8 +391,10 @@ namespace Svg2AndroidVector
         public static string EllipsePathData(float cx, float cy, float rx, float ry)
         {
             var pathData = "M" + (cx - rx) + "," + cy;
-            pathData += " A" + rx + "," + ry + " 0 0,0 " + (cx + rx) + "," + cy;
-            pathData += " A" + rx + "," + ry + " 0 0,0 " + (cx - rx) + "," + cy;
+            pathData += " A" + rx + "," + ry + " 0 0,1 " + cx + "," + (cy - ry);
+            pathData += " A" + rx + "," + ry + " 0 0,1 " + (cx + rx) + "," + cy;
+            pathData += " A" + rx + "," + ry + " 0 0,1 " + cx + "," + (cy + ry);
+            pathData += " A" + rx + "," + ry + " 0 0,1 " + (cx - rx) + "," + cy;
             pathData += " Z";
             return pathData;
         }

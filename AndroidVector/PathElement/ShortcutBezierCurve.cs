@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using AndroidVector.Extensions;
+using PdfSharpCore.Drawing;
 
 namespace AndroidVector.PathElement
 {
@@ -70,5 +72,22 @@ namespace AndroidVector.PathElement
             return new RectangleF(left, top, right - left, bottom - top);
         }
 
+        public override XPoint AddToPath(XGraphicsPath path, XPoint cursor, Base lastPathCommand = null)
+        {
+            var previousControlPoint = new PointF((float)cursor.X, (float)cursor.Y);
+            if (lastPathCommand is BezierCurve bezierCurve)
+                previousControlPoint = bezierCurve.Control2;
+            else if (lastPathCommand is QuadraticCurve quadraticCurve)
+                previousControlPoint = quadraticCurve.Control1;
+            else if (lastPathCommand is ShortcutBezierCurve shortcutBezierCurve)
+                previousControlPoint = shortcutBezierCurve.Control2;
+            else if (lastPathCommand is ShortcutQuadraticCurve shortcutQuadraticCurve)
+                previousControlPoint = shortcutQuadraticCurve.Control2;
+            var deltaX = cursor.X - previousControlPoint.X;
+            var deltaY = cursor.Y - previousControlPoint.Y;
+            var control1 = new XPoint(cursor.X + deltaX, cursor.Y + deltaY);
+            path.AddBezier(cursor, control1, Control2.ToXPoint(), End.ToXPoint());
+            return End.ToXPoint();
+        }
     }
 }
