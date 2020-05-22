@@ -166,8 +166,8 @@ namespace AndroidVector.PathElement
             else if (fS && Δθ < 0)
                 Δθ += Math.PI * 2;
 
-            if (Math.Abs(Δθ) <= Math.PI / 2)
-                return new List<Base> { this };
+            //if (Math.Abs(Δθ) <= Math.PI / 2)
+            //    return new List<Base> { this };
 
             var result = new List<Base>();
             
