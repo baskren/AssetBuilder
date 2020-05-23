@@ -46,6 +46,17 @@ namespace AndroidVector.PathElement
                 End.X.ToString("0.###") + "," + End.Y.ToString("0.###");
         }
 
+        public BezierCurve ToBezierCurve(SizeF cursor)
+        {
+            var cp1x = (float)(cursor.Width + 2.0 / 3.0 * (Control1.X - cursor.Width));
+            var cp1y = (float)(cursor.Height + 2.0 / 3.0 * (Control1.Y - cursor.Height));
+
+            var cp2x = (float)(End.X + 2.0 / 3.0 * (Control1.X - End.X));
+            var cp2y = (float)(End.Y + 2.0 / 3.0 * (Control1.Y - End.Y));
+
+            return new BezierCurve(new PointF(cp1x, cp1y), new PointF(cp2x, cp2y), End);
+        }
+
         public override SizeF ToAbsolute(SizeF cursor)
         {
             if (IsRelative)
@@ -74,7 +85,14 @@ namespace AndroidVector.PathElement
 
         public override XPoint AddToPath(XGraphicsPath path, XPoint cursor, Base lastPathCommand = null)
         {
-            path.AddBezier(cursor, Control1.ToXPoint(), Control1.ToXPoint(), End.ToXPoint());
+            var cp1x = cursor.X + 2.0 / 3.0 * (Control1.X - cursor.X);
+            var cp1y = cursor.Y + 2.0 / 3.0 * (Control1.Y - cursor.Y);
+
+            var cp2x = End.X + 2.0 / 3.0 * (Control1.X - End.X);
+            var cp2y = End.Y + 2.0 / 3.0 * (Control1.Y - End.Y);
+
+
+            path.AddBezier(cursor, new XPoint(cp1x, cp1y), new XPoint(cp2x, cp2y), End.ToXPoint());
             return End.ToXPoint();
         }
     }

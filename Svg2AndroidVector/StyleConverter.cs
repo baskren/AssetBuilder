@@ -178,9 +178,11 @@ namespace Svg2AndroidVector
                                         {
                                             if (PaintConverter.ConvertLinearGradient(svgLinearGradient, warnings) is LinearGradient avGradient)
                                             {
+                                                if (cmd == "stroke")
+                                                    warnings.Add("Error: Using a gradient for a stroke color is not supported (works for AndroidVector but not PDFs).  Consider creating a unique path (with an interior area that can be filled with a gradient) emulate your stroke with a gradient.");
                                                 if (avElement.Element(AndroidVector.Namespace.Aapt + "attr") is XElement aaptAttr)
                                                     aaptAttr.Remove();
-                                                var aapt = new AaptAttr(cmd+"Color", avGradient);
+                                                var aapt = new AaptAttr(cmd + "Color", avGradient);
                                                 avElement.Add(aapt);
                                                 avElement.SetAndroidAttributeValue(avAtrName, null);
                                                 return;
@@ -190,6 +192,8 @@ namespace Svg2AndroidVector
                                         {
                                             if (PaintConverter.ConvertRadialGradient(svgRadialGradient, warnings) is RadialGradient avGradient)
                                             {
+                                                if (cmd == "stroke")
+                                                    warnings.Add("Error: Using a gradient for a stroke color is not supported (works for AndroidVector but not PDFs).  Consider creating a unique path (with an interior area that can be filled with a gradient) emulate your stroke with a gradient.");
                                                 if (avElement.Element(AndroidVector.Namespace.Aapt + "attr") is XElement aaptAttr)
                                                     aaptAttr.Remove();
                                                 var aapt = new AaptAttr(cmd+"Color", avGradient);

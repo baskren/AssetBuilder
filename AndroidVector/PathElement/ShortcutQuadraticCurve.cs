@@ -78,8 +78,19 @@ namespace AndroidVector.PathElement
             var deltaX = cursor.X - previousControlPoint.X;
             var deltaY = cursor.Y - previousControlPoint.Y;
             var control1 = new XPoint(cursor.X + deltaX, cursor.Y + deltaY);
-            path.AddBezier(cursor, control1, control1, End.ToXPoint());
+
+            var cp1x = cursor.X + 2.0 / 3.0 * (control1.X - cursor.X);
+            var cp1y = cursor.Y + 2.0 / 3.0 * (control1.Y - cursor.Y);
+
+            var cp2x = End.X + 2.0 / 3.0 * (control1.X - End.X);
+            var cp2y = End.Y + 2.0 / 3.0 * (control1.Y - End.Y);
+
+            path.AddBezier(cursor, new XPoint(cp1x, cp1y), new XPoint(cp2x, cp2y), End.ToXPoint());
+            //path.AddBezier(cursor, control1, control1, End.ToXPoint());
+
+            // for reference by future ShortcutQuadraticCurve elements.
             Control2 = new PointF((float)control1.X, (float)control1.Y);
+
             return End.ToXPoint();
         }
 

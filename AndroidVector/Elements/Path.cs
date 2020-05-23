@@ -201,11 +201,6 @@ namespace AndroidVector
 
         public override void AddToPdf(XGraphics gfx)
         {
-
-            if (StrokeColor.A == 255 && StrokeColor.R == 255 && StrokeColor.G == 255 && StrokeColor.B == 255)
-                System.Diagnostics.Debug.WriteLine("Path");
-
-
             if (PathData?.ToPathList() is List<PathElement.Base> pathList)
             {
                 pathList = pathList.ToTransformablePathlist();

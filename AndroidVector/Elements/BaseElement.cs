@@ -234,12 +234,13 @@ namespace AndroidVector
             if (SvgTransforms.Count > 0)
                 throw new Exception("Cannot convert to PDF before ApplySvgTransforms has been called.");
 
+            gfx.Save();
             foreach (var element in Elements().ToArray())
             {
                 if (element is BaseElement baseElement)
                     baseElement.AddToPdf(gfx);
             }
-
+            gfx.Restore();
         }
     }
 }

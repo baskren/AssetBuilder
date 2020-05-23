@@ -72,6 +72,7 @@ namespace AndroidVector.PathElement
             return new RectangleF(left, top, right - left, bottom - top);
         }
 
+
         public override XPoint AddToPath(XGraphicsPath path, XPoint cursor, Base lastPathCommand = null)
         {
             var previousControlPoint = new PointF((float)cursor.X, (float)cursor.Y);
@@ -86,6 +87,9 @@ namespace AndroidVector.PathElement
             var deltaX = cursor.X - previousControlPoint.X;
             var deltaY = cursor.Y - previousControlPoint.Y;
             var control1 = new XPoint(cursor.X + deltaX, cursor.Y + deltaY);
+
+
+
             path.AddBezier(cursor, control1, Control2.ToXPoint(), End.ToXPoint());
             return End.ToXPoint();
         }

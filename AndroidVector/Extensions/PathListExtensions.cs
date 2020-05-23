@@ -52,6 +52,8 @@ namespace AndroidVector.Extensions
                         }
                         if (element is Arc arc)
                             newList.AddRange(arc.ToSmallArcs(cursor));
+                        //else if (element is QuadraticCurve quadratic)
+                        //    newList.Add(quadratic.ToBezierCurve(cursor));
                         else
                             newList.Add(element);
                         cursor = newCursor;

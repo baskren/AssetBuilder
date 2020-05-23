@@ -192,9 +192,12 @@ namespace Svg2AndroidVector
                                     AddClipPathElement(useElement, avGroup, warnings);
                                 }
                                 else if (GeometryConverter.ConvertElementToPathData(useElement, warnings) is string pathData)
+                                {
                                     avClip.PathData += pathData;
+                                    warnings.AddWarning("A union of two (or more) clippaths has been found.  If these clippaths overlap, you're likely not going to like the result.  Suggestion:  Use a vector image editor (like InkScape) to alter your union of clippaths to be one path, without crossing segments.");
+                                }
                                 else
-                                    warnings.AddWarning("Ignoring <"+ useElement.Name.LocalName+ " id='" + useElement.Attribute("id")?.Value + "'> inside of <"+child.Name.LocalName+" id='"+child.Attribute("id")?.Value+"' xlink:href='" + hrefAttribute.Value + "' because could not find element referenced by xlink:href attribute.");
+                                    warnings.AddWarning("Ignoring <" + useElement.Name.LocalName + " id='" + useElement.Attribute("id")?.Value + "'> inside of <" + child.Name.LocalName + " id='" + child.Attribute("id")?.Value + "' xlink:href='" + hrefAttribute.Value + "' because could not find element referenced by xlink:href attribute.");
                             }
                             else
                             {
