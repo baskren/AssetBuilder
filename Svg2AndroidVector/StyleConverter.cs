@@ -333,7 +333,7 @@ namespace Svg2AndroidVector
                     if (tokens.Length > 4)
                     {
                         var aToken = tokens[4].Trim();
-                        if (aToken.EndsWith('%'))
+                        if (aToken.EndsWith("%"))
                         {
                             if (float.TryParse(aToken, out float alpha))
                                 return (hexColor, alpha);
@@ -381,7 +381,7 @@ namespace Svg2AndroidVector
         static string ParseColorNumberToken(string token)
         {
             float value;
-            if (token.EndsWith('%'))
+            if (token.EndsWith("%"))
             {
                 if (!float.TryParse(token, out value))
                     return null;

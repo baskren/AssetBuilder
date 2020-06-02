@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using AndroidVector.Extensions;
 using PdfSharpCore.Drawing;
+using SkiaSharp;
 
 namespace AndroidVector.PathElement
 {
@@ -93,6 +94,7 @@ namespace AndroidVector.PathElement
 
             return End.ToXPoint();
         }
+
 
     }
 }

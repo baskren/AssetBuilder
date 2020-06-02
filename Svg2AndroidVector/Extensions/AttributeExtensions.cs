@@ -24,7 +24,7 @@ namespace Svg2AndroidVector
             if (string.IsNullOrWhiteSpace(unit))
                 return float.TryParse(valueText, out value);
             var orientation = Orientation.Unknown;
-            if (text.Contains('%'))
+            if (text.Contains("%"))
             {
                 switch (attribute.Name.ToString())
                 {

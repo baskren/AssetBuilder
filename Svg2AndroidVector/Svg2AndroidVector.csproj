@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <NoWarn>$(NoWarn),1701,1702,1573,1591,1712</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,5 +12,8 @@
   <ItemGroup>
     <Folder Include="Extensions\" />
     <Folder Include="Enums\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
   </ItemGroup>
 </Project>

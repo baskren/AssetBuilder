@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using AndroidVector.Extensions;
 using PdfSharpCore.Drawing;
 using PdfSharpCore.Pdf;
+using SkiaSharp;
 
 namespace AndroidVector
 {
@@ -180,6 +181,16 @@ namespace AndroidVector
                 this.SetAndroidAttributeValue("strokeMiterLimit", null);
             if (Fill == FillType.NonZero)
                 this.SetAndroidAttributeValue("fillType", null);
+            if (Attribute(Namespace.AndroidVector + nameof(FillColor).ToCamelCase()) is XAttribute fillAttribute && fillAttribute.Value == "none")
+            {
+                fillAttribute.Remove();
+                FillAlpha = 0;
+            }
+            if (Attribute(Namespace.AndroidVector + nameof(StrokeColor).ToCamelCase()) is XAttribute strokeAttribute && strokeAttribute.Value == "none")
+            {
+                strokeAttribute.Remove();
+                StrokeAlpha = 0;
+            }
         }
         #endregion
 
@@ -281,7 +292,7 @@ namespace AndroidVector
                                         GradientItem lastItem = null;
                                         var items = children.ToList();
                                         items.Sort();
-                                        float rA = 0, rB = 0;
+                                        //float rA = 0, rB = 0;
                                         foreach (GradientItem item in items)
                                         {
                                             if (item == items.First())
@@ -335,7 +346,7 @@ namespace AndroidVector
                     {
                         LineCap = StrokeLineCap.ToXLineCap(),
                         LineJoin = StrokeLineJoin.ToXLineJoin(),
-                        MiterLimit = StrokeMiterLimit
+                        MiterLimit = StrokeMiterLimit,
                     };
                     var strokePath = new XGraphicsPath();
                     PathElement.Base lastItem = null;
@@ -357,6 +368,147 @@ namespace AndroidVector
                         //    lastMovePoint = cursor;
                     }
                     gfx.DrawPath(pen, strokePath);
+                }
+            }
+        }
+
+
+        public override void AddToSKCanvas(SKCanvas canvas)
+        {
+            if (PathData?.ToPathList() is List<PathElement.Base> pathList)
+            {
+                var path = SKPath.ParseSvgPathData(PathData);
+
+                SKPaint fillPaint = null;
+                if (Elements(Namespace.Aapt + "attr") is IEnumerable<XElement> elements && elements.Count() > 0)
+                {
+                    foreach (var child in elements)
+                    {
+                        if (child is AaptAttr aaptAttr && aaptAttr.Attribute("name") is XAttribute nameAttribute && nameAttribute.Value == "android:fillColor")
+                        {
+                            if (child.Element("gradient") is XElement gradientElement)
+                            {
+                                if (gradientElement is LinearGradient linearGradient)
+                                {
+                                    var x1 = linearGradient.StartX;
+                                    var y1 = linearGradient.StartY;
+                                    var x2 = linearGradient.EndX;
+                                    var y2 = linearGradient.EndY;
+
+                                    if (linearGradient.Elements("item") is IEnumerable<XElement> children)
+                                    {
+                                        var items = children.ToList();
+                                        items.Sort();
+                                        var offsets = new List<float>();
+                                        var colors = new List<SKColor>();
+                                        foreach (GradientItem item in items)
+                                        {
+                                            offsets.Add(item.Offset);
+                                            colors.Add(item.Color.ToSKColor());
+                                        }
+                                        fillPaint = new SKPaint
+                                        {
+                                            Style = SKPaintStyle.Fill,
+                                            IsAntialias = true,
+                                            Shader = SKShader.CreateLinearGradient(
+                                            new SKPoint(x1, y1),
+                                            new SKPoint(x2, y2),
+                                            colors.ToArray(),
+                                            offsets.ToArray(),
+                                            linearGradient.TileMode.ToSKShaderTileMode())
+                                        };
+                                    }
+                                    else
+                                    {
+                                        fillPaint = new SKPaint
+                                        {
+                                            Style = SKPaintStyle.Fill,
+                                            IsAntialias = true,
+                                            Shader = SKShader.CreateLinearGradient(
+                                            new SKPoint(x1, y1),
+                                            new SKPoint(x2, y2),
+                                            new SKColor[] { linearGradient.StartColor.ToSKColor(), linearGradient.EndColor.ToSKColor() },
+                                            new float[] { 0, 1 },
+                                            linearGradient.TileMode.ToSKShaderTileMode())
+                                        };
+                                    }
+                                }
+                                else if (gradientElement is RadialGradient radialGradient)
+                                {
+                                    var cx = radialGradient.CenterX;
+                                    var cy = radialGradient.CenterY;
+                                    var c = new SKPoint(cx, cy);
+                                    var r = radialGradient.GradientRadius;
+                                    if (radialGradient.Elements("item") is IEnumerable<XElement> children)
+                                    {
+                                        var items = children.ToList();
+                                        items.Sort();
+                                        var offsets = new List<float>();
+                                        var colors = new List<SKColor>();
+                                        foreach (GradientItem item in items)
+                                        {
+                                            offsets.Add(item.Offset);
+                                            colors.Add(item.Color.ToSKColor());
+                                        }
+                                        fillPaint = new SKPaint
+                                        {
+                                            Style = SKPaintStyle.Fill,
+                                            IsAntialias = true,
+                                            Shader = SKShader.CreateRadialGradient(
+                                            c,
+                                            r,
+                                            colors.ToArray(),
+                                            offsets.ToArray(),
+                                            radialGradient.TileMode.ToSKShaderTileMode()
+                                            )
+                                        };
+                                    }
+                                    else
+                                    {
+                                        fillPaint = new SKPaint
+                                        {
+                                            Style = SKPaintStyle.Fill,
+                                            IsAntialias = true,
+                                            Shader = SKShader.CreateRadialGradient(
+                                            c,
+                                            r,
+                                            new SKColor[] { radialGradient.StartColor.ToSKColor(), radialGradient.EndColor.ToSKColor() },
+                                            new float[] { 0, 1 },
+                                            radialGradient.TileMode.ToSKShaderTileMode()
+                                            )
+                                        };
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else if (FillColor != Color.Empty && FillAlpha > 0) // && pathList.Any(p=>p is PathElement.ClosePath))
+                {
+                    fillPaint = new SKPaint
+                    {
+                        Style = SKPaintStyle.Fill,
+                        IsAntialias = true,
+                        Color = FillColor.ToSKColor().WithAlpha((byte)Math.Round(FillAlpha * 255)),
+                    };
+                }
+                if (fillPaint != null)
+                    canvas.DrawPath(path, fillPaint);
+
+
+                if (StrokeColor != Color.Empty && StrokeAlpha > 0 && StrokeWidth > 0)
+                {
+                    var paint = new SKPaint
+                    {
+                        Style = SKPaintStyle.Stroke,
+                        IsAntialias = true,
+                        Color = StrokeColor.ToSKColor().WithAlpha((byte)Math.Round(StrokeAlpha * 255)),
+                        StrokeCap = StrokeLineCap.ToSKStrokeCap(),
+                        StrokeJoin = StrokeLineJoin.ToSKLineJoin(),
+                        StrokeMiter = StrokeMiterLimit,
+                        StrokeWidth = StrokeWidth
+                    };
+                    canvas.DrawPath(path, paint);
                 }
             }
         }

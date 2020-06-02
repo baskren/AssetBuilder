@@ -1,8 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+    <NoWarn>$(NoWarn),1701,1702,1573,1591,1712</NoWarn>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -17,7 +19,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="4.5.0.617" />  
-    <PackageReference Include="Xamarin.Essentials" Version="1.5.2" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.5.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="SkiaSharp.Svg" Version="1.60.0" />
     <PackageReference Include="Amporis.Xamarin.Forms.ColorPicker" Version="1.0.23" />
@@ -35,15 +37,16 @@
     <ProjectReference Include="..\PdfSharpCore\PdfSharpCore\PdfSharpCore.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Resources\background_splash.xml" />
     <None Remove="Resources\Contents.json" />
     <None Remove="Resources\LaunchScreen.storyboard" />
+    <None Remove="Resources\drawable.background_splash.xml" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\SplashActivity.cs" />
-    <EmbeddedResource Include="Resources\background_splash.xml" />
+    <EmbeddedResource Include="Resources\drawable-v23.background_splash.xml" />
     <EmbeddedResource Include="Resources\Contents.json" />
     <EmbeddedResource Include="Resources\LaunchScreen.storyboard" />
+    <EmbeddedResource Include="Resources\drawable.background_splash.xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Resources\SplashActivity.cs" />

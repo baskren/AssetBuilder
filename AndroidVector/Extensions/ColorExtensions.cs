@@ -101,5 +101,9 @@ namespace AndroidVector
 
         public static XColor ToXColor(this Color c)
             => XColor.FromArgb(c.ToArgb());
+
+        public static SkiaSharp.SKColor ToSKColor(this Color c)
+            => new SkiaSharp.SKColor(c.R, c.G, c.B, c.A);
+
     }
 }

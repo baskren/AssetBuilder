@@ -147,7 +147,14 @@ namespace AndroidVector
             => CreateSkewRadians((float)(Math.PI * degreesX / 180f), (float)(Math.PI* degreesY / 180f));
 
 		public static Matrix CreateSkewRadians(float radiansX, float radiansY)
-			=> CreateSkewRadians((float)Math.Tan(-radiansX), (float)Math.Tan(-radiansY));
+		{
+			if (radiansX % Math.PI / 2 == 0 && (radiansX / (Math.PI /2))%2 > 0)
+                System.Diagnostics.Debug.WriteLine("Matrix");
+			if (radiansY % Math.PI / 2 == 0 && (radiansY / (Math.PI / 2)) % 2 > 0)
+				System.Diagnostics.Debug.WriteLine("Matrix");
+
+			return CreateShear((float)Math.Tan(radiansX), (float)Math.Tan(radiansY));
+		}
 
 		public static Matrix CreateShear(float shearX, float shearY)
 			=> new Matrix(1, shearY, shearX, 1, 0, 0);

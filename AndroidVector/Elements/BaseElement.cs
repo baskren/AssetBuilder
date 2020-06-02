@@ -38,11 +38,13 @@ namespace AndroidVector
 
 
         #region Constructors
+
         public BaseElement(XName name) : base(name) { }
 
         public BaseElement(XName name, object content) : base(name, content) { }
 
         public BaseElement(XName name, params object[] content) : base(name, content) { }
+
         #endregion
 
 
@@ -141,6 +143,8 @@ namespace AndroidVector
             this.SetAndroidAttributeValue("strokeLineJoin", null);
             this.SetAndroidAttributeValue("strokeMiterLimit", null);
             this.SetAndroidAttributeValue("fillType", null);
+            this.SetAndroidAttributeValue("strokeColor", null);
+            this.SetAndroidAttributeValue("fillColor", null);
         }
 
         public virtual void MapGradients()
@@ -241,6 +245,23 @@ namespace AndroidVector
                     baseElement.AddToPdf(gfx);
             }
             gfx.Restore();
+        }
+
+        public virtual void AddToSKCanvas(SkiaSharp.SKCanvas canvas)
+        {
+            if (SvgOpacity != 1)
+                throw new Exception("Cannot convert to PDF before ApplySvgOpacity has been called.");
+
+            if (SvgTransforms.Count > 0)
+                throw new Exception("Cannot convert to PDF before ApplySvgTransforms has been called.");
+
+            canvas.Save();
+            foreach (var element in Elements().ToArray())
+            {
+                if (element is BaseElement baseElement)
+                    baseElement.AddToSKCanvas(canvas);
+            }
+            canvas.Restore();
         }
     }
 }

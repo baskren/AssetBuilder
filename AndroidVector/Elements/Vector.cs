@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
 using PdfSharpCore.Drawing;
+using SkiaSharp;
 
 namespace AndroidVector
 {
@@ -62,7 +65,8 @@ namespace AndroidVector
             Add(new XAttribute(XNamespace.Xmlns + "aapt", Namespace.Aapt));
         }
 
-        public void ToPdfDocument(string filePath)
+
+        public string ToPdfDocument(string filePath)
         {
             var doc = new PdfSharpCore.Pdf.PdfDocument();
             if (doc.Version < 14)
@@ -78,7 +82,8 @@ namespace AndroidVector
 
             XGraphics gfx = XGraphics.FromPdfPage(page);
             gfx.ScaleTransform(page.Width / ViewportWidth, page.Height / ViewportHeight);
-            AddToPdf(gfx);
+            var warnings = new List<string>();
+            AddToPdf(gfx, warnings);
 
             /*
             XPen pen = new XPen(XColors.Navy, Math.PI);
@@ -103,5 +108,44 @@ namespace AndroidVector
 
             doc.Save(filePath);
         }
+
+        public void ToPng(string path, Color backgroundColor,  Size imageSize = default, Size bitmapSize = default)
+        {
+             if (imageSize == default)
+                imageSize = new Size((int)Width.As(Unit.Dp), (int)Height.As(Unit.Dp));
+            if (bitmapSize == default)
+                bitmapSize = imageSize;
+            using (var bitmap = new SKBitmap(bitmapSize.Width, bitmapSize.Height))
+            {
+                using (var canvas = new SKCanvas(bitmap))
+                {
+                    var r = backgroundColor.R;
+                    var g = backgroundColor.G;
+                    var b = backgroundColor.B;
+                    var a = backgroundColor.A;
+                    canvas.Clear(new SKColor(r, g, b, a));
+                    canvas.Translate(bitmapSize.Width / 2 - imageSize.Width / 2, bitmapSize.Height / 2 - imageSize.Height / 2);
+                    canvas.Scale((float)(imageSize.Width / ViewportWidth), (float)(imageSize.Height / ViewportHeight));
+                    AddToSKCanvas(canvas);
+
+                    using (var image = SKImage.FromBitmap(bitmap))
+                    {
+                        var skdata = image.Encode(SKEncodedImageFormat.Png, 50);
+                        using (var stream = System.IO.File.OpenWrite(path))
+                        {
+                            skdata.SaveTo(stream);
+                        }
+                    }
+                }
+            }
+        }
+
+        public override string ToString()
+         {
+            string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+            var text = xmlHeader + base.ToString();
+            return text;
+        }
+
     }
 }

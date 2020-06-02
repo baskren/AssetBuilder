@@ -20,5 +20,17 @@ namespace AndroidVector
                 return PdfSharpCore.Drawing.XLineJoin.Round;
             throw new Exception("Cannot convert LineJoin to XLineJoin.");
         }
+
+        public static SkiaSharp.SKStrokeJoin ToSKLineJoin(this LineJoin lineJoin)
+        {
+            if (lineJoin == LineJoin.Bevel)
+                return SkiaSharp.SKStrokeJoin.Bevel;
+            if (lineJoin == LineJoin.Miter)
+                return SkiaSharp.SKStrokeJoin.Miter;
+            if (lineJoin == LineJoin.Round)
+                return SkiaSharp.SKStrokeJoin.Round;
+            throw new Exception("Cannot convert LineJoin to XLineJoin.");
+        }
+
     }
 }

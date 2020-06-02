@@ -255,7 +255,7 @@ namespace Svg2AndroidVector
                 if (!string.IsNullOrWhiteSpace(opacityText))
                 {
                     bool percent = false;
-                    if (opacityText.EndsWith('%'))
+                    if (opacityText.EndsWith("%"))
                     {
                         percent = true;
                         opacityText.Trim('%');

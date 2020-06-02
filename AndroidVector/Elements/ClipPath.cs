@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using AndroidVector.Extensions;
 using PdfSharpCore.Drawing;
+using SkiaSharp;
 
 namespace AndroidVector
 {
@@ -32,7 +33,7 @@ namespace AndroidVector
             PathData = pathList.ToPathDataText();
         }
 
-        public override void AddToPdf(XGraphics gfx)
+        public override void AddToPdf(XGraphics gfx, List<string> warnings)
         {
             var cursor = new XPoint(0, 0);
             var clipPath = new XGraphicsPath();
@@ -51,6 +52,12 @@ namespace AndroidVector
 
                 gfx.IntersectClip(clipPath);
             }
+        }
+
+        public override void AddToSKCanvas(SKCanvas canvas)
+        {
+            var path = SKPath.ParseSvgPathData(PathData);
+            canvas.ClipPath(path, antialias: true);
         }
     }
 }

@@ -3,10 +3,12 @@ namespace AndroidVector
 {
     public class AaptAttr : BaseElement
     {
+        public AaptAttr() : base(Namespace.Aapt + "attr") { }
+
         public AaptAttr(string attributeName, object content) : base(Namespace.Aapt + "attr", content)
         {
-            SetAttributeValue("name", "android:" + attributeName);
+            if (!string.IsNullOrWhiteSpace(attributeName))
+                SetAttributeValue("name", "android:" + attributeName);
         }
-
     }
 }

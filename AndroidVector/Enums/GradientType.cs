@@ -7,4 +7,5 @@ namespace AndroidVector
         Radial,
         Sweep
     }
+
 }

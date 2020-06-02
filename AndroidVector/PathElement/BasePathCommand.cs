@@ -40,5 +40,6 @@ namespace AndroidVector.PathElement
 
         public virtual XPoint AddToPath(XGraphicsPath path, XPoint cursor, Base lastPathCommand = null)
             => throw new NotImplementedException();
+
     }
 }

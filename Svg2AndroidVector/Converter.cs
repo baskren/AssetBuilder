@@ -174,7 +174,7 @@ namespace Svg2AndroidVector
                                 child.AddAfterSelf(newTarget);
                                 //child.ReplaceWith(newTarget);
 
-                                string x = null, y = null;
+                                //string x = null, y = null;
                                 foreach (var useAttribute in child.Attributes())
                                 {
                                     if (useAttribute.Name == Namespace.xlinkNs + "href")
@@ -193,7 +193,7 @@ namespace Svg2AndroidVector
                                     else if (useAttribute.Name == "style")
                                     {
                                         if (newTarget.Attribute("style") is XAttribute targetAttribute)
-                                            newTarget.SetAttributeValue("style", useAttribute.Value + (useAttribute.Value.EndsWith(';') ? null : ";") + targetAttribute.Value);
+                                            newTarget.SetAttributeValue("style", useAttribute.Value + (useAttribute.Value.EndsWith(";") ? null : ";") + targetAttribute.Value);
                                         else
                                             newTarget.SetAttributeValue("style", useAttribute.Value);
                                     }
@@ -243,7 +243,7 @@ namespace Svg2AndroidVector
                 {
                     var useText = useAttribute.Value.Trim();
                     bool usePercent = false;
-                    if (useText.EndsWith('%'))
+                    if (useText.EndsWith("%"))
                     {
                         usePercent = true;
                         useText.Trim('%');
@@ -254,7 +254,7 @@ namespace Svg2AndroidVector
                             useValue /= 100;
                         var targetText = targetAttribute.Value.Trim();
                         bool targetPercent = false;
-                        if (targetText.EndsWith('%'))
+                        if (targetText.EndsWith("%"))
                         {
                             targetPercent = true;
                             targetText.Trim('%');

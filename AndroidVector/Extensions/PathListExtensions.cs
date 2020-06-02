@@ -65,7 +65,7 @@ namespace AndroidVector.Extensions
 
         public static string ToPathDataText(this List<Base> pathList)
         {
-            var result = string.Join(' ', pathList);
+            var result = string.Join(" ", pathList);
             return result;
         }
 
@@ -78,7 +78,7 @@ namespace AndroidVector.Extensions
             {
                 if (i == pathDataText.Length || (char.ToLower(pathDataText[i])!='e' && char.IsLetter(pathDataText[i])))
                 {
-                    strings.Add(pathDataText[start..i]);
+                    strings.Add(pathDataText.Substring(start, i - start));
                     start = i;
                 }
             }

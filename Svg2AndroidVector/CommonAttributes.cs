@@ -27,7 +27,7 @@ namespace Svg2AndroidVector
         {
             StyleConverter.ProcessStyleAttributes(svgElement, avElement, warnings);
 
-            ignoreAttributes ??= new List<string>();
+            ignoreAttributes = ignoreAttributes ?? new List<string>();
             ignoreAttributes.AddRange(IgnoreAttributes);
 
             foreach (var attribute in svgElement.Attributes())

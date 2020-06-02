@@ -43,7 +43,7 @@
                         Grid.Column="1"
                         VerticalTextAlignment="Center"
                         HorizontalOptions="FillAndExpand"
-                        Placeholder="drag and drop iOS AppIcon.appiconset folder here"
+                        Placeholder="drag and drop iOS platform project folder here"
                         />
 
                     <Label
@@ -57,7 +57,7 @@
                         Grid.Column="1"
                         VerticalTextAlignment="Center"
                         HorizontalOptions="FillAndExpand"
-                        Placeholder="drag and drop Android Resources folder here"
+                        Placeholder="drag and drop Android platform project folder here"
                         />
 
                     <Label
@@ -71,7 +71,7 @@
                         Grid.Column="1"
                         VerticalTextAlignment="Center"
                         HorizontalOptions="FillAndExpand"
-                        Placeholder="drag and drop UWP Assets folder here"
+                        Placeholder="drag and drop UWP platform project folder here"
                         />
 
                 </Grid>
@@ -88,9 +88,11 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="150" />
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
+                        <RowDefinition Height="40"/>
                         <RowDefinition Height="40"/>
                         <RowDefinition Height="50"/>
                     </Grid.RowDefinitions>
@@ -102,16 +104,43 @@
                         FontAttributes="Bold"/>
 
                     <Label
-                        Text="Icon SVG file: "
+                        Text="Background Color: "
                         Grid.Row="1"
+                        HorizontalTextAlignment="End"
+                        VerticalOptions="Center"
+                        />
+                    <Label
+                        x:Name="_iconBackgroundColorEntry"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Fill"
+                        HorizontalTextAlignment="Start"
+                        VerticalTextAlignment="Center"
+                        BackgroundColor="White"
+                        Text="#FFFFFF"
+                        />
+                    <Button
+                        x:Name="_iconBackgroundColorButton"
+                        TextColor="White"
+                        BackgroundColor="Blue"
+                        Grid.Row="1"
+                        Grid.Column="2"
+                        Clicked="OnSelectIconBackgroundColorButtonClicked"
+                        Text="Select"/>
+
+                    <Label
+                        Text="Icon SVG file: "
+                        Grid.Row="2"
                         VerticalOptions="Center"
                         HorizontalTextAlignment="End"
                         FontFamily="MaterialIcons"
                         />
                     <Entry
                         x:Name="_iconSvgFileEntry"
-                        Grid.Row="1"
+                        Grid.Row="2"
                         Grid.Column="1"
+                        Grid.ColumnSpan="2"
                         VerticalTextAlignment="Center"
                         HorizontalOptions="FillAndExpand"
                         Placeholder="drag and drop SVG file here"
@@ -120,8 +149,8 @@
                     <Button
                         x:Name="_generateIconsButton"
                         Text="Generate Icons"
-                        Grid.Row="2"
-                        Grid.ColumnSpan="2"
+                        Grid.Row="3"
+                        Grid.ColumnSpan="3"
                         BackgroundColor="Blue"
                         TextColor="White"
                         CornerRadius="4"

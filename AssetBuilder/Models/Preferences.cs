@@ -62,7 +62,7 @@ namespace AssetBuilder.Models
             set => SetField(ref _uwpProjectFolder, value);
         }
 
-        Color _splashBackgroundColor;
+        Color _splashBackgroundColor = Color.White;
         [JsonIgnore]
         public Color SplashBackgroundColor
         {
@@ -74,6 +74,20 @@ namespace AssetBuilder.Models
         {
             get => _splashBackgroundColor.ToHex();
             set => _splashBackgroundColor = Color.FromHex(value.Trim('#'));
+        }
+
+        Color _iconBackgroundColor = Color.White;
+        [JsonIgnore]
+        public Color IconBackgroundColor
+        {
+            get => _iconBackgroundColor;
+            set => SetField(ref _iconBackgroundColor, value);
+        }
+
+        public string IconBackgroundColorString
+        {
+            get => _iconBackgroundColor.ToHex();
+            set => _iconBackgroundColor = Color.FromHex(value.Trim('#'));
         }
 
         string _squareSvgSplashImageFile;

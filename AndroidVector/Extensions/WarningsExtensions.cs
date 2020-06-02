@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Svg2AndroidVector
+namespace AndroidVector
 {
     public static class WarningsExtensions
     {

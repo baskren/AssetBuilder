@@ -25,7 +25,16 @@ namespace AndroidVector
 
         public GradientItem(string offset, string color) : base ("item")
         {
-            SetPropertyAttribute(offset, nameof(Offset));
+            if (!string.IsNullOrWhiteSpace(offset))
+            {
+                offset = offset.Trim();
+                if (offset.EndsWith("%"))
+                {
+                    if (float.TryParse(offset.Trim('%'), out float value))
+                        offset = (value / 100f).ToString();
+                }
+                SetPropertyAttribute(offset, nameof(Offset));
+            }
             SetPropertyAttribute(color, nameof(Color));
         }
 
