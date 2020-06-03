@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
+using AndroidVector;
 
 namespace Svg2AndroidVector
 {

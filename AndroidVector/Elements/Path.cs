@@ -194,7 +194,7 @@ namespace AndroidVector
         }
         #endregion
 
-        void FillPath(XGraphics gfx, List<PathElement.Base> pathList, XBrush fill)
+        void FillPath(XGraphics gfx, List<PathElement.Base> pathList, XBrush brush)
         {
             var cursor = new XPoint(0, 0);
             var fillPath = new XGraphicsPath
@@ -207,140 +207,70 @@ namespace AndroidVector
                 cursor = item.AddToPath(fillPath, cursor, lastItem);
                 lastItem = item;
             }
-            gfx.DrawPath(fill, fillPath);
+            gfx.DrawPath(brush, fillPath);
         }
 
-        public override void AddToPdf(XGraphics gfx)
+        void StrokePath(XGraphics gfx, List<PathElement.Base> pathList, XBrush brush)
+        {
+            XPen pen = new XPen(brush, StrokeWidth)
+            {
+                LineCap = StrokeLineCap.ToXLineCap(),
+                LineJoin = StrokeLineJoin.ToXLineJoin(),
+                MiterLimit = StrokeMiterLimit,
+            };
+            StrokePath(gfx, pathList, pen);
+        }
+
+        void StrokePath(XGraphics gfx, List<PathElement.Base> pathList, XPen pen)
+        {
+            var cursor = new XPoint(0, 0);
+            var strokePath = new XGraphicsPath();
+            PathElement.Base lastItem = null;
+            foreach (var item in pathList)
+            {
+                cursor = item.AddToPath(strokePath, cursor, lastItem);
+                lastItem = item;
+            }
+            gfx.DrawPath(pen, strokePath);
+        }
+
+        public override void AddToPdf(XGraphics gfx, List<string> warnings)
         {
             if (PathData?.ToPathList() is List<PathElement.Base> pathList)
             {
                 pathList = pathList.ToTransformablePathlist();
                 PathData = pathList.ToPathDataText();
 
-
+                bool fillApplied = false;
+                bool strokeApplied = false;
                 if (Elements(Namespace.Aapt + "attr") is IEnumerable<XElement> elements && elements.Count() > 0)
                 {
                     foreach (var child in elements)
                     {
-                        if (child is AaptAttr aaptAttr && aaptAttr.Attribute("name") is XAttribute nameAttribute && nameAttribute.Value == "android:fillColor")
+                        if (child is AaptAttr aaptAttr && aaptAttr.Attribute("name") is XAttribute nameAttribute && (nameAttribute.Value == "android:fillColor" || nameAttribute.Value == "android:strokeColor"))
                         {
                             if (child.Element("gradient") is XElement gradientElement)
                             {
-                                if (gradientElement is LinearGradient linearGradient)
-                                {
-                                    var x1 = linearGradient.StartX;
-                                    var y1 = linearGradient.StartY;
-                                    var x2 = linearGradient.EndX;
-                                    var y2 = linearGradient.EndY;
-
-                                    if (linearGradient.Elements("item") is IEnumerable<XElement> children)
-                                    {
-                                        GradientItem lastItem = null;
-                                        var items = children.ToList();
-                                        items.Sort();
-                                        float xA, xB=0, yA, yB=0;
-                                        foreach (GradientItem item in items)
-                                        {
-                                            if (item == items.First())
-                                            {
-                                                xA = x1 + (x2 - x1) * -1000;
-                                                yA = y1 + (y2 - y1) * -1000;
-                                                xB = x1 + (x2 - x1) * item.Offset;
-                                                yB = y1 + (y2 - y1) * item.Offset;
-                                                XBrush fill = new XLinearGradientBrush(new XPoint(xA, yA), new XPoint(xB, yB), item.Color.ToXColor(), item.Color.ToXColor());
-                                                FillPath(gfx, pathList, fill);
-                                            }
-                                            else
-                                            {
-                                                xA = x1 + (x2 - x1) * lastItem.Offset;
-                                                yA = y1 + (y2 - y1) * lastItem.Offset;
-                                                xB = x1 + (x2 - x1) * item.Offset;
-                                                yB = y1 + (y2 - y1) * item.Offset;
-                                                XBrush fill = new XLinearGradientBrush(new XPoint(xA, yA), new XPoint(xB, yB), lastItem.Color.ToXColor(), item.Color.ToXColor());
-                                                FillPath(gfx, pathList, fill);
-                                                if (item == items.Last())
-                                                {
-                                                    xA = x1 + (x2 - x1) * item.Offset; 
-                                                    yA = y1 + (y2 - y1) * item.Offset;
-                                                    xB = x1 + (x2 - x1) * 1000;
-                                                    yB = y1 + (y2 - y1) * 1000;
-                                                    fill = new XLinearGradientBrush(new XPoint(xA, yA), new XPoint(xB, yB), item.Color.ToXColor(), item.Color.ToXColor());
-                                                    FillPath(gfx, pathList, fill);
-                                                }
-                                            }
-                                            lastItem = item;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        XBrush fill = new XLinearGradientBrush(new XPoint(x1 + (x2 - x1) * -1000, y1 + (y2 - y1) * -1000), new XPoint(x1, y1), linearGradient.StartColor.ToXColor(), linearGradient.StartColor.ToXColor());
-                                        FillPath(gfx, pathList, fill);
-                                        fill = new XLinearGradientBrush(new XPoint(x1, y1), new XPoint(x2, y2), linearGradient.StartColor.ToXColor(), linearGradient.EndColor.ToXColor());
-                                        FillPath(gfx, pathList, fill);
-                                        fill = new XLinearGradientBrush(new XPoint(x2, y2), new XPoint(x1 + (x2 - x1) * 1000, y1 + (y2 - y1) * 1000), linearGradient.EndColor.ToXColor(), linearGradient.EndColor.ToXColor());
-                                        FillPath(gfx, pathList, fill);
-                                    }
-                                }
-                                else if (gradientElement is RadialGradient radialGradient)
-                                {
-                                    var cx = radialGradient.CenterX;
-                                    var cy = radialGradient.CenterY;
-                                    var c = new XPoint(cx, cy);
-                                    var r = radialGradient.GradientRadius;
-                                    if (radialGradient.Elements("item") is IEnumerable<XElement> children)
-                                    {
-                                        GradientItem lastItem = null;
-                                        var items = children.ToList();
-                                        items.Sort();
-                                        //float rA = 0, rB = 0;
-                                        foreach (GradientItem item in items)
-                                        {
-                                            if (item == items.First())
-                                            {
-                                                if (item.Offset > 0)
-                                                {
-                                                    XBrush fill = new XRadialGradientBrush(c, 0,  r * item.Offset, item.Color.ToXColor(), item.Color.ToXColor());
-                                                    FillPath(gfx, pathList, fill);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                XBrush fill = new XRadialGradientBrush(c, r * lastItem.Offset, r * item.Offset, lastItem.Color.ToXColor(), item.Color.ToXColor());
-                                                FillPath(gfx, pathList, fill);
-                                                
-                                                if (item == items.Last())
-                                                {
-                                                    fill = new XRadialGradientBrush(c, r * item.Offset, r * 100, item.Color.ToXColor(), item.Color.ToXColor());
-                                                    FillPath(gfx, pathList, fill);
-                                                }
-                                                
-                                            }
-                                            lastItem = item;
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        XBrush fill = new XRadialGradientBrush(c, 0, radialGradient.GradientRadius, radialGradient.StartColor.ToXColor(), radialGradient.EndColor.ToXColor());
-                                        FillPath(gfx, pathList, fill);
-                                        fill = new XRadialGradientBrush(c, radialGradient.GradientRadius, radialGradient.GradientRadius * 100, radialGradient.StartColor.ToXColor(), radialGradient.EndColor.ToXColor());
-                                        FillPath(gfx, pathList, fill);
-                                    }
-                                }
+                                ApplyGradient(gfx, gradientElement, pathList, nameAttribute.Value == "android:strokeColor", warnings);
+                                if (nameAttribute.Value == "android:strokeColor")
+                                    strokeApplied = true;
+                                else
+                                    fillApplied = true;
                             }
                         }
                     }
                 }
-                else if (FillColor != Color.Empty && FillAlpha > 0) // && pathList.Any(p=>p is PathElement.ClosePath))
+
+                if (!fillApplied && FillColor != Color.Empty && FillAlpha > 0) // && pathList.Any(p=>p is PathElement.ClosePath))
                 {
                     XColor fillColor = XColor.FromArgb((int)Math.Round(FillAlpha * 255), FillColor.R, FillColor.G, FillColor.B);
-                    XBrush fill = new XSolidBrush(fillColor);
-                    FillPath(gfx, pathList, fill);
+                    XBrush brush = new XSolidBrush(fillColor);
+                    FillPath(gfx, pathList, brush);
                 }
 
-                if (StrokeColor != Color.Empty && StrokeAlpha > 0 && StrokeWidth > 0)
+
+                if (!strokeApplied && StrokeColor != Color.Empty && StrokeAlpha > 0 && StrokeWidth > 0)
                 {
-                    var cursor = new XPoint(0, 0);
                     XColor penColor = XColor.FromArgb((int)Math.Round(StrokeAlpha * 255), StrokeColor.R, StrokeColor.G, StrokeColor.B);
                     XPen pen = new XPen(penColor, StrokeWidth)
                     {
@@ -348,30 +278,149 @@ namespace AndroidVector
                         LineJoin = StrokeLineJoin.ToXLineJoin(),
                         MiterLimit = StrokeMiterLimit,
                     };
-                    var strokePath = new XGraphicsPath();
-                    PathElement.Base lastItem = null;
-                    //XPoint lastMovePoint = cursor;
-                    foreach (var item in pathList)
-                    {
-                        //if (item is PathElement.ClosePath)
-                        //    strokePath.AddLine(cursor, lastMovePoint);
-                        //else if (item is PathElement.MoveTo moveTo)
-                        //{
-                        //    strokePath.CloseFigure();
-                        //    gfx.DrawPath(pen, strokePath);
-                        //    strokePath = new XGraphicsPath();
-                        //    strokePath.StartFigure();
-                        //}
-                        cursor = item.AddToPath(strokePath, cursor, lastItem);
-                        lastItem = item;
-                        //if (item is PathElement.MoveTo)
-                        //    lastMovePoint = cursor;
-                    }
-                    gfx.DrawPath(pen, strokePath);
+                    StrokePath(gfx, pathList, pen);
                 }
             }
         }
 
+        void ApplyGradient(XGraphics gfx, XElement gradientElement, List<PathElement.Base> pathList, bool isStroke, List<string> warnings)
+        {
+            if (gradientElement is LinearGradient linearGradient)
+            {
+                var x1 = linearGradient.StartX;
+                var y1 = linearGradient.StartY;
+                var x2 = linearGradient.EndX;
+                var y2 = linearGradient.EndY;
+
+                if (linearGradient.Elements("item") is IEnumerable<XElement> children)
+                {
+                    GradientItem lastItem = null;
+                    var items = children.ToList();
+                    items.Sort();
+                    float xA, xB = 0, yA, yB = 0;
+                    foreach (GradientItem item in items)
+                    {
+                        if (item == items.First())
+                        {
+                            xA = x1 + (x2 - x1) * -1000;
+                            yA = y1 + (y2 - y1) * -1000;
+                            xB = x1 + (x2 - x1) * item.Offset;
+                            yB = y1 + (y2 - y1) * item.Offset;
+                            XBrush brush = new XLinearGradientBrush(new XPoint(xA, yA), new XPoint(xB, yB), item.Color.ToXColor(), item.Color.ToXColor());
+                            if (isStroke)
+                                StrokePath(gfx, pathList, brush);
+                            else
+                                FillPath(gfx, pathList, brush);
+                        }
+                        else
+                        {
+                            xA = x1 + (x2 - x1) * lastItem.Offset;
+                            yA = y1 + (y2 - y1) * lastItem.Offset;
+                            xB = x1 + (x2 - x1) * item.Offset;
+                            yB = y1 + (y2 - y1) * item.Offset;
+                            XBrush brush = new XLinearGradientBrush(new XPoint(xA, yA), new XPoint(xB, yB), lastItem.Color.ToXColor(), item.Color.ToXColor());
+                            if (isStroke)
+                                StrokePath(gfx, pathList, brush);
+                            else
+                                FillPath(gfx, pathList, brush);
+                            if (item == items.Last())
+                            {
+                                xA = x1 + (x2 - x1) * item.Offset;
+                                yA = y1 + (y2 - y1) * item.Offset;
+                                xB = x1 + (x2 - x1) * 1000;
+                                yB = y1 + (y2 - y1) * 1000;
+                                brush = new XLinearGradientBrush(new XPoint(xA, yA), new XPoint(xB, yB), item.Color.ToXColor(), item.Color.ToXColor());
+                                if (isStroke)
+                                    StrokePath(gfx, pathList, brush);
+                                else
+                                    FillPath(gfx, pathList, brush);
+                            }
+                        }
+                        lastItem = item;
+                    }
+                }
+                else
+                {
+                    XBrush brush = new XLinearGradientBrush(new XPoint(x1 + (x2 - x1) * -1000, y1 + (y2 - y1) * -1000), new XPoint(x1, y1), linearGradient.StartColor.ToXColor(), linearGradient.StartColor.ToXColor());
+                    if (isStroke)
+                        StrokePath(gfx, pathList, brush);
+                    else
+                        FillPath(gfx, pathList, brush);
+                    brush = new XLinearGradientBrush(new XPoint(x1, y1), new XPoint(x2, y2), linearGradient.StartColor.ToXColor(), linearGradient.EndColor.ToXColor());
+                    if (isStroke)
+                        StrokePath(gfx, pathList, brush);
+                    else
+                        FillPath(gfx, pathList, brush);
+                    brush = new XLinearGradientBrush(new XPoint(x2, y2), new XPoint(x1 + (x2 - x1) * 1000, y1 + (y2 - y1) * 1000), linearGradient.EndColor.ToXColor(), linearGradient.EndColor.ToXColor());
+                    if (isStroke)
+                        StrokePath(gfx, pathList, brush);
+                    else
+                        FillPath(gfx, pathList, brush);
+                }
+            }
+            else if (gradientElement is RadialGradient radialGradient)
+            {
+                var cx = radialGradient.CenterX;
+                var cy = radialGradient.CenterY;
+                var c = new XPoint(cx, cy);
+                var r = radialGradient.GradientRadius;
+                if (radialGradient.Elements("item") is IEnumerable<XElement> children)
+                {
+                    GradientItem lastItem = null;
+                    var items = children.ToList();
+                    items.Sort();
+                    //float rA = 0, rB = 0;
+                    foreach (GradientItem item in items)
+                    {
+                        if (item == items.First())
+                        {
+                            if (item.Offset > 0)
+                            {
+                                XBrush brush = new XRadialGradientBrush(c, 0, r * item.Offset, item.Color.ToXColor(), item.Color.ToXColor());
+                                if (isStroke)
+                                    StrokePath(gfx, pathList, brush);
+                                else
+                                    FillPath(gfx, pathList, brush);
+                            }
+                        }
+                        else
+                        {
+                            XBrush brush = new XRadialGradientBrush(c, r * lastItem.Offset, r * item.Offset, lastItem.Color.ToXColor(), item.Color.ToXColor());
+                            if (isStroke)
+                                StrokePath(gfx, pathList, brush);
+                            else
+                                FillPath(gfx, pathList, brush);
+
+                            if (item == items.Last())
+                            {
+                                brush = new XRadialGradientBrush(c, r * item.Offset, r * 100, item.Color.ToXColor(), item.Color.ToXColor());
+                                if (isStroke)
+                                    StrokePath(gfx, pathList, brush);
+                                else
+                                    FillPath(gfx, pathList, brush);
+                            }
+
+                        }
+                        lastItem = item;
+                    }
+
+                }
+                else
+                {
+                    XBrush brush = new XRadialGradientBrush(c, 0, radialGradient.GradientRadius, radialGradient.StartColor.ToXColor(), radialGradient.EndColor.ToXColor());
+                    if (isStroke)
+                        StrokePath(gfx, pathList, brush);
+                    else
+                        FillPath(gfx, pathList, brush);
+                    brush = new XRadialGradientBrush(c, radialGradient.GradientRadius, radialGradient.GradientRadius * 100, radialGradient.StartColor.ToXColor(), radialGradient.EndColor.ToXColor());
+                    if (isStroke)
+                        StrokePath(gfx, pathList, brush);
+                    else
+                        FillPath(gfx, pathList, brush);
+                }
+            }
+
+        }
 
         public override void AddToSKCanvas(SKCanvas canvas)
         {

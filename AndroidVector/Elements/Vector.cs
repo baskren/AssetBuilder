@@ -66,7 +66,7 @@ namespace AndroidVector
         }
 
 
-        public string ToPdfDocument(string filePath)
+        public List<string> ToPdfDocument(string filePath)
         {
             var doc = new PdfSharpCore.Pdf.PdfDocument();
             if (doc.Version < 14)
@@ -107,6 +107,7 @@ namespace AndroidVector
             */
 
             doc.Save(filePath);
+            return warnings;
         }
 
         public void ToPng(string path, Color backgroundColor,  Size imageSize = default, Size bitmapSize = default)

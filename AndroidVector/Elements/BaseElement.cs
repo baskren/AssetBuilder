@@ -230,7 +230,7 @@ namespace AndroidVector
         #endregion
 
 
-        public virtual void AddToPdf(PdfSharpCore.Drawing.XGraphics gfx)
+        public virtual void AddToPdf(PdfSharpCore.Drawing.XGraphics gfx, List<string> warnings)
         {
             if (SvgOpacity != 1)
                 throw new Exception("Cannot convert to PDF before ApplySvgOpacity has been called.");
@@ -242,7 +242,7 @@ namespace AndroidVector
             foreach (var element in Elements().ToArray())
             {
                 if (element is BaseElement baseElement)
-                    baseElement.AddToPdf(gfx);
+                    baseElement.AddToPdf(gfx, warnings);
             }
             gfx.Restore();
         }

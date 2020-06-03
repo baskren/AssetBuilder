@@ -63,7 +63,7 @@ namespace AndroidVector
                 r = int.Parse(s.Substring(2, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                 g = int.Parse(s.Substring(4, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                 b = int.Parse(s.Substring(6, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture);
-                return Color.FromArgb(r, g, b);
+                return Color.FromArgb(a, r, g, b);
             }
             else
                 throw new ArgumentException($"Invalid hex color string [{s}]");
