@@ -213,6 +213,7 @@ namespace AssetBuilder.Views
                 DisplayAlert(null, "Cannot find iOS icons folder [" + dest + "]", "ok");
                 return;
             }
+
             foreach (var path in Directory.GetFiles(dest) )
             {
                 if (Path.GetExtension(path).ToLower() == ".png"
@@ -220,7 +221,6 @@ namespace AssetBuilder.Views
                     && int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(4), out int size)
                     )
                 {
-                    System.Diagnostics.Debug.WriteLine("size: " + size);
                     vector.ToPng(path, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
                 }
             }
@@ -292,8 +292,11 @@ namespace AssetBuilder.Views
 
             if (Svg2.GenerateAndroidVector(svgPath) is (AndroidVector.Vector vector, List<string> warnings))
             {
+                vector = vector.AspectClone();
+
                 // through pure Android cruelty, we have to do this.  What a mess.
                 var tmpVector = AndroidVector.BaseElementExtensions.Copy(vector);
+
                 tmpVector.Width = new AndroidVector.UnitizedFloat(117, AndroidVector.Unit.Dp);
                 tmpVector.Height = new AndroidVector.UnitizedFloat(117, AndroidVector.Unit.Dp);
                 tmpVector.ViewportWidth *= 1.5;
@@ -315,7 +318,6 @@ namespace AssetBuilder.Views
             return vector;
         }
 
-        //void GenerateRasterAndroidIcons(SKPicture pict)
         void GenerateRasterAndroidIcons(AndroidVector.Vector vector)
         {
             if (string.IsNullOrWhiteSpace(Preferences.Current.AndroidProjectFolder) || !Directory.Exists(Preferences.Current.AndroidProjectFolder))
@@ -497,16 +499,7 @@ namespace AssetBuilder.Views
                     DisplayAlert("Warnings", string.Join("\n\n", warnings), "ok");
                 try
                 {
-                    var svg = new SkiaSharp.Extended.Svg.SKSvg();
-                    var pict = svg.Load(Preferences.Current.SquareSvgSplashImageFile);
-
-                    var width = (int)Math.Round(vector.Width.As(AndroidVector.Unit.Dp));
-                    var height = (int)Math.Round(vector.Height.As(AndroidVector.Unit.Dp));
-                    using var img = SKImage.FromPicture(pict, new SKSizeI(width, height), SKMatrix.MakeScale(width / pict.CullRect.Width, height / pict.CullRect.Height));
-                    var skdata = img.Encode(SKEncodedImageFormat.Png, 50);
-                    var path = Path.Combine(drawableFolder, "ic_launchimage.png");
-                    using var stream = File.OpenWrite(path);
-                    skdata.SaveTo(stream);
+                    vector.ToPng(Path.Combine(drawableFolder, "ic_launchimage.png"), Color.Transparent);
                 }
                 catch (Exception e)
                 {
@@ -590,7 +583,7 @@ namespace AssetBuilder.Views
 
             try
             {
-                vector.ToPdfDocument(pdfPath);
+                vector.ToPdfDocument(pdfPath, Preferences.Current.SplashBackgroundColor);
             }
             catch (Exception e)
             {
@@ -598,67 +591,6 @@ namespace AssetBuilder.Views
             }
 
             return null;
-
-            /*
-            try
-            {
-                var svg = new SkiaSharp.Extended.Svg.SKSvg();
-                var pict = svg.Load(Preferences.Current.SquareSvgSplashImageFile);
-
-
-                if (string.IsNullOrWhiteSpace(Preferences.Current.IosOProjectFolder) || !Directory.Exists(Preferences.Current.IosOProjectFolder))
-                    return "Invalid iOS Project Folder";
-
-                var destDir = Path.Combine(new string[] { Preferences.Current.IosOProjectFolder, "Assets.xcassets", "Splash.imageset" });
-                if (!Directory.Exists(destDir))
-                {
-                    Directory.CreateDirectory(destDir);
-                    GetType().Assembly.TryCopyResource("AssetBuilder.Resources.Contents.json", Path.Combine(destDir, "Contents.json"));
-                }
-
-                var pdfPath = Path.Combine(destDir, "LaunchImage.pdf");
-                if (File.Exists(pdfPath))
-                    File.Delete(pdfPath);
-
-                return Svg2.GeneratePdf(Preferences.Current.SquareSvgSplashImageFile, pdfPath);
-
-            }
-            catch (Exception e)
-            {
-                return "Could not generate iOS Splash PDF due to SkiaSharp exception: " + e.Message;
-            }
-            */
-            /*
-            var metadata = new SKDocumentPdfMetadata
-            {
-                Author = "42nd Parallel",
-                Creation = DateTime.Now,
-                Creator = "AssetBuilder",
-                Keywords = "Launch Screen Image",
-                Modified = DateTime.Now,
-                Producer = "SkiaSharp",
-                Subject = "Launch Screen Image",
-                Title = "Launch Screen Image",
-            };
-
-            var stream = new SKFileWStream(pdfPath);
-            var document = SKDocument.CreatePdf(stream, metadata);
-            var paint = new SKPaint();
-
-            float canvasSize = 600;
-            var pdfCanvas = document.BeginPage(canvasSize, canvasSize);
-
-            float scale = canvasSize / pict.CullRect.Width;
-            var matrix = SKMatrix.MakeScale(scale, scale);
-
-            pdfCanvas.DrawPicture(pict, ref matrix);
-
-            document.EndPage();
-            document.Close();
-            
-            return null;
-            */
-
         }
 
         public string UpdateIosLaunchScreenStoryboard()
@@ -681,7 +613,7 @@ namespace AssetBuilder.Views
 
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n";
             var text = xmlHeader + document;
-            File.WriteAllText(launchScreenPath, text);
+             File.WriteAllText(launchScreenPath, text);
             return null;
         }
 
@@ -704,9 +636,7 @@ namespace AssetBuilder.Views
                     XNamespace ns = document.Root.Attribute("xmlns").Value;
                     foreach (var itemGroup in document.Descendants(ns + "ItemGroup"))
                     {
-                        //if (prjElement.Name == "ItemGroup")
                         {
-                            //var itemGroup = prjElement;
                             if (itemGroup.Element(ns +"InterfaceDefinition") is XElement interfaceDef
                                 && interfaceDef.Attribute("Include") is XAttribute includeAttr
                                 && (includeAttr.Value == "Resources\\LaunchScreen.storyboard"
@@ -732,8 +662,6 @@ namespace AssetBuilder.Views
 
                                 return null;
                             }
-
-                            //if (itemGroup.Elements(ns + "Folder")
                         }
                     }
                     return "could not find ItemGroup into which to inject the LaunchScreen image assets";

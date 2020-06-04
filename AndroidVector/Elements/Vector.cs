@@ -66,7 +66,7 @@ namespace AndroidVector
         }
 
 
-        public List<string> ToPdfDocument(string filePath)
+        public List<string> ToPdfDocument(string filePath, Color backgroundColor)
         {
             var doc = new PdfSharpCore.Pdf.PdfDocument();
             if (doc.Version < 14)
@@ -80,31 +80,13 @@ namespace AndroidVector
             page.Width = Width.As(Unit.Pt);
             page.Height = Height.As(Unit.Pt);
 
-            XGraphics gfx = XGraphics.FromPdfPage(page);
-            gfx.ScaleTransform(page.Width / ViewportWidth, page.Height / ViewportHeight);
             var warnings = new List<string>();
-            AddToPdf(gfx, warnings);
-
-            /*
-            XPen pen = new XPen(XColors.Navy, Math.PI);
-            pen.DashStyle = XDashStyle.Dash;
-            var color = XColor.FromName("DarkGoldenrod");
-            //color.A = 0.5;
-            XSolidBrush brush = new XSolidBrush(color);
-
-            XGraphicsPath path = new XGraphicsPath();
-            //path.AddMove(100,100);
-            path.AddArc(new XPoint(100,   0), new XPoint(200, 100), new XSize(100, 100), 0, false, XSweepDirection.Clockwise);
-            path.AddArc(new XPoint(200, 100), new XPoint(100, 200), new XSize(100, 100), 0, false, XSweepDirection.Clockwise);
-            path.AddArc(new XPoint(100, 200), new XPoint(  0, 100), new XSize(100, 100), 0, false, XSweepDirection.Clockwise);
-            path.AddArc(new XPoint(  0, 100), new XPoint(100,   0), new XSize(100, 100), 0, false, XSweepDirection.Clockwise);
-            //path.AddLine(10, 120, 50, 60);
-            //path.AddArc(50, 20, 110, 80, 180, 180);
-            //path.AddArc(new XPoint(50, 60), new XPoint(160, 60), new XSize(55, 40), 0, true, XSweepDirection.Clockwise);
-            //path.AddLine(160, 60, 220, 100);
-            path.CloseFigure();
-            gfx.DrawPath(pen, brush, path);
-            */
+            using (XGraphics gfx = XGraphics.FromPdfPage(page))
+            {
+                gfx.DrawRectangle(new XSolidBrush(backgroundColor.ToXColor()), new XRect(-72, -72, page.Width.Point+72, page.Height.Point+72));
+                gfx.ScaleTransform(page.Width / ViewportWidth, page.Height / ViewportHeight);
+                AddToPdf(gfx, warnings);
+            }
 
             doc.Save(filePath);
             return warnings;
@@ -112,7 +94,7 @@ namespace AndroidVector
 
         public void ToPng(string path, Color backgroundColor,  Size imageSize = default, Size bitmapSize = default)
         {
-             if (imageSize == default)
+            if (imageSize == default)
                 imageSize = new Size((int)Width.As(Unit.Dp), (int)Height.As(Unit.Dp));
             if (bitmapSize == default)
                 bitmapSize = imageSize;
@@ -148,5 +130,40 @@ namespace AndroidVector
             return text;
         }
 
+        public Vector AspectClone(float aspectRatio = 1)
+        {
+            var vector = this.Copy();
+
+            var width = vector.Width.As(AndroidVector.Unit.Dp);
+            var height = vector.Height.As(AndroidVector.Unit.Dp);
+            var orginalAspect = width / height;
+            if (orginalAspect != aspectRatio)
+            {
+                var viewportWidth = vector.ViewportWidth;
+                var viewportHeight = vector.ViewportHeight;
+
+                if (orginalAspect > aspectRatio)
+                {
+                    var heightScale = orginalAspect / aspectRatio;
+                    var heightMoveScale = (width - height) / 2 / height;
+                    vector.Height = new AndroidVector.UnitizedFloat(width / aspectRatio, AndroidVector.Unit.Dp);
+                    vector.ViewportHeight *= heightScale;
+                    vector.SvgTransforms.Add(AndroidVector.Matrix.CreateTranslate(0, (float)(viewportHeight * heightMoveScale)));
+                    vector.ApplySvgTransforms();
+                    vector.PurgeDefaults();
+                }
+                else 
+                {
+                    var widthScale = aspectRatio / orginalAspect;
+                    var widthOffsetScale =  (height - width) / 2 / width;
+                    vector.Width = new AndroidVector.UnitizedFloat(height, AndroidVector.Unit.Dp);
+                    vector.ViewportWidth *= widthScale;
+                    vector.SvgTransforms.Add(AndroidVector.Matrix.CreateTranslate((float)(viewportWidth * widthOffsetScale), 0));
+                    vector.ApplySvgTransforms();
+                    vector.PurgeDefaults();
+                }
+            }
+            return vector;
+        }
     }
 }

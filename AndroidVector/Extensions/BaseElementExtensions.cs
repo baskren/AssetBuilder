@@ -11,7 +11,7 @@ namespace AndroidVector
             foreach (var attribute in baseElement.Attributes())
                 if (copy.Attribute(attribute.Name) == null)
                     copy.Add(attribute);
-            //copy.Add(Elements());
+
             foreach (var element in baseElement.Elements())
             {
                 if (element is Vector bElement)
@@ -30,9 +30,14 @@ namespace AndroidVector
                     copy.Add(clipPath.Copy());
                 else if (element is AaptAttr aaptAttr)
                     copy.Add(aaptAttr.Copy());
+                else if (element is GradientItem gradientItem)
+                    copy.Add(gradientItem.Copy());
+                else
+                    throw new Exception("Doh!  Forgot to support Copy on [" + element + "] AndroidVector element!");
             }
             return copy;
 
         }
+
     }
 }

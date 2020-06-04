@@ -390,7 +390,6 @@ namespace AssetBuilder.Mac
 			if (pboard.Types.Any(s => s == "NSFilenamesPboardType"))
 			{
 				var files = pboard.GetPropertyListForType("NSFilenamesPboardType") as NSArray;
-                System.Diagnostics.Debug.WriteLine("EntryRenderer");
                 for (nuint i = 0; i < files.Count; i++)
                 {
 					var file = files.GetItem<NSString>(i);

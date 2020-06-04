@@ -54,6 +54,12 @@ namespace AssetBuilder
             var warnings = new List<string>();
             var vector = Svg2AndroidVector.Converter.ConvertSvg(xdoc, warnings);
 
+            var width = vector.Width.As(Unit.Dp);
+            var height = vector.Height.As(Unit.Dp);
+
+            if (width * height == 0)
+                return (null, new List<string> { "ERROR: SVG has zero width or height." });
+
             return (vector, warnings);
         }
 

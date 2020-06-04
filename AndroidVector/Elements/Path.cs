@@ -81,7 +81,7 @@ namespace AndroidVector
 
         public float StrokeMiterLimit
         {
-            get => GetPropertyAttribute<float>();
+            get => GetPropertyAttribute<float>(4f);
             set => SetPropertyAttribute(value);
         }
 
@@ -199,7 +199,7 @@ namespace AndroidVector
             var cursor = new XPoint(0, 0);
             var fillPath = new XGraphicsPath
             {
-                FillMode = Fill == FillType.EvenOdd ? XFillMode.Alternate : XFillMode.Winding
+                FillMode = Fill.ToXFillMode()
             };
             PathElement.Base lastItem = null;
             foreach (var item in pathList)
@@ -427,16 +427,19 @@ namespace AndroidVector
             if (PathData?.ToPathList() is List<PathElement.Base> pathList)
             {
                 var path = SKPath.ParseSvgPathData(PathData);
+                path.FillType = Fill.ToSkPathFillType();
 
                 SKPaint fillPaint = null;
+                SKPaint strokePaint = null;
                 if (Elements(Namespace.Aapt + "attr") is IEnumerable<XElement> elements && elements.Count() > 0)
                 {
                     foreach (var child in elements)
                     {
-                        if (child is AaptAttr aaptAttr && aaptAttr.Attribute("name") is XAttribute nameAttribute && nameAttribute.Value == "android:fillColor")
+                        if (child is AaptAttr aaptAttr && aaptAttr.Attribute("name") is XAttribute nameAttribute && (nameAttribute.Value == "android:fillColor" || nameAttribute.Value == "android:strokeColor"))
                         {
                             if (child.Element("gradient") is XElement gradientElement)
                             {
+                                SKShader shader = null;
                                 if (gradientElement is LinearGradient linearGradient)
                                 {
                                     var x1 = linearGradient.StartX;
@@ -455,31 +458,21 @@ namespace AndroidVector
                                             offsets.Add(item.Offset);
                                             colors.Add(item.Color.ToSKColor());
                                         }
-                                        fillPaint = new SKPaint
-                                        {
-                                            Style = SKPaintStyle.Fill,
-                                            IsAntialias = true,
-                                            Shader = SKShader.CreateLinearGradient(
-                                            new SKPoint(x1, y1),
-                                            new SKPoint(x2, y2),
-                                            colors.ToArray(),
-                                            offsets.ToArray(),
-                                            linearGradient.TileMode.ToSKShaderTileMode())
-                                        };
+                                        shader = SKShader.CreateLinearGradient(
+                                                new SKPoint(x1, y1),
+                                                new SKPoint(x2, y2),
+                                                colors.ToArray(),
+                                                offsets.ToArray(),
+                                                linearGradient.TileMode.ToSKShaderTileMode());
                                     }
                                     else
                                     {
-                                        fillPaint = new SKPaint
-                                        {
-                                            Style = SKPaintStyle.Fill,
-                                            IsAntialias = true,
-                                            Shader = SKShader.CreateLinearGradient(
+                                        shader = SKShader.CreateLinearGradient(
                                             new SKPoint(x1, y1),
                                             new SKPoint(x2, y2),
                                             new SKColor[] { linearGradient.StartColor.ToSKColor(), linearGradient.EndColor.ToSKColor() },
                                             new float[] { 0, 1 },
-                                            linearGradient.TileMode.ToSKShaderTileMode())
-                                        };
+                                            linearGradient.TileMode.ToSKShaderTileMode());
                                     }
                                 }
                                 else if (gradientElement is RadialGradient radialGradient)
@@ -499,40 +492,50 @@ namespace AndroidVector
                                             offsets.Add(item.Offset);
                                             colors.Add(item.Color.ToSKColor());
                                         }
-                                        fillPaint = new SKPaint
-                                        {
-                                            Style = SKPaintStyle.Fill,
-                                            IsAntialias = true,
-                                            Shader = SKShader.CreateRadialGradient(
+                                        shader = SKShader.CreateRadialGradient(
                                             c,
                                             r,
                                             colors.ToArray(),
                                             offsets.ToArray(),
                                             radialGradient.TileMode.ToSKShaderTileMode()
-                                            )
-                                        };
+                                            );
                                     }
                                     else
                                     {
-                                        fillPaint = new SKPaint
-                                        {
-                                            Style = SKPaintStyle.Fill,
-                                            IsAntialias = true,
-                                            Shader = SKShader.CreateRadialGradient(
+                                        shader = SKShader.CreateRadialGradient(
                                             c,
                                             r,
                                             new SKColor[] { radialGradient.StartColor.ToSKColor(), radialGradient.EndColor.ToSKColor() },
                                             new float[] { 0, 1 },
                                             radialGradient.TileMode.ToSKShaderTileMode()
-                                            )
-                                        };
+                                            );
                                     }
                                 }
+
+                                if (nameAttribute.Value == "android:fillColor")
+                                    fillPaint = new SKPaint
+                                    {
+                                        Style = SKPaintStyle.Fill,
+                                        IsAntialias = true,
+                                        Shader = shader,
+                                    };
+                                else
+                                    strokePaint = new SKPaint
+                                    {
+                                        Style = SKPaintStyle.Stroke,
+                                        IsAntialias = true,
+                                        Shader = shader,
+                                        StrokeCap = StrokeLineCap.ToSKStrokeCap(),
+                                        StrokeJoin = StrokeLineJoin.ToSKLineJoin(),
+                                        StrokeMiter = StrokeMiterLimit,
+                                        StrokeWidth = StrokeWidth,
+                                    };
                             }
                         }
                     }
                 }
-                else if (FillColor != Color.Empty && FillAlpha > 0) // && pathList.Any(p=>p is PathElement.ClosePath))
+
+                if (fillPaint == null && FillColor != Color.Empty && FillAlpha > 0) // && pathList.Any(p=>p is PathElement.ClosePath))
                 {
                     fillPaint = new SKPaint
                     {
@@ -545,9 +548,9 @@ namespace AndroidVector
                     canvas.DrawPath(path, fillPaint);
 
 
-                if (StrokeColor != Color.Empty && StrokeAlpha > 0 && StrokeWidth > 0)
+                if (strokePaint == null && StrokeColor != Color.Empty && StrokeAlpha > 0 && StrokeWidth > 0)
                 {
-                    var paint = new SKPaint
+                    strokePaint = new SKPaint
                     {
                         Style = SKPaintStyle.Stroke,
                         IsAntialias = true,
@@ -557,8 +560,9 @@ namespace AndroidVector
                         StrokeMiter = StrokeMiterLimit,
                         StrokeWidth = StrokeWidth
                     };
-                    canvas.DrawPath(path, paint);
                 }
+                if (strokePaint != null)
+                    canvas.DrawPath(path, strokePaint);
             }
         }
     }

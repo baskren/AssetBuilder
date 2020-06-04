@@ -43,9 +43,9 @@ namespace AndroidVector.Extensions
                 else
                 {
                     var newCursor = element.ToAbsolute(cursor);
-                    if (newCursor != cursor || !started)
+                    if (newCursor != cursor || !started || element is MoveTo)
                     {
-                        if (!started)
+                        if (!started || element is MoveTo)
                         {
                             start = newCursor;
                             started = true;

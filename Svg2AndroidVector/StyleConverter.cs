@@ -44,6 +44,8 @@ namespace Svg2AndroidVector
             { "stroke-linecap", "strokeLineCap"},
             { "stroke-linejoin", "strokeLineJoin"},
             { "stroke-miterlimit", "strokeMiterLimit"},
+
+            { "stroke-fill", "" }
         };
 
         public static List<string> IgnoreAttributeMap = new List<string>
@@ -135,7 +137,64 @@ namespace Svg2AndroidVector
             }
         }
 
+        static void SetColorStyleValue(string cmd, string avAtrName, string value, XElement svgElement, BaseElement avElement, List<string> warnings)
+        {
+            if (value == "none")
+            {
+                avElement.SetAndroidAttributeValue(avAtrName, value);
+            }
+            else if (value.StartsWith("url("))
+            {
+                if (!value.StartsWith("url(#"))
+                    throw new Exception("Only anchor URLs are supported at this time.");
 
+                //var iri = value.Substring("url(#".Length).Trim(')').Trim();
+                var iri = value.SubstringWithTerminator("url(#".Length, ')').Trim();
+                if (svgElement.GetRoot() is XElement root)
+                {
+                    AndroidVector.BaseGradient gradient = null;
+                    if (root.Descendants(Namespace.Svg + "linearGradient").FirstOrDefault(e => e.Attribute("id").Value == iri) is XElement svgLinearGradient)
+                    {
+                        if (PaintConverter.ConvertLinearGradient(svgLinearGradient, warnings) is LinearGradient avGradient)
+                            gradient = avGradient;
+                    }
+                    else if (root.Descendants(Namespace.Svg + "radialGradient").FirstOrDefault(e => e.Attribute("id").Value == iri) is XElement svgRadialGradient)
+                    {
+                        if (PaintConverter.ConvertRadialGradient(svgRadialGradient, warnings) is RadialGradient avGradient)
+                            gradient = avGradient;
+                    }
+
+                    if (gradient != null)
+                    {
+                        if (avElement.Element(AndroidVector.Namespace.Aapt + "attr") is XElement aaptAttr && aaptAttr.Attribute("name").Value == "android:" + gradient.Attribute(AndroidVector.Namespace.AndroidVector + "type").Value)
+                            aaptAttr.Remove();
+
+                        var aapt = new AaptAttr(cmd + "Color");
+                        avElement.Add(aapt);
+
+                        if (aapt.Elements("gradient").FirstOrDefault(e => e.Attribute(AndroidVector.Namespace.AndroidVector + "type").Value == gradient.Attribute(AndroidVector.Namespace.AndroidVector + "type").Value) is XElement oldGradient)
+                            oldGradient.Remove();
+
+                        aapt.Add(gradient);
+                        avElement.SetAndroidAttributeValue(avAtrName, null);
+                        return;
+                    }
+
+                    warnings.AddWarning("Ignoring gradient because no element found to complete link [" + value + "].");
+                    return;
+                }
+                throw new Exception("Could not find document root");
+
+            }
+            else
+            {
+                var (hexColor, opacity) = GetHexColorAndFloatOpacity(value, warnings);
+                avElement.SetAndroidAttributeValue(avAtrName, hexColor);
+                if (!float.IsNaN(opacity))
+                    avElement.SetAndroidAttributeValue(cmd + "Alpha", opacity);
+            }
+
+        }
 
         public static void ProcessStyleValue(XElement svgElement, string styleText, BaseElement avElement, List<string> warnings, bool local = false)
         {
@@ -160,58 +219,66 @@ namespace Svg2AndroidVector
                             }
                             else */
                             if (cmd == "fill" || cmd == "stroke")
+                                SetColorStyleValue(cmd, avAtrName, value, svgElement, avElement, warnings);
+                            else if (cmd == "stroke-fill")
                             {
-                                if (value == "none")
-                                {
-                                    avElement.SetAndroidAttributeValue(avAtrName, value);
-                                }
-                                else if (value.StartsWith("url("))
-                                {
-                                    if (!value.StartsWith("url(#"))
-                                        throw new Exception("Only anchor URLs are supported at this time.");
-
-                                    //var iri = value.Substring("url(#".Length).Trim(')').Trim();
-                                    var iri = value.SubstringWithTerminator("url(#".Length, ')').Trim();
-                                    if (svgElement.GetRoot() is XElement root)
-                                    {
-                                        if (root.Descendants(Namespace.Svg + "linearGradient").FirstOrDefault(e => e.Attribute("id").Value == iri) is XElement svgLinearGradient)
-                                        {
-                                            if (PaintConverter.ConvertLinearGradient(svgLinearGradient, warnings) is LinearGradient avGradient)
-                                            {
-                                                if (avElement.Element(AndroidVector.Namespace.Aapt + "attr") is XElement aaptAttr)
-                                                    aaptAttr.Remove();
-                                                var aapt = new AaptAttr(cmd + "Color", avGradient);
-                                                avElement.Add(aapt);
-                                                avElement.SetAndroidAttributeValue(avAtrName, null);
-                                                return;
-                                            }
-                                        }
-                                        if (root.Descendants(Namespace.Svg + "radialGradient").FirstOrDefault(e => e.Attribute("id").Value == iri) is XElement svgRadialGradient)
-                                        {
-                                            if (PaintConverter.ConvertRadialGradient(svgRadialGradient, warnings) is RadialGradient avGradient)
-                                            {
-                                                if (avElement.Element(AndroidVector.Namespace.Aapt + "attr") is XElement aaptAttr)
-                                                    aaptAttr.Remove();
-                                                var aapt = new AaptAttr(cmd+"Color", avGradient);
-                                                avElement.Add(aapt);
-                                                avElement.SetAndroidAttributeValue(avAtrName, null);
-                                                return;
-                                            }
-                                        }
-                                        warnings.AddWarning("Ignoring gradient because no element found to complete link [" + value + "].");
-                                        return;
-                                    }
-                                    throw new Exception("Could not find document root");
-
-                                }
-                                else
-                                {
-                                    var (hexColor, opacity) = GetHexColorAndFloatOpacity(value, warnings);
-                                    avElement.SetAndroidAttributeValue(avAtrName, hexColor);
-                                    if (!float.IsNaN(opacity))
-                                        avElement.SetAndroidAttributeValue(cmd + "Alpha", opacity);
-                                }
+                                SetColorStyleValue("fill", AttributeMap["fill"], value, svgElement, avElement, warnings);
+                                SetColorStyleValue("stroke", AttributeMap["stroke"], value, svgElement, avElement, warnings);
                             }
+                            /*
+                        {
+                            if (value == "none")
+                            {
+                                avElement.SetAndroidAttributeValue(avAtrName, value);
+                            }
+                            else if (value.StartsWith("url("))
+                            {
+                                if (!value.StartsWith("url(#"))
+                                    throw new Exception("Only anchor URLs are supported at this time.");
+
+                                //var iri = value.Substring("url(#".Length).Trim(')').Trim();
+                                var iri = value.SubstringWithTerminator("url(#".Length, ')').Trim();
+                                if (svgElement.GetRoot() is XElement root)
+                                {
+                                    if (root.Descendants(Namespace.Svg + "linearGradient").FirstOrDefault(e => e.Attribute("id").Value == iri) is XElement svgLinearGradient)
+                                    {
+                                        if (PaintConverter.ConvertLinearGradient(svgLinearGradient, warnings) is LinearGradient avGradient)
+                                        {
+                                            if (avElement.Element(AndroidVector.Namespace.Aapt + "attr") is XElement aaptAttr)
+                                                aaptAttr.Remove();
+                                            var aapt = new AaptAttr(cmd + "Color", avGradient);
+                                            avElement.Add(aapt);
+                                            avElement.SetAndroidAttributeValue(avAtrName, null);
+                                            return;
+                                        }
+                                    }
+                                    if (root.Descendants(Namespace.Svg + "radialGradient").FirstOrDefault(e => e.Attribute("id").Value == iri) is XElement svgRadialGradient)
+                                    {
+                                        if (PaintConverter.ConvertRadialGradient(svgRadialGradient, warnings) is RadialGradient avGradient)
+                                        {
+                                            if (avElement.Element(AndroidVector.Namespace.Aapt + "attr") is XElement aaptAttr)
+                                                aaptAttr.Remove();
+                                            var aapt = new AaptAttr(cmd+"Color", avGradient);
+                                            avElement.Add(aapt);
+                                            avElement.SetAndroidAttributeValue(avAtrName, null);
+                                            return;
+                                        }
+                                    }
+                                    warnings.AddWarning("Ignoring gradient because no element found to complete link [" + value + "].");
+                                    return;
+                                }
+                                throw new Exception("Could not find document root");
+
+                            }
+                            else
+                            {
+                                var (hexColor, opacity) = GetHexColorAndFloatOpacity(value, warnings);
+                                avElement.SetAndroidAttributeValue(avAtrName, hexColor);
+                                if (!float.IsNaN(opacity))
+                                    avElement.SetAndroidAttributeValue(cmd + "Alpha", opacity);
+                            }
+
+                        } */
                             else if (cmd == "stroke-width")
                             {
                                 ElementExtensions.TryGetValueInPx(svgElement, value, Orientation.Unknown, out float strokeWidth);

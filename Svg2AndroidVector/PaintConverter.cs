@@ -10,12 +10,6 @@ namespace Svg2AndroidVector
 {
     public static class PaintConverter
     {
-        //TODO: insert gradient properties as post processing setup.
-        public static Dictionary<string, string> PaintAttributeMap = new Dictionary<string, string>
-        {
-            { "fill", "fillColor" },
-            { "stroke", "strokeColor" },
-        };
 
         static XElement GetGradientHrefElement(XElement svgGradient, List<string> warnings)
         {
