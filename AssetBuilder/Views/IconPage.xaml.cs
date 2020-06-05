@@ -417,7 +417,7 @@ namespace AssetBuilder.Views
                         androidResourceItemGroup.Add(element);
 
                         element = new XElement(ns + "AndroidResource");
-                        element.SetAttributeValue("Include", "Resources\\drawable\\ic_launchimage.png");
+                        element.SetAttributeValue("Include", "Resources\\drawable\\splash_image.png");
                         androidResourceItemGroup.Add(element);
 
                         element = new XElement(ns + "AndroidResource");
@@ -425,7 +425,7 @@ namespace AssetBuilder.Views
                         androidResourceItemGroup.Add(element);
 
                         element = new XElement(ns + "AndroidResource");
-                        element.SetAttributeValue("Include", "Resources\\drawable-v23\\ic_launchimage.xml");
+                        element.SetAttributeValue("Include", "Resources\\drawable-v23\\splash_image.xml");
                         androidResourceItemGroup.Add(element);
 
 
@@ -493,17 +493,28 @@ namespace AssetBuilder.Views
 
             if (Svg2.GenerateAndroidVector(Preferences.Current.SquareSvgSplashImageFile) is (AndroidVector.Vector vector, List<string> warnings))
             {
-                File.WriteAllText(Path.Combine(drawable23Folder, "ic_launchimage.xml"), vector.ToString());
+                File.WriteAllText(Path.Combine(drawable23Folder, "splash_image.xml"), vector.ToString());
 
                 if (warnings.Count > 0)
                     DisplayAlert("Warnings", string.Join("\n\n", warnings), "ok");
                 try
                 {
-                    vector.ToPng(Path.Combine(drawableFolder, "ic_launchimage.png"), Color.Transparent);
+                    var width = vector.Width.As(AndroidVector.Unit.Dp);
+                    var height = vector.Height.As(AndroidVector.Unit.Dp);
+                    var size = new System.Drawing.Size((int)Math.Ceiling(width), (int)Math.Ceiling(height));
+                    if (width > 300 || height > 300)
+                    {
+                        var aspect = width / height;
+                        if (aspect >= 1)
+                            size = new System.Drawing.Size(300, (int)Math.Ceiling(300 / aspect));
+                        else
+                            size = new System.Drawing.Size((int)Math.Ceiling(300 * aspect), 300);
+                    }
+                    vector.ToPng(Path.Combine(drawableFolder, "splash_image.png"), Color.Transparent, size);
                 }
                 catch (Exception e)
                 {
-                    DisplayAlert("SkiaSharp ERROR", "Failed to generate pre-v23 SDK Android splash image (drawable/ic_launchimage.png) because of the following SkiaSharp exception:\n\n" + e.Message, "ok");
+                    DisplayAlert("SkiaSharp ERROR", "Failed to generate pre-v23 SDK Android splash image (drawable/splash_image.png) because of the following SkiaSharp exception:\n\n" + e.Message, "ok");
                 }
             }
             else

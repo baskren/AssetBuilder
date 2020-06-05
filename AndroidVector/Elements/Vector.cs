@@ -92,6 +92,13 @@ namespace AndroidVector
             return warnings;
         }
 
+        /// <summary>
+        /// Generates a PNG from the AndroidVector
+        /// </summary>
+        /// <param name="path">where to save the PNG</param>
+        /// <param name="backgroundColor">background color for the PNG</param>
+        /// <param name="imageSize">size of vector image (centered) in the PNG</param>
+        /// <param name="bitmapSize">size of the PNG</param>
         public void ToPng(string path, Color backgroundColor,  Size imageSize = default, Size bitmapSize = default)
         {
             if (imageSize == default)
