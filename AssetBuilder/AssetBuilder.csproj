@@ -25,7 +25,6 @@
     <PackageReference Include="Amporis.Xamarin.Forms.ColorPicker" Version="1.0.23" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Resources\" />
     <Folder Include="ViewModels\" />
     <Folder Include="Models\" />
     <Folder Include="Services\" />
@@ -40,8 +39,10 @@
     <None Remove="Resources\Contents.json" />
     <None Remove="Resources\LaunchScreen.storyboard" />
     <None Remove="Resources\drawable.background_splash.xml" />
+    <None Remove="Resources\MaterialIcons-Regular.ttf" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources\MaterialIcons-Regular.ttf" />
     <EmbeddedResource Include="Resources\SplashActivity.cs" />
     <EmbeddedResource Include="Resources\drawable-v23.background_splash.xml" />
     <EmbeddedResource Include="Resources\Contents.json" />
