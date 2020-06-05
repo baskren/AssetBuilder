@@ -3,4 +3,4 @@
 	url = https://baskren@github.com/baskren/P42.Utils.git
 [submodule "PdfSharpCore"]
 	path = PdfSharpCore
-	url = https://github.com/ststeiger/PdfSharpCore.git
+url=https://github.com/baskren/PdfSharpCore.git
