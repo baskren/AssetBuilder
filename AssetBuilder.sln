@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30128.74
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetBuilder", "AssetBuilder\AssetBuilder.csproj", "{87136539-BC88-4C69-A2BE-B43846354F60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AssetBuilder", "AssetBuilder\AssetBuilder.csproj", "{87136539-BC88-4C69-A2BE-B43846354F60}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetBuilder.Mac", "AssetBuilder.Mac\AssetBuilder.Mac.csproj", "{99177F95-E77F-4DE7-97B4-946A8889D1B8}"
 EndProject
@@ -30,7 +30,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssetBuilder.UWP", "AssetBu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "P42.Utils.UWP", "P42.Utils\P42.Utils.UWP\P42.Utils.UWP.csproj", "{68B96681-EF89-4F47-96C9-65AA37883C0A}"
 EndProject
-Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "ImageSharp.Drawing", "PdfSharpCore\SixLabors\ImageSharp\src\ImageSharp.Drawing\ImageSharp.Drawing.csproj", "{74EBCD2C-8F3D-44D7-97BA-A584D0987103}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImageSharp.Drawing", "PdfSharpCore\SixLabors\ImageSharp\src\ImageSharp.Drawing\ImageSharp.Drawing.csproj", "{74EBCD2C-8F3D-44D7-97BA-A584D0987103}"
 EndProject
 Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "SharedInfrastructure", "PdfSharpCore\SixLabors\Fonts\shared-infrastructure\src\SharedInfrastructure\SharedInfrastructure.shproj", "{4BB357A7-7C4E-433C-A0BF-B04899625D75}"
 EndProject
@@ -90,9 +90,7 @@ Global
 		{99177F95-E77F-4DE7-97B4-946A8889D1B8}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
 		{99177F95-E77F-4DE7-97B4-946A8889D1B8}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
 		{99177F95-E77F-4DE7-97B4-946A8889D1B8}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{99177F95-E77F-4DE7-97B4-946A8889D1B8}.Debug|x64.Build.0 = Debug|Any CPU
 		{99177F95-E77F-4DE7-97B4-946A8889D1B8}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{99177F95-E77F-4DE7-97B4-946A8889D1B8}.Debug|x86.Build.0 = Debug|Any CPU
 		{99177F95-E77F-4DE7-97B4-946A8889D1B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99177F95-E77F-4DE7-97B4-946A8889D1B8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{99177F95-E77F-4DE7-97B4-946A8889D1B8}.Release|ARM.ActiveCfg = Release|Any CPU
@@ -145,9 +143,7 @@ Global
 		{13073839-11CF-4C44-86B1-597F61F600B2}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
 		{13073839-11CF-4C44-86B1-597F61F600B2}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
 		{13073839-11CF-4C44-86B1-597F61F600B2}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{13073839-11CF-4C44-86B1-597F61F600B2}.Debug|x64.Build.0 = Debug|Any CPU
 		{13073839-11CF-4C44-86B1-597F61F600B2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{13073839-11CF-4C44-86B1-597F61F600B2}.Debug|x86.Build.0 = Debug|Any CPU
 		{13073839-11CF-4C44-86B1-597F61F600B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13073839-11CF-4C44-86B1-597F61F600B2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{13073839-11CF-4C44-86B1-597F61F600B2}.Release|ARM.ActiveCfg = Release|Any CPU
@@ -172,9 +168,7 @@ Global
 		{530E21BA-A725-4714-8678-74CCA5CDBB38}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
 		{530E21BA-A725-4714-8678-74CCA5CDBB38}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
 		{530E21BA-A725-4714-8678-74CCA5CDBB38}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{530E21BA-A725-4714-8678-74CCA5CDBB38}.Debug|x64.Build.0 = Debug|Any CPU
 		{530E21BA-A725-4714-8678-74CCA5CDBB38}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{530E21BA-A725-4714-8678-74CCA5CDBB38}.Debug|x86.Build.0 = Debug|Any CPU
 		{530E21BA-A725-4714-8678-74CCA5CDBB38}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{530E21BA-A725-4714-8678-74CCA5CDBB38}.Release|Any CPU.Build.0 = Release|Any CPU
 		{530E21BA-A725-4714-8678-74CCA5CDBB38}.Release|ARM.ActiveCfg = Release|Any CPU
