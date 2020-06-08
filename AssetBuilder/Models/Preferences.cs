@@ -26,7 +26,7 @@ namespace AssetBuilder.Models
 
         public bool IsIconEnabled => !string.IsNullOrWhiteSpace(SvgIconFile) && IsDestinationsEnabled;
 
-        public bool IsSplashEnabled => !string.IsNullOrWhiteSpace(SquareSvgSplashImageFile) && IsDestinationsEnabled;
+        public bool IsSplashEnabled => (!string.IsNullOrWhiteSpace(SquareSvgSplashImageFile) || !string.IsNullOrEmpty(Rect310SvgSplashImageFile)) && IsDestinationsEnabled;
 
         private static void OnCurrent_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
@@ -95,6 +95,29 @@ namespace AssetBuilder.Models
         {
             get => _squareSvgSplashImageFile;
             set => SetField(ref _squareSvgSplashImageFile, value);
+        }
+
+        /*
+        string _rect620SvgSplashImageFile;
+        public string Rect620SvgSplashImageFile
+        {
+            get => _rect620SvgSplashImageFile;
+            set => SetField(ref _rect620SvgSplashImageFile, value);
+        }
+        */
+
+        string _rect310SvgSplashImageFile;
+        public string Rect310SvgSplashImageFile
+        {
+            get => _rect310SvgSplashImageFile;
+            set => SetField(ref _rect310SvgSplashImageFile, value);
+        }
+
+        MobileSplashSource _mobileSplashSource;
+        public MobileSplashSource MobileSplashSource
+        {
+            get => _mobileSplashSource;
+            set => SetField(ref _mobileSplashSource, value);
         }
     }
 }

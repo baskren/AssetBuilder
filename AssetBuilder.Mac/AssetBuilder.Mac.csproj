@@ -82,10 +82,10 @@
     <Reference Include="SkiaSharp.Extended.Svg">
       <HintPath>..\packages\SkiaSharp.Svg.1.60.0\lib\netstandard2.0\SkiaSharp.Extended.Svg.dll</HintPath>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="Amporis.Xamarin.Forms.ColorPicker">
       <HintPath>..\packages\Amporis.Xamarin.Forms.ColorPicker.1.0.23\lib\netstandard2.0\Amporis.Xamarin.Forms.ColorPicker.dll</HintPath>
     </Reference>
-    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json" />
@@ -124,6 +124,7 @@
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\FontExtensions.cs" />
     <Compile Include="Extensions\AlignmentExtensions.cs" />
+    <Compile Include="LabelRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />
