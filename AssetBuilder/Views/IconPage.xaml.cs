@@ -320,8 +320,8 @@ namespace AssetBuilder.Views
                 //                await DisplayAlert(null, label.Placeholder.ToString(), "ok");
                 if (label == _androidProjectFolderEntry || label == _iosProjectFolderEntry || label == _uwpProjectFolderEntry)
                 {
-                    if (await CrossFolderPicker.Current.PickFolder() is FolderData folderData)
-                        label.Text = folderData.FolderPath;
+                    if (await CrossFolderPicker.Current.PickFolder() is IFolder folder)
+                        label.Text = folder.Path;
                 }
                 else if (await CrossFilePicker.Current.PickFile() is FileData fileData)
                 {
