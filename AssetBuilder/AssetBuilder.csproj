@@ -34,6 +34,7 @@
     <ProjectReference Include="..\AndroidVector\AndroidVector.csproj" />
     <ProjectReference Include="..\Svg2AndroidVector\Svg2AndroidVector.csproj" />
     <ProjectReference Include="..\PdfSharpCore\PdfSharpCore\PdfSharpCore.csproj" />
+    <ProjectReference Include="..\FilePicker\src\FilePicker\FilePicker.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Resources\Contents.json" />

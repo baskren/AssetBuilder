@@ -25,6 +25,7 @@ namespace AssetBuilder.Mac
         {
             Forms.Init();
             P42.Utils.macOS.Settings.Init();
+            Plugin.FilePicker.Platform.Init();
             LoadApplication(new App());
             base.DidFinishLaunching(notification);
         }

@@ -9,6 +9,8 @@ using System.Linq;
 using P42.Utils;
 using Amporis.Xamarin.Forms.ColorPicker;
 using System.Collections.Generic;
+using Plugin.FilePicker;
+using Plugin.FilePicker.Abstractions;
 
 namespace AssetBuilder.Views
 {
@@ -314,7 +316,18 @@ namespace AssetBuilder.Views
                     Preferences.Current.IconBackgroundColor = await ColorPickerDialog.Show(Content as Grid, "Icon Background", Preferences.Current.IconBackgroundColor, null);
             }
             else if (sender is AssetBuilder.Label label)
-                await DisplayAlert(null, label.Placeholder.ToString(), "ok");
+            {
+                //                await DisplayAlert(null, label.Placeholder.ToString(), "ok");
+                if (label == _androidProjectFolderEntry || label == _iosProjectFolderEntry || label == _uwpProjectFolderEntry)
+                {
+                    if (await CrossFolderPicker.Current.PickFolder() is FolderData folderData)
+                        label.Text = folderData.FolderPath;
+                }
+                else if (await CrossFilePicker.Current.PickFile() is FileData fileData)
+                {
+                    label.Text = fileData.FilePath;
+                }
+            }
             else if (sender is Xamarin.Forms.Label xfLabel)
             {
                 if (xfLabel == _uwpProjectFolderClearButton)

@@ -86,6 +86,7 @@
     <Reference Include="Amporis.Xamarin.Forms.ColorPicker">
       <HintPath>..\packages\Amporis.Xamarin.Forms.ColorPicker.1.0.23\lib\netstandard2.0\Amporis.Xamarin.Forms.ColorPicker.dll</HintPath>
     </Reference>
+    <Reference Include="System.Drawing.Common.dll" />
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json" />
@@ -165,6 +166,14 @@
     <ProjectReference Include="..\PdfSharpCore\SixLabors\Core\src\SixLabors.Core\SixLabors.Core.csproj">
       <Project>{9A4C3AC5-C672-422C-85EA-6F4DD26B891D}</Project>
       <Name>SixLabors.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FilePicker\src\FilePicker\FilePicker.csproj">
+      <Project>{EEC524C8-4DE6-4967-8A16-826B53D64683}</Project>
+      <Name>FilePicker</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FilePicker\src\FilePicker.Mac\FilePicker.Mac.csproj">
+      <Project>{FD2BB50B-103F-4121-972A-A2B5BF6560CA}</Project>
+      <Name>FilePicker.Mac</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />

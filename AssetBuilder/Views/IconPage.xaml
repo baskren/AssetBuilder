@@ -61,7 +61,7 @@
                                 HorizontalOptions="Fill"
                                 VerticalOptions="Fill"
                                 VerticalTextAlignment="Center"
-                                Placeholder="drag and drop iOS platform project folder here"
+                                Placeholder="click to select iOS platform project folder"
                                 >
                                 <AB:Label.GestureRecognizers>
                                     <TapGestureRecognizer
@@ -112,7 +112,7 @@
                                 HorizontalOptions="Fill"
                                 VerticalOptions="Fill"
                                 VerticalTextAlignment="Center"
-                                Placeholder="drag and drop Android platform project folder here"
+                                Placeholder="click to select Android platform project folder"
                                 >
                                 <AB:Label.GestureRecognizers>
                                     <TapGestureRecognizer
@@ -161,7 +161,7 @@
                                 HorizontalOptions="Fill"
                                 VerticalOptions="Fill"
                                 VerticalTextAlignment="Center"
-                                Placeholder="drag and drop UWP platform project folder here"
+                                Placeholder="click to select UWP platform project folder"
                                 >
                                 <AB:Label.GestureRecognizers>
                                     <TapGestureRecognizer
@@ -284,7 +284,7 @@
                                 x:Name="_iconSvgFileEntry"
                                 VerticalTextAlignment="Center"
                                 HorizontalOptions="FillAndExpand"
-                                Placeholder="drag and drop SVG file here"
+                                Placeholder="click to select icon SVG file"
                                 >
                                 <AB:Label.GestureRecognizers>
                                     <TapGestureRecognizer
@@ -451,7 +451,7 @@
                                 x:Name="_squareSvgLaunchImageEntry"
                                 VerticalTextAlignment="Center"
                                 HorizontalOptions="FillAndExpand"
-                                Placeholder="drag and drop SVG file here"
+                                Placeholder="click to select square (1:1) SVG file"
                                 >
                                 <AB:Label.GestureRecognizers>
                                     <TapGestureRecognizer
@@ -528,7 +528,7 @@
                                 x:Name="_rect310SvgLaunchImageEntry"
                                 VerticalTextAlignment="Center"
                                 HorizontalOptions="FillAndExpand"
-                                Placeholder="drag and drop SVG file here"
+                                Placeholder="click to select rectangular (310:150) SVG file"
                                 >
                                 <AB:Label.GestureRecognizers>
                                     <TapGestureRecognizer
