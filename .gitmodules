@@ -1,3 +1,9 @@
 [submodule "PdfSharpCore"]
     path = PdfSharpCore
     url=https://github.com/baskren/PdfSharpCore.git
+[submodule "P42.Utils"]
+	path = P42.Utils
+	url = https://github.com/baskren/P42.Utils.git
+[submodule "FilePicker"]
+	path = FilePicker
+	url = https://github.com/baskren/FilePicker-Plugin-for-Xamarin-and-Windows.git
