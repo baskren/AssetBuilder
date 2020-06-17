@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
     <NoWarn>$(NoWarn),1701,1702,1573,1591,1712</NoWarn>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>    
@@ -34,7 +34,7 @@
     <ProjectReference Include="..\AndroidVector\AndroidVector.csproj" />
     <ProjectReference Include="..\Svg2AndroidVector\Svg2AndroidVector.csproj" />
     <ProjectReference Include="..\PdfSharpCore\PdfSharpCore\PdfSharpCore.csproj" />
-    <ProjectReference Include="..\FilePicker\src\FilePicker\FilePicker.csproj" />
+    <ProjectReference Include="..\Storage\Source\P42.Storage\P42.Storage.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Resources\Contents.json" />

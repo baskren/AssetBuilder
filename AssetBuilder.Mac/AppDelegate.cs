@@ -24,8 +24,8 @@ namespace AssetBuilder.Mac
         public override void DidFinishLaunching(NSNotification notification)
         {
             Forms.Init();
-            P42.Utils.macOS.Settings.Init();
-            Plugin.FilePicker.Platform.Init();
+            P42.Utils.MacOS.Settings.Init();
+            P42.Storage.Platform.Init();
             LoadApplication(new App());
             base.DidFinishLaunching(notification);
         }

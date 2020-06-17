@@ -9,8 +9,6 @@ using System.Linq;
 using P42.Utils;
 using Amporis.Xamarin.Forms.ColorPicker;
 using System.Collections.Generic;
-using Plugin.FilePicker;
-using Plugin.FilePicker.Abstractions;
 
 namespace AssetBuilder.Views
 {
@@ -19,6 +17,8 @@ namespace AssetBuilder.Views
     [DesignTimeVisible(false)]
     public partial class IconPage : ContentPage
     {
+        const string XmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+
         public IconPage()
         {
             InitializeComponent();
@@ -28,17 +28,6 @@ namespace AssetBuilder.Views
         {
             base.OnAppearing();
 
-            _iconSvgFileEntry.Text = Preferences.Current.SvgIconFile;
-            _iosProjectFolderEntry.Text = Preferences.Current.IosOProjectFolder;
-            _androidProjectFolderEntry.Text = Preferences.Current.AndroidProjectFolder;
-            _uwpProjectFolderEntry.Text = Preferences.Current.UwpProjectFolder;
-            _splashPageBackgroundColorEntry.Text = Preferences.Current.SplashBackgroundColor.ToHex();
-            _iconBackgroundColorEntry.Text = Preferences.Current.IconBackgroundColor.ToHex();
-            _squareSvgLaunchImageEntry.Text = Preferences.Current.SquareSvgSplashImageFile;
-            _rect310SvgLaunchImageEntry.Text = Preferences.Current.Rect310SvgSplashImageFile;
-            //_rect620SvgLaunchImageEntry.Text = Preferences.Current.Rect620SvgSplashImageFile;
-            UpdateMobileSplashSource();
-
             Preferences.Current.PropertyChanged += OnPreferencesChanged;
 
             _iconSvgFileEntry.TextChanged += OnIconSvgFileChanged;
@@ -47,16 +36,28 @@ namespace AssetBuilder.Views
             _uwpProjectFolderEntry.TextChanged += OnUwpProjectFolderChanged;
             _squareSvgLaunchImageEntry.TextChanged += OnSquareSvgLaunchImageEntryChanged;
             _rect310SvgLaunchImageEntry.TextChanged += OnRect310SvgLaunchImageEntryChanged;
-            //_rect620SvgLaunchImageEntry.TextChanged += OnRect620SvgLaunchImageEntryChanged;
 
             _mobileUseSquareSplashImageCheckBox.CheckedChanged += MobileSourceCheckBoxChanged;
             _mobileUseRect310SplashImageCheckBox.CheckedChanged += MobileSourceCheckBoxChanged;
-            //_mobileUseRect620SplashImageCheckBox.CheckedChanged += MobileSourceCheckBoxChanged;
+
+            _iconSvgFileEntry.Text = Preferences.Current.SvgIconFile;
+            _iosProjectFolderEntry.Text = Preferences.Current.IosOProjectFolder;
+            _androidProjectFolderEntry.Text = Preferences.Current.AndroidProjectFolder;
+            _uwpProjectFolderEntry.Text = Preferences.Current.UwpProjectFolder;
+            _splashPageBackgroundColorEntry.Text = Preferences.Current.SplashBackgroundColor.ToHex();
+            _iconBackgroundColorEntry.Text = Preferences.Current.IconBackgroundColor.ToHex();
+            _squareSvgLaunchImageEntry.Text = Preferences.Current.SquareSvgSplashImageFile;
+            _rect310SvgLaunchImageEntry.Text = Preferences.Current.Rect310SvgSplashImageFile;
+
+            UpdateMobileSplashSource();
 
             UpdateButtonAbility();
 
             OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.SplashBackgroundColor)));
             OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.IconBackgroundColor)));
+            OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.AndroidProjectFolder)));
+            OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.IosOProjectFolder)));
+            OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.UwpProjectFolder)));
         }
 
         private void MobileSourceCheckBoxChanged(object sender, CheckedChangedEventArgs e)
@@ -91,8 +92,6 @@ namespace AssetBuilder.Views
                 UpdateMobileSplashSource();
             else if (e.PropertyName == nameof(Preferences.Rect310SvgSplashImageFile))
                 UpdateMobileSplashSource();
-            //else if (e.PropertyName == nameof(Preferences.Rect620SvgSplashImageFile))
-            //    UpdateMobileSplashSource();
         }
 
 
@@ -100,6 +99,96 @@ namespace AssetBuilder.Views
         #region Entry event Handlers
 
         #region Project Folders
+        string GetProjectFile(string projectFolderPath, Xamarin.Essentials.DevicePlatform platform)
+        {
+            if (string.IsNullOrWhiteSpace(projectFolderPath))
+                return null;
+            var osName = platform.ToString();
+            if (Directory.GetFiles(projectFolderPath, "*.csproj") is string[] files)
+            {
+                if (!Directory.Exists(projectFolderPath))
+                {
+                    DisplayAlert(osName + " Project Folder", "[" + projectFolderPath + "] failed Directory.Exists test.", "ok");
+                    return null;
+                }
+                if (files.Length > 1)
+                {
+                    DisplayAlert(osName + " Project Folder", "multiple .csproj files found in the "+osName+" project folder", "ok");
+                    return  null;
+                }
+                if (files.Length < 1)
+                {
+                    DisplayAlert(osName + " Project Folder", "no .csproj file found in the " + osName + " project folder", "ok");
+                    return null;
+                }
+                var fileName = files[0];
+                if (string.IsNullOrWhiteSpace(fileName))
+                {
+                    DisplayAlert(osName + " Project Folder", "invalid filename for " + osName + " .csproj file", "ok");
+                    return null;
+                }
+                if (!File.Exists(fileName))
+                {
+                    DisplayAlert(osName + " Project Folder", "candidate for " + osName + " project file [" + fileName + "] does not exist.", "ok");
+                    return null;
+                }
+                var text = File.ReadAllText(fileName);
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    DisplayAlert(osName + " Project Folder", "candidate for " + osName + " project file [" + fileName + "] is empty.", "ok");
+                    return null;
+                }
+                var outputType = "";
+                var targetType = "";
+                switch (osName)
+                {
+                    case nameof(Xamarin.Essentials.DevicePlatform.iOS):
+                        outputType = "<OutputType>Exe</OutputType>";
+                        targetType = "\\Xamarin\\iOS\\Xamarin.iOS.CSharp.targets";
+                        break;
+                    case nameof(Xamarin.Essentials.DevicePlatform.Android):
+                        outputType = "<OutputType>Library</OutputType>";
+                        targetType = "\\Xamarin\\Android\\Xamarin.Android.CSharp.targets";
+                        break;
+                    case nameof(Xamarin.Essentials.DevicePlatform.UWP):
+                        outputType = "<OutputType>AppContainerExe</OutputType>";
+                        targetType = "Microsoft.Windows.UI.Xaml.CSharp.targets";
+                        break;
+                    default:
+                        DisplayAlert(osName + " Project Folder", "Unsupported DevicePlatform [" + osName + "]", "ok");
+                        return null;
+                }
+                if (!text.Contains(outputType) || !text.Contains(targetType))
+                    DisplayAlert(osName + " Project Folder", "This folder's project file [" + fileName + "] doesn't appear to be an "+osName+" executable app project file.", "ok");
+                else
+                    return fileName;
+            }
+            return null;
+        }
+
+        bool IsSvgFile(string svgFilePath)
+        {
+            if (string.IsNullOrWhiteSpace(svgFilePath))
+                return false;
+            if (!File.Exists(svgFilePath))
+            {
+                DisplayAlert("SVG File", "File [" + svgFilePath + "] failed File.Exists test.", "ok");
+                return false;
+            }
+            var text = File.ReadAllText(svgFilePath);
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                DisplayAlert("SVG File", "File [" + svgFilePath + "] is empty.", "ok");
+                return false;
+            }
+            if (!text.Contains("<svg") || !text.Contains("http://www.w3.org/2000/svg"))
+            {
+                DisplayAlert("SVG File", "File [" + svgFilePath + "] doesn't appear to have SVG content.", "ok");
+                return false;
+            }
+            return true;
+        }
+
         private void OnIosProjectFolderChanged(object sender, TextChangedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(e.NewTextValue))
@@ -107,13 +196,10 @@ namespace AssetBuilder.Views
                 Preferences.Current.IosOProjectFolder = null;
                 return;
             }
-            if (Directory.Exists(e.NewTextValue.Trim()))
+            if (GetProjectFile(e.NewTextValue, Xamarin.Essentials.DevicePlatform.iOS) is string fileName)
                 Preferences.Current.IosOProjectFolder = e.NewTextValue.Trim();
             else
-            {
-                DisplayAlert(null, "[" + e.NewTextValue + "] failed Directory.Exists test.", "ok");
                 _iosProjectFolderEntry.Text = e.OldTextValue;
-            }
         }
 
         private void OnAndroidProjectFolderChanged(object sender, TextChangedEventArgs e)
@@ -123,13 +209,10 @@ namespace AssetBuilder.Views
                 Preferences.Current.AndroidProjectFolder = null;
                 return;
             }
-            if (Directory.Exists(e.NewTextValue.Trim()))
+            if (GetProjectFile(e.NewTextValue, Xamarin.Essentials.DevicePlatform.Android) is string fileName)
                 Preferences.Current.AndroidProjectFolder = e.NewTextValue.Trim();
             else
-            {
-                DisplayAlert(null, "[" + e.NewTextValue + "] failed Directory.Exists test.", "ok");
                 _androidProjectFolderEntry.Text = e.OldTextValue;
-            }
         }
 
         private void OnUwpProjectFolderChanged(object sender, TextChangedEventArgs e)
@@ -139,13 +222,10 @@ namespace AssetBuilder.Views
                 Preferences.Current.UwpProjectFolder = null;
                 return;
             }
-            if (Directory.Exists(e.NewTextValue.Trim()))
+            if (GetProjectFile(e.NewTextValue, Xamarin.Essentials.DevicePlatform.UWP) is string fileName)
                 Preferences.Current.UwpProjectFolder = e.NewTextValue.Trim();
             else
-            {
-                DisplayAlert(null, "[" + e.NewTextValue + "] failed Directory.Exists test.", "ok");
                 _uwpProjectFolderEntry.Text = e.OldTextValue;
-            }
         }
         #endregion
 
@@ -158,19 +238,10 @@ namespace AssetBuilder.Views
                 Preferences.Current.SvgIconFile = null;
                 return;
             }
-            if (File.Exists(e.NewTextValue))
-            {
-                if (e.NewTextValue.ToLower().EndsWith(".svg"))
-                {
-                    Preferences.Current.SvgIconFile = e.NewTextValue;
-                    return;
-                }
-                else
-                    DisplayAlert(null, "file must be SVG", "ok");
-            }
+            if (IsSvgFile(e.NewTextValue))
+                Preferences.Current.SvgIconFile = e.NewTextValue;
             else
-                DisplayAlert(null, e.NewTextValue + " is not a file.", "ok");
-            _iconSvgFileEntry.Text = e.OldTextValue;
+                _iconSvgFileEntry.Text = e.OldTextValue;
         }
 
         private void OnSquareSvgLaunchImageEntryChanged(object sender, TextChangedEventArgs e)
@@ -182,21 +253,14 @@ namespace AssetBuilder.Views
                 _mobileUseSquareSplashImageCheckBox.IsChecked = false;
                 return;
             }
-            if (File.Exists(e.NewTextValue))
+            if (IsSvgFile(e.NewTextValue))
             {
-                if (e.NewTextValue.ToLower().EndsWith(".svg"))
-                {
-                    Preferences.Current.SquareSvgSplashImageFile = e.NewTextValue;
-                    _mobileUseSquareSplashImageCheckBox.IsEnabled = true;
-                    _mobileUseSquareSplashImageCheckBox.IsChecked = string.IsNullOrWhiteSpace(Preferences.Current.Rect310SvgSplashImageFile); // && string.IsNullOrWhiteSpace(Preferences.Current.Rect620SvgSplashImageFile);
-                    return;
-                }
-                else
-                    DisplayAlert(null, "file must be SVG", "ok");
+                Preferences.Current.SquareSvgSplashImageFile = e.NewTextValue;
+                _mobileUseSquareSplashImageCheckBox.IsEnabled = true;
+                _mobileUseSquareSplashImageCheckBox.IsChecked = string.IsNullOrWhiteSpace(Preferences.Current.Rect310SvgSplashImageFile); // && string.IsNullOrWhiteSpace(Preferences.Current.Rect620SvgSplashImageFile);
             }
             else
-                DisplayAlert(null, e.NewTextValue + " is not a file.", "ok");
-            _squareSvgLaunchImageEntry.Text = e.OldTextValue;
+                _squareSvgLaunchImageEntry.Text = e.OldTextValue;
             UpdateMobileSplashSource();
         }
 
@@ -209,49 +273,15 @@ namespace AssetBuilder.Views
                 _mobileUseRect310SplashImageCheckBox.IsChecked = false;
                 return;
             }
-            if (File.Exists(e.NewTextValue))
+            if (IsSvgFile(e.NewTextValue))
             {
-                if (e.NewTextValue.ToLower().EndsWith(".svg"))
-                {
-                    Preferences.Current.Rect310SvgSplashImageFile = e.NewTextValue;
-                    _mobileUseRect310SplashImageCheckBox.IsEnabled = true;
-                    _mobileUseRect310SplashImageCheckBox.IsChecked = string.IsNullOrWhiteSpace(Preferences.Current.SquareSvgSplashImageFile);// && string.IsNullOrWhiteSpace(Preferences.Current.Rect620SvgSplashImageFile);
-                    return;
-                }
-                else
-                    DisplayAlert(null, "file must be SVG", "ok");
+                Preferences.Current.Rect310SvgSplashImageFile = e.NewTextValue;
+                _mobileUseRect310SplashImageCheckBox.IsEnabled = true;
+                _mobileUseRect310SplashImageCheckBox.IsChecked = string.IsNullOrWhiteSpace(Preferences.Current.SquareSvgSplashImageFile);// && string.IsNullOrWhiteSpace(Preferences.Current.Rect620SvgSplashImageFile);
             }
             else
-                DisplayAlert(null, e.NewTextValue + " is not a file.", "ok");
-            _rect310SvgLaunchImageEntry.Text = e.OldTextValue;
+                _rect310SvgLaunchImageEntry.Text = e.OldTextValue;
         }
-        /*
-        private void OnRect620SvgLaunchImageEntryChanged(object sender, TextChangedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(e.NewTextValue))
-            {
-                Preferences.Current.Rect620SvgSplashImageFile = null;
-                _mobileUseRect620SplashImageCheckBox.IsEnabled = false;
-                _mobileUseRect620SplashImageCheckBox.IsChecked = false;
-                return;
-            }
-            if (File.Exists(e.NewTextValue))
-            {
-                if (e.NewTextValue.ToLower().EndsWith(".svg"))
-                {
-                    Preferences.Current.Rect620SvgSplashImageFile = e.NewTextValue;
-                    _mobileUseRect620SplashImageCheckBox.IsEnabled = true;
-                    _mobileUseRect620SplashImageCheckBox.IsChecked = string.IsNullOrWhiteSpace(Preferences.Current.SquareSvgSplashImageFile) && string.IsNullOrWhiteSpace(Preferences.Current.Rect310SvgSplashImageFile);
-                    return;
-                }
-                else
-                    DisplayAlert(null, "file must be SVG", "ok");
-            }
-            else
-                DisplayAlert(null, e.NewTextValue + " is not a file.", "ok");
-            _rect620SvgLaunchImageEntry.Text = e.OldTextValue;
-        }
-        */
         #endregion
 
         #endregion
@@ -264,31 +294,27 @@ namespace AssetBuilder.Views
             _generateLaunchImagesButton.IsEnabled = Preferences.Current.IsSplashEnabled;
         }
 
+        bool firstUpdateMobileSplashSource = true;
         void UpdateMobileSplashSource()
         {
-            if (string.IsNullOrWhiteSpace(Preferences.Current.SquareSvgSplashImageFile))
+            if (!firstUpdateMobileSplashSource)
             {
-                Preferences.Current.SquareSvgSplashImageFile = null;
-                _mobileUseSquareSplashImageCheckBox.IsEnabled = false;
-                _mobileUseSquareSplashImageCheckBox.IsChecked = false;
+                if (string.IsNullOrWhiteSpace(Preferences.Current.SquareSvgSplashImageFile))
+                {
+                    Preferences.Current.SquareSvgSplashImageFile = null;
+                    _mobileUseSquareSplashImageCheckBox.IsEnabled = false;
+                    _mobileUseSquareSplashImageCheckBox.IsChecked = false;
+                }
+                if (string.IsNullOrWhiteSpace(Preferences.Current.Rect310SvgSplashImageFile))
+                {
+                    Preferences.Current.Rect310SvgSplashImageFile = null;
+                    _mobileUseRect310SplashImageCheckBox.IsEnabled = false;
+                    _mobileUseRect310SplashImageCheckBox.IsChecked = false;
+                }
             }
-            if (string.IsNullOrWhiteSpace(Preferences.Current.Rect310SvgSplashImageFile))
-            {
-                Preferences.Current.Rect310SvgSplashImageFile = null;
-                _mobileUseRect310SplashImageCheckBox.IsEnabled = false;
-                _mobileUseRect310SplashImageCheckBox.IsChecked = false;
-            }
-            /*
-            if (string.IsNullOrWhiteSpace(Preferences.Current.Rect620SvgSplashImageFile))
-            {
-                Preferences.Current.Rect620SvgSplashImageFile = null;
-                _mobileUseRect620SplashImageCheckBox.IsEnabled = false;
-                _mobileUseRect620SplashImageCheckBox.IsChecked = false;
-            }
-            */
+
             _mobileUseSquareSplashImageCheckBox.IsChecked = Preferences.Current.MobileSplashSource == MobileSplashSource.Square;
             _mobileUseRect310SplashImageCheckBox.IsChecked = Preferences.Current.MobileSplashSource == MobileSplashSource.Rect310;
-            //_mobileUseRect620SplashImageCheckBox.IsChecked = Preferences.Current.MobileSplashSource == MobileSplashSource.Rect620;
         }
 
         string MobileSplashSvg
@@ -299,8 +325,6 @@ namespace AssetBuilder.Views
                     return Preferences.Current.SquareSvgSplashImageFile;
                 else if (Preferences.Current.MobileSplashSource == MobileSplashSource.Rect310)
                     return Preferences.Current.Rect310SvgSplashImageFile;
-                //else if (Preferences.Current.MobileSplashSource == MobileSplashSource.Rect620)
-                //    return Preferences.Current.Rect620SvgSplashImageFile;
                 else
                     return null;
             }
@@ -320,12 +344,12 @@ namespace AssetBuilder.Views
                 //                await DisplayAlert(null, label.Placeholder.ToString(), "ok");
                 if (label == _androidProjectFolderEntry || label == _iosProjectFolderEntry || label == _uwpProjectFolderEntry)
                 {
-                    if (await CrossFolderPicker.Current.PickFolder() is IFolder folder)
+                    if (await P42.Storage.Pickers.PickSingleFolderAsync()  is P42.Storage.IStorageFolder folder)
                         label.Text = folder.Path;
                 }
-                else if (await CrossFilePicker.Current.PickFile() is FileData fileData)
+                else if (await P42.Storage.Pickers.PickSingleFileAsync() is P42.Storage.IStorageFile fileData)
                 {
-                    label.Text = fileData.FilePath;
+                    label.Text = fileData.Path;
                 }
             }
             else if (sender is Xamarin.Forms.Label xfLabel)
@@ -383,8 +407,6 @@ namespace AssetBuilder.Views
 
             if (!string.IsNullOrWhiteSpace(Preferences.Current.AndroidProjectFolder))
             {
-                string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-
                 var resourcesFolder = Path.Combine(Preferences.Current.AndroidProjectFolder, "Resources");
                 if (!Directory.Exists(resourcesFolder))
                     Directory.CreateDirectory(resourcesFolder);
@@ -392,72 +414,64 @@ namespace AssetBuilder.Views
                 if (!Directory.Exists(mipmapFolder))
                     Directory.CreateDirectory(mipmapFolder);
 
-                var csprojFiles = Directory.GetFiles(Preferences.Current.AndroidProjectFolder, "*.csproj");
-                if (csprojFiles.Length > 1)
+                if (GetProjectFile(Preferences.Current.AndroidProjectFolder, Xamarin.Essentials.DevicePlatform.Android) is string projectFilePath)
                 {
-                    DisplayAlert(null, "More than one Android .csproj file", "ok");
-                    return null;
-                }
-                if (csprojFiles.Length < 1)
-                {
-                    DisplayAlert(null, "Could not find Android .csproj file", "ok");
-                    return null;
-                }
-                if (XDocument.Load(csprojFiles[0]) is XDocument csprojDoc)
-                {
-                    XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
-                    if (csprojDoc.Descendants(ns + "AndroidResource").FirstOrDefault(e => e.Attribute("Include")?.Value == "Resources\\values\\styles.xml") is XElement firstAndroidResource)
+                    if (XDocument.Load(projectFilePath) is XDocument csprojDoc)
                     {
-                        var androidResourceItemGroup = firstAndroidResource.Parent;
-                        if (!androidResourceItemGroup.Elements(ns + "AndroidResource").Any(e => e.Attribute("Include")?.Value == "Resources\\mipmap-anydpi-v26\\launcher_foreground.xml"))
+                        XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
+                        if (csprojDoc.Descendants(ns + "AndroidResource").FirstOrDefault(e => e.Attribute("Include")?.Value == "Resources\\values\\styles.xml") is XElement firstAndroidResource)
                         {
-                            var element = new XElement(ns + "AndroidResource");
-                            element.SetAttributeValue("Include", "Resources\\mipmap-anydpi-v26\\launcher_foreground.xml");
-                            androidResourceItemGroup.Add(element);
+                            var androidResourceItemGroup = firstAndroidResource.Parent;
+                            if (!androidResourceItemGroup.Elements(ns + "AndroidResource").Any(e => e.Attribute("Include")?.Value == "Resources\\mipmap-anydpi-v26\\launcher_foreground.xml"))
+                            {
+                                var element = new XElement(ns + "AndroidResource");
+                                element.SetAttributeValue("Include", "Resources\\mipmap-anydpi-v26\\launcher_foreground.xml");
+                                androidResourceItemGroup.Add(element);
 
-                            File.WriteAllText(csprojFiles[0], xmlHeader + csprojDoc);
+                                File.WriteAllText(projectFilePath, XmlHeader + csprojDoc);
+                            }
                         }
+
                     }
-
-                }
-                else
-                {
-                    DisplayAlert(null, "Could not load Android .csproj file as an XDocument", "ok");
-                    return null;
-                }
-
-                var valuesFolder = Path.Combine(resourcesFolder, "values");
-                var colorsPath = Path.Combine(valuesFolder, "colors.xml");
-                var colorsDocument = XDocument.Load(colorsPath);
-                var colors = colorsDocument.Root;
-                if (colors.Name.ToString() == "resources")
-                {
-                    var color = colors.Elements("color").FirstOrDefault(e => e.Attribute("name") is XAttribute name && name.Value == "launcher_background");
-                    if (color is null)
+                    else
                     {
-                        color = new XElement("color");
-                        color.SetAttributeValue("name", "launcher_background");
-                        colors.Add(color);
+                        DisplayAlert(null, "Could not load Android .csproj file as an XDocument", "ok");
+                        return null;
                     }
-                    color.Value = Preferences.Current.IconBackgroundColor.ToHex();
 
-                    var text = xmlHeader + colorsDocument.ToString();
-                    File.WriteAllText(colorsPath, text);
-                }
+                    var valuesFolder = Path.Combine(resourcesFolder, "values");
+                    var colorsPath = Path.Combine(valuesFolder, "colors.xml");
+                    var colorsDocument = XDocument.Load(colorsPath);
+                    var colors = colorsDocument.Root;
+                    if (colors.Name.ToString() == "resources")
+                    {
+                        var color = colors.Elements("color").FirstOrDefault(e => e.Attribute("name") is XAttribute name && name.Value == "launcher_background");
+                        if (color is null)
+                        {
+                            color = new XElement("color");
+                            color.SetAttributeValue("name", "launcher_background");
+                            colors.Add(color);
+                        }
+                        color.Value = Preferences.Current.IconBackgroundColor.ToHex();
+
+                        var text = XmlHeader + colorsDocument.ToString();
+                        File.WriteAllText(colorsPath, text);
+                    }
 
 
-                if (vector != null)
-                { 
-                    // through pure Android cruelty, we have to do this.  What a mess.
-                    var tmpVector = AndroidVector.BaseElementExtensions.Copy(vector);
-                    tmpVector.Width = new AndroidVector.UnitizedFloat(117, AndroidVector.Unit.Dp);
-                    tmpVector.Height = new AndroidVector.UnitizedFloat(117, AndroidVector.Unit.Dp);
-                    tmpVector.ViewportWidth *= 1.5;
-                    tmpVector.ViewportHeight *= 1.5;
-                    tmpVector.SvgTransforms.Add(AndroidVector.Matrix.CreateTranslate((float)(tmpVector.ViewportWidth / 6), (float)(tmpVector.ViewportHeight / 6)));
-                    tmpVector.ApplySvgTransforms();
-                    tmpVector.PurgeDefaults();
-                    File.WriteAllText(Path.Combine(mipmapFolder, "launcher_foreground.xml"), tmpVector.ToString());
+                    if (vector != null)
+                    {
+                        // through pure Android cruelty, we have to do this.  What a mess.
+                        var tmpVector = AndroidVector.BaseElementExtensions.Copy(vector);
+                        tmpVector.Width = new AndroidVector.UnitizedFloat(117, AndroidVector.Unit.Dp);
+                        tmpVector.Height = new AndroidVector.UnitizedFloat(117, AndroidVector.Unit.Dp);
+                        tmpVector.ViewportWidth *= 1.5;
+                        tmpVector.ViewportHeight *= 1.5;
+                        tmpVector.SvgTransforms.Add(AndroidVector.Matrix.CreateTranslate((float)(tmpVector.ViewportWidth / 6), (float)(tmpVector.ViewportHeight / 6)));
+                        tmpVector.ApplySvgTransforms();
+                        tmpVector.PurgeDefaults();
+                        File.WriteAllText(Path.Combine(mipmapFolder, "launcher_foreground.xml"), tmpVector.ToString());
+                    }
                 }
             }
             return vector;
@@ -629,7 +643,6 @@ namespace AssetBuilder.Views
         {
             if (vector != null && !string.IsNullOrWhiteSpace(Preferences.Current.AndroidProjectFolder))
             {
-                string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
                 var resourcesFolder = Path.Combine(Preferences.Current.AndroidProjectFolder, "Resources");
                 if (!Directory.Exists(resourcesFolder))
@@ -677,127 +690,119 @@ namespace AssetBuilder.Views
                     DisplayAlert("SkiaSharp ERROR", "Failed to generate pre-v23 SDK Android splash image (drawable/splash_image.png) because of the following SkiaSharp exception:\n\n" + e.Message, "ok");
                 }
 
-                var csprojFiles = Directory.GetFiles(Preferences.Current.AndroidProjectFolder, "*.csproj");
-                if (csprojFiles.Length > 1)
+                if (GetProjectFile(Preferences.Current.AndroidProjectFolder, Xamarin.Essentials.DevicePlatform.Android) is string projectFilePath)
                 {
-                    DisplayAlert(null, "More than one Android .csproj file", "ok");
-                    return null;
-                }
-                if (csprojFiles.Length < 1)
-                {
-                    DisplayAlert(null, "Could not find Android .csproj file", "ok");
-                    return null;
-                }
-                if (XDocument.Load(csprojFiles[0]) is XDocument csprojDoc)
-                {
-                    XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
-                    if (csprojDoc.Descendants(ns + "AndroidResource").FirstOrDefault(e => e.Attribute("Include")?.Value == "Resources\\values\\styles.xml") is XElement firstAndroidResource)
+                    if (XDocument.Load(projectFilePath) is XDocument csprojDoc)
                     {
-                        var androidResourceItemGroup = firstAndroidResource.Parent;
-                        if (!androidResourceItemGroup.Elements(ns + "AndroidResource").Any(e => e.Attribute("Include")?.Value == "Resources\\drawable\\background_splash.xml"))
+                        XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
+                        if (csprojDoc.Descendants(ns + "AndroidResource").FirstOrDefault(e => e.Attribute("Include")?.Value == "Resources\\values\\styles.xml") is XElement firstAndroidResource)
                         {
-                            var element = new XElement(ns + "AndroidResource");
-                            element.SetAttributeValue("Include", "Resources\\drawable\\background_splash.xml");
-                            androidResourceItemGroup.Add(element);
+                            var androidResourceItemGroup = firstAndroidResource.Parent;
+                            if (!androidResourceItemGroup.Elements(ns + "AndroidResource").Any(e => e.Attribute("Include")?.Value == "Resources\\drawable\\background_splash.xml"))
+                            {
+                                var element = new XElement(ns + "AndroidResource");
+                                element.SetAttributeValue("Include", "Resources\\drawable\\background_splash.xml");
+                                androidResourceItemGroup.Add(element);
 
-                            element = new XElement(ns + "AndroidResource");
-                            element.SetAttributeValue("Include", "Resources\\drawable\\splash_image.png");
-                            androidResourceItemGroup.Add(element);
+                                element = new XElement(ns + "AndroidResource");
+                                element.SetAttributeValue("Include", "Resources\\drawable\\splash_image.png");
+                                androidResourceItemGroup.Add(element);
 
-                            element = new XElement(ns + "AndroidResource");
-                            element.SetAttributeValue("Include", "Resources\\drawable-v23\\background_splash.xml");
-                            androidResourceItemGroup.Add(element);
+                                element = new XElement(ns + "AndroidResource");
+                                element.SetAttributeValue("Include", "Resources\\drawable-v23\\background_splash.xml");
+                                androidResourceItemGroup.Add(element);
 
-                            element = new XElement(ns + "AndroidResource");
-                            element.SetAttributeValue("Include", "Resources\\drawable-v23\\splash_image.xml");
-                            androidResourceItemGroup.Add(element);
+                                element = new XElement(ns + "AndroidResource");
+                                element.SetAttributeValue("Include", "Resources\\drawable-v23\\splash_image.xml");
+                                androidResourceItemGroup.Add(element);
 
 
-                            File.WriteAllText(csprojFiles[0], xmlHeader + csprojDoc);
+                                File.WriteAllText(projectFilePath, XmlHeader + csprojDoc);
+                            }
+                        }
+
+                        if (csprojDoc.Descendants(ns + "Compile").FirstOrDefault(e => e.Attribute("Include")?.Value == "MainActivity.cs") is XElement mainActivityElement)
+                        {
+                            var sourceItemGroup = mainActivityElement.Parent;
+                            if (!sourceItemGroup.Elements(ns + "Compile").Any(e => e.Attribute("Include")?.Value == "SplashActivity.cs"))
+                            {
+                                var element = new XElement(ns + "Compile");
+                                element.SetAttributeValue("Include", "SplashActivity.cs");
+                                sourceItemGroup.Add(element);
+
+                                File.WriteAllText(projectFilePath, XmlHeader + csprojDoc);
+                            }
                         }
                     }
-
-                    if (csprojDoc.Descendants(ns + "Compile").FirstOrDefault(e => e.Attribute("Include")?.Value == "MainActivity.cs") is XElement mainActivityElement)
-                    {
-                        var sourceItemGroup = mainActivityElement.Parent;
-                        if (!sourceItemGroup.Elements(ns + "Compile").Any(e => e.Attribute("Include")?.Value == "SplashActivity.cs"))
-                        {
-                            var element = new XElement(ns + "Compile");
-                            element.SetAttributeValue("Include", "SplashActivity.cs");
-                            sourceItemGroup.Add(element);
-
-                            File.WriteAllText(csprojFiles[0], xmlHeader + csprojDoc);
-                        }
-                    }
-                }
-                else
-                {
-                    DisplayAlert(null, "Could not load Android .csproj file as an XDocument", "ok");
-                    return null;
-                }
-
-                var valuesFolder = Path.Combine(resourcesFolder, "values");
-                var stylesPath = Path.Combine(valuesFolder, "styles.xml");
-                var stylesDocument = XDocument.Load(stylesPath);
-                var styles = stylesDocument.Root;
-                if (styles.Name.ToString() == "resources")
-                {
-                    if (!styles.Elements("style").Any(e => e.Attribute("name")?.Value == "SplashTheme"))
-                    {
-                        XNamespace ns = "android";
-                        var item = new XElement("item", "@drawable/background_splash");
-                        item.SetAttributeValue("name", ns + "windowBackground");
-                        var style = new XElement("style", item);
-                        style.SetAttributeValue("name", "SplashTheme");
-                        style.SetAttributeValue("parent", "Theme.AppCompat.NoActionBar");
-                        styles.Add(style);
-
-                        var text = xmlHeader + stylesDocument.ToString().Replace("{android}", "android:");
-                        File.WriteAllText(stylesPath, text);
-                    }
-                }
-
-                var colorsPath = Path.Combine(valuesFolder, "colors.xml");
-                var colorsDocument = XDocument.Load(colorsPath);
-                var colors = colorsDocument.Root;
-                if (colors.Name.ToString() == "resources")
-                {
-                    var color = colors.Elements("color").FirstOrDefault(e => e.Attribute("name") is XAttribute name && name.Value == "splash_background");
-                    if (color is null)
-                    {
-                        color = new XElement("color");
-                        color.SetAttributeValue("name", "splash_background");
-                        colors.Add(color);
-                    }
-                    color.Value = Preferences.Current.SplashBackgroundColor.ToHex();
-
-                    var text = xmlHeader + colorsDocument.ToString();
-                    File.WriteAllText(colorsPath, text);
-                }
-
-                //DisplayAlert(null, "Don't forget to set MainLauncher=\"false\" in " + Path.Combine(Preferences.Current.AndroidProjectFolder + "MainActivity.cs") + ".", "ok");
-                string namespaceLine = null;
-                var mainActivityPath = Path.Combine(Preferences.Current.AndroidProjectFolder, "MainActivity.cs");
-                var mainActivityLines = File.ReadAllLines(mainActivityPath);
-                var updatedLines = new List<string>();
-                foreach (var line in mainActivityLines)
-                {
-                    if (line.StartsWith("namespace"))
-                        namespaceLine = line;
-                    updatedLines.Add(line.Replace("MainLauncher = true", "MainLauncher = false"));
-                }
-                File.WriteAllLines(mainActivityPath, updatedLines);
-
-                var splashActivityLines = File.ReadAllLines(splashActivityPath);
-                updatedLines = new List<string>();
-                foreach (var line in splashActivityLines)
-                {
-                    if (line.StartsWith("namespace"))
-                        updatedLines.Add(namespaceLine);
                     else
-                        updatedLines.Add(line);
+                    {
+                        DisplayAlert(null, "Could not load Android .csproj file as an XDocument", "ok");
+                        return null;
+                    }
+
+                    var valuesFolder = Path.Combine(resourcesFolder, "values");
+                    var stylesPath = Path.Combine(valuesFolder, "styles.xml");
+                    var stylesDocument = XDocument.Load(stylesPath);
+                    var styles = stylesDocument.Root;
+                    if (styles.Name.ToString() == "resources")
+                    {
+                        if (!styles.Elements("style").Any(e => e.Attribute("name")?.Value == "SplashTheme"))
+                        {
+                            XNamespace ns = "android";
+                            var item = new XElement("item", "@drawable/background_splash");
+                            item.SetAttributeValue("name", ns + "windowBackground");
+                            var style = new XElement("style", item);
+                            style.SetAttributeValue("name", "SplashTheme");
+                            style.SetAttributeValue("parent", "Theme.AppCompat.NoActionBar");
+                            styles.Add(style);
+
+                            var text = XmlHeader + stylesDocument.ToString().Replace("{android}", "android:");
+                            File.WriteAllText(stylesPath, text);
+                        }
+                    }
+
+                    var colorsPath = Path.Combine(valuesFolder, "colors.xml");
+                    var colorsDocument = XDocument.Load(colorsPath);
+                    var colors = colorsDocument.Root;
+                    if (colors.Name.ToString() == "resources")
+                    {
+                        var color = colors.Elements("color").FirstOrDefault(e => e.Attribute("name") is XAttribute name && name.Value == "splash_background");
+                        if (color is null)
+                        {
+                            color = new XElement("color");
+                            color.SetAttributeValue("name", "splash_background");
+                            colors.Add(color);
+                        }
+                        color.Value = Preferences.Current.SplashBackgroundColor.ToHex();
+
+                        var text = XmlHeader + colorsDocument.ToString();
+                        File.WriteAllText(colorsPath, text);
+                    }
+
+                    //DisplayAlert(null, "Don't forget to set MainLauncher=\"false\" in " + Path.Combine(Preferences.Current.AndroidProjectFolder + "MainActivity.cs") + ".", "ok");
+                    string namespaceLine = null;
+                    var mainActivityPath = Path.Combine(Preferences.Current.AndroidProjectFolder, "MainActivity.cs");
+                    var mainActivityLines = File.ReadAllLines(mainActivityPath);
+                    var updatedLines = new List<string>();
+                    foreach (var line in mainActivityLines)
+                    {
+                        if (line.StartsWith("namespace"))
+                            namespaceLine = line;
+                        updatedLines.Add(line.Replace("MainLauncher = true", "MainLauncher = false"));
+                    }
+                    File.WriteAllLines(mainActivityPath, updatedLines);
+
+                    var splashActivityLines = File.ReadAllLines(splashActivityPath);
+                    updatedLines = new List<string>();
+                    foreach (var line in splashActivityLines)
+                    {
+                        if (line.StartsWith("namespace"))
+                            updatedLines.Add(namespaceLine);
+                        else
+                            updatedLines.Add(line);
+                    }
+                    File.WriteAllLines(splashActivityPath, updatedLines);
                 }
-                File.WriteAllLines(splashActivityPath, updatedLines);
             }
             return vector;
         }
@@ -862,7 +867,7 @@ namespace AssetBuilder.Views
         {
             var resourcesFolder = Path.Combine(Preferences.Current.IosOProjectFolder, "Resources");
             var launchScreenPath = Path.Combine(resourcesFolder, "LaunchScreen.storyboard");
-            GetType().Assembly.TryCopyResource("AssetBuilder.Resources.LaunchScreen.storyboard", launchScreenPath, true);
+            GetType().Assembly.TryCopyResource("AssetBuilder.Resources.LaunchScreen.storyboard", launchScreenPath);
 
             var document = XDocument.Load("file://" + launchScreenPath);
             if (document.Descendants("color") is IEnumerable<XElement> colorElements)
@@ -884,25 +889,15 @@ namespace AssetBuilder.Views
 
         public string UpdateIosCsproj()
         {
-            var fs = Directory.GetFiles(Preferences.Current.IosOProjectFolder);
-            if (Directory.GetFiles(Preferences.Current.IosOProjectFolder, "*.csproj") is string[] files)
+            if (GetProjectFile(Preferences.Current.IosOProjectFolder, Xamarin.Essentials.DevicePlatform.iOS) is string projectFilePath)
             {
-                if (files.Length > 1)
-                    return "multiple .csproj files found in the iOS project folder";
-                if (files.Length < 1)
-                    return "no .csproj file found in the iOS project folder";
-                var fileName = files[0];
-                if (string.IsNullOrWhiteSpace(fileName))
-                    return "invalid filename for iOS .csproj file";
-                if (!File.Exists(fileName))
-                    return "candidate for iOS project file [" + fileName + "] does not exist.";
-                if (XDocument.Load(fileName) is XDocument document)
+                if (XDocument.Load(projectFilePath) is XDocument document)
                 {
                     XNamespace ns = document.Root.Attribute("xmlns").Value;
                     foreach (var itemGroup in document.Descendants(ns + "ItemGroup"))
                     {
                         {
-                            if (itemGroup.Element(ns +"InterfaceDefinition") is XElement interfaceDef
+                            if (itemGroup.Element(ns + "InterfaceDefinition") is XElement interfaceDef
                                 && interfaceDef.Attribute("Include") is XAttribute includeAttr
                                 && (includeAttr.Value == "Resources\\LaunchScreen.storyboard"
                                     || includeAttr.Value == "Resources/LaunchScreen.storyboard")
@@ -911,19 +906,18 @@ namespace AssetBuilder.Views
                                 if (itemGroup.Elements(ns + "ImageAsset").Attributes("Include").Any(a => a.Value == "Assets.xcassets\\Splash.imageset\\LaunchImage.pdf"))
                                     return null;
 
-                                var imageAsset = new XElement(ns +"ImageAsset",
+                                var imageAsset = new XElement(ns + "ImageAsset",
                                     new XElement(ns + "Visible", false));
                                 imageAsset.SetAttributeValue("Include", "Assets.xcassets\\Splash.imageset\\Contents.json");
                                 itemGroup.Add(imageAsset);
 
-                                imageAsset = new XElement(ns +"ImageAsset",
-                                    new XElement(ns +"Visible", false));
+                                imageAsset = new XElement(ns + "ImageAsset",
+                                    new XElement(ns + "Visible", false));
                                 imageAsset.SetAttributeValue("Include", "Assets.xcassets\\Splash.imageset\\LaunchImage.pdf");
                                 itemGroup.Add(imageAsset);
 
-                                string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-                                var text = xmlHeader + document;
-                                File.WriteAllText(fileName, text);
+                                var text = XmlHeader + document;
+                                File.WriteAllText(projectFilePath, text);
 
                                 return null;
                             }
@@ -931,8 +925,6 @@ namespace AssetBuilder.Views
                     }
                     return "could not find ItemGroup into which to inject the LaunchScreen image assets";
                 }
-                else
-                    return "could not load [" + fileName + "] as an XML document";
             }
             return "could not get files from iOS project folder.";
         }
@@ -979,69 +971,38 @@ namespace AssetBuilder.Views
             if (GenerateUwpSquareSplashAndLogoImages() is AndroidVector.Vector rectVector && Preferences.Current.MobileSplashSource == MobileSplashSource.Square)
                 mobileVector = rectVector;
 
-            if (!string.IsNullOrWhiteSpace(Preferences.Current.UwpProjectFolder))
+            if (GetProjectFile(Preferences.Current.UwpProjectFolder, Xamarin.Essentials.DevicePlatform.UWP) is string projectFilePath)
             {
-                var fs = Directory.GetFiles(Preferences.Current.UwpProjectFolder);
-                if (Directory.GetFiles(Preferences.Current.UwpProjectFolder, "*.csproj") is string[] files)
+                if (XDocument.Load(projectFilePath) is XDocument document)
                 {
-                    if (files.Length > 1)
+                    XNamespace ns = document.Root.Attribute("xmlns").Value;
+                    var found = false;
+                    foreach (var itemGroup in document.Descendants(ns + "ItemGroup"))
                     {
-                        DisplayAlert("UWP Splash Images", "multiple .csproj files found in the WUP project folder", "ok");
-                        return mobileVector;
-                    }
-                    if (files.Length < 1)
-                    {
-                        DisplayAlert("UWP Splash Images", "no .csproj file found in the UWP project folder", "ok");
-                        return mobileVector;
-                    }
-                    var fileName = files[0];
-                    if (string.IsNullOrWhiteSpace(fileName))
-                    {
-                        DisplayAlert("UWP Splash Images", "invalid filename for UWP .csproj file", "ok");
-                        return mobileVector;
-                    }
-                    if (!File.Exists(fileName))
-                    {
-                        DisplayAlert("UWP Splash Images", "candidate for UWP project file [" + fileName + "] does not exist.", "ok");
-                        return mobileVector;
-                    }
-                    if (XDocument.Load(fileName) is XDocument document)
-                    {
-                        XNamespace ns = document.Root.Attribute("xmlns").Value;
-                        var found = false;
-                        foreach (var itemGroup in document.Descendants(ns + "ItemGroup"))
+                        if (itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LargeTile.scale-100.png"))
                         {
-                            if (itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LargeTile.scale-100.png"))
+                            found = true;
+                            foreach (var kvp in UwpRectangularSplashImages)
                             {
-                                found = true;
-                                foreach (var kvp in UwpRectangularSplashImages)
-                                {
-                                    if (!itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
-                                        itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
-                                }
-                                foreach (var kvp in UwpSquareLogoImages)
-                                {
-                                    if (!itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
-                                        itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
-                                }
-
-
-                                string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-                                var text = xmlHeader + document;
-                                File.WriteAllText(fileName, text);
-                                break;
+                                if (!itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
+                                    itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
                             }
-                        }
-                        if (!found)
-                            DisplayAlert("UWP Splash Images", "Could not find <ItemGroup>, in UWP's .csproj file, that contains icon, logo, and splash images", "ok");
-                    }
-                    else
-                        DisplayAlert("UWP Splash Images", "could not load [" + fileName + "] as an XML document", "ok");
-                }
-                else
-                    DisplayAlert("UWP Splash Images", "no .csproj file found in the UWP project folder", "ok");
-            }
+                            foreach (var kvp in UwpSquareLogoImages)
+                            {
+                                if (!itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
+                                    itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
+                            }
 
+
+                            var text = XmlHeader + document;
+                            File.WriteAllText(projectFilePath, text);
+                            break;
+                        }
+                    }
+                    if (!found)
+                        DisplayAlert("UWP Splash Images", "Could not find <ItemGroup>, in UWP's .csproj file, that contains icon, logo, and splash images", "ok");
+                }
+            }
             return mobileVector;
         }
 

@@ -18,7 +18,7 @@
                 >
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="200" />
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
@@ -196,7 +196,7 @@
                 >
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="200" />
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
@@ -215,7 +215,7 @@
                     <Label
                         Text="Background Color: "
                         Grid.Row="1"
-                        HorizontalTextAlignment="Start"
+                        HorizontalTextAlignment="End"
                         VerticalOptions="Center"
                         />
                     <Frame
@@ -258,10 +258,10 @@
                         </Grid>
                     </Frame>
                     <Label
-                        Text="Icon Image: "
+                        Text="Icon SVG: "
                         Grid.Row="2"
                         VerticalOptions="Center"
-                        HorizontalTextAlignment="Start"
+                        HorizontalTextAlignment="End"
                         FontFamily="MaterialIcons"
                         />
                     <Frame
@@ -330,7 +330,7 @@
                 >
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="150" />
+                        <ColumnDefinition Width="200" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
@@ -353,7 +353,7 @@
                     <Label
                         Text="Background Color: "
                         Grid.Row="1"
-                        HorizontalTextAlignment="Start"
+                        HorizontalTextAlignment="End"
                         VerticalOptions="Center"
                         />
                     <Frame
@@ -409,19 +409,20 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <Label
-                            Text="Square Image : "
+                            Text="Square SVG (1:1): "
                             Grid.ColumnSpan="2"
-                            HorizontalTextAlignment="Start"
+                            HorizontalTextAlignment="End"
                             VerticalOptions="Center"
                             />
                         <Label
-                            Text="is mobile splash"
+                            Text="use for iOS/Droid"
                             Grid.Row="1"
                             VerticalOptions="Fill"
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End"
                             VerticalTextAlignment="Center"
                             FontAttributes="Italic"
+                            TextColor="#00A"
                             />
                         <CheckBox
                             x:Name="_mobileUseSquareSplashImageCheckBox"
@@ -486,19 +487,20 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <Label
-                            Text="Rectangle Image: "
+                            Text="Rectangle SVG (6.2:3):"
                             Grid.ColumnSpan="2"
-                            HorizontalTextAlignment="Start"
+                            HorizontalTextAlignment="End"
                             VerticalOptions="Center"
                             />
                         <Label
-                            Text="is mobile splash"
+                            Text="use for iOS/Droid"
                             Grid.Row="1"
                             VerticalOptions="Fill"
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End"
                             VerticalTextAlignment="Center"
                             FontAttributes="Italic"
+                            TextColor="#00A"
                             />
                         <CheckBox
                             x:Name="_mobileUseRect310SplashImageCheckBox"
@@ -551,87 +553,6 @@
                             </Label>
                         </Grid>
                     </Frame>
-
-                    <!--
-                    <Grid
-                        Grid.Row="4"
-                        >
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="20" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        <Label
-                            Text="620:300 Image: "
-                            Grid.ColumnSpan="2"
-                            HorizontalTextAlignment="Start"
-                            VerticalOptions="Center"
-                            />
-                        <Label
-                            Text="is mobile splash"
-                            Grid.Row="1"
-                            VerticalOptions="Fill"
-                            HorizontalOptions="Fill"
-                            HorizontalTextAlignment="End"
-                            VerticalTextAlignment="Center"
-                            FontAttributes="Italic"
-                            />
-                        <CheckBox
-                            x:Name="_mobileUseRect620SplashImageCheckBox"
-                            Grid.Row="1"
-                            Grid.Column="1"
-                            VerticalOptions="Center"
-                            HorizontalOptions="Center"
-                            />
-                    </Grid>
-
-                    <Frame
-                        x:Name="_rect620SvgLaunchImageFrame"
-                        BackgroundColor="White"
-                        BorderColor="DarkGray"
-                        CornerRadius="4"
-                        Margin="0"
-                        Grid.Row="4"
-                        Grid.Column="1"
-                        HasShadow="False"
-                        Padding="2"
-                        >
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="40"/>
-                            </Grid.ColumnDefinitions>
-                            <AB:Label
-                                x:Name="_rect620SvgLaunchImageEntry"
-                                VerticalTextAlignment="Center"
-                                HorizontalOptions="FillAndExpand"
-                                Placeholder="drag and drop SVG file here"
-                                >
-                                <AB:Label.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Tapped="TapGestureRecognizer_Tapped"/>
-                                </AB:Label.GestureRecognizers>
-                            </AB:Label>
-                            <Label
-                                x:Name="_rect620SvgLaunchImageClearButton"
-                                FontFamily="MaterialIcons"
-                                Text="ⓧ"
-                                Grid.Column="1"
-                                HorizontalOptions="Fill"
-                                VerticalOptions="Fill"
-                                HorizontalTextAlignment="Center"
-                                VerticalTextAlignment="Center"
-                                >
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
-                    </Frame>
-                    -->
 
 
                     <Button
