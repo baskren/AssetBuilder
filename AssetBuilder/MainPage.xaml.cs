@@ -9,17 +9,19 @@ using System.Linq;
 using P42.Utils;
 using Amporis.Xamarin.Forms.ColorPicker;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using P42.Storage;
 
 namespace AssetBuilder.Views
 {
     // Learn more about making custom code visible in the Xamarin.Forms previewer
     // by visiting https://aka.ms/xamarinforms-previewer
     [DesignTimeVisible(false)]
-    public partial class IconPage : ContentPage
+    public partial class MainPage : ContentPage
     {
         const string XmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
-        public IconPage()
+        public MainPage()
         {
             InitializeComponent();
         }
@@ -99,69 +101,72 @@ namespace AssetBuilder.Views
         #region Entry event Handlers
 
         #region Project Folders
-        string GetProjectFile(string projectFolderPath, Xamarin.Essentials.DevicePlatform platform)
+        async Task<P42.Storage.IStorageFile> GetProjectFile(string projectFolderPath, Xamarin.Essentials.DevicePlatform platform)
         {
             if (string.IsNullOrWhiteSpace(projectFolderPath))
                 return null;
             var osName = platform.ToString();
-            if (Directory.GetFiles(projectFolderPath, "*.csproj") is string[] files)
+            if (await P42.Storage.StorageFolder.GetFolderFromPathAsync(projectFolderPath) is P42.Storage.IStorageFolder projectFolder)
             {
-                if (!Directory.Exists(projectFolderPath))
+                if (await projectFolder.GetFilesAsync("*.csproj") is IReadOnlyList<P42.Storage.IStorageFile> projFiles)
                 {
-                    DisplayAlert(osName + " Project Folder", "[" + projectFolderPath + "] failed Directory.Exists test.", "ok");
-                    return null;
-                }
-                if (files.Length > 1)
-                {
-                    DisplayAlert(osName + " Project Folder", "multiple .csproj files found in the "+osName+" project folder", "ok");
-                    return  null;
-                }
-                if (files.Length < 1)
-                {
-                    DisplayAlert(osName + " Project Folder", "no .csproj file found in the " + osName + " project folder", "ok");
-                    return null;
-                }
-                var fileName = files[0];
-                if (string.IsNullOrWhiteSpace(fileName))
-                {
-                    DisplayAlert(osName + " Project Folder", "invalid filename for " + osName + " .csproj file", "ok");
-                    return null;
-                }
-                if (!File.Exists(fileName))
-                {
-                    DisplayAlert(osName + " Project Folder", "candidate for " + osName + " project file [" + fileName + "] does not exist.", "ok");
-                    return null;
-                }
-                var text = File.ReadAllText(fileName);
-                if (string.IsNullOrWhiteSpace(text))
-                {
-                    DisplayAlert(osName + " Project Folder", "candidate for " + osName + " project file [" + fileName + "] is empty.", "ok");
-                    return null;
-                }
-                var outputType = "";
-                var targetType = "";
-                switch (osName)
-                {
-                    case nameof(Xamarin.Essentials.DevicePlatform.iOS):
-                        outputType = "<OutputType>Exe</OutputType>";
-                        targetType = "\\Xamarin\\iOS\\Xamarin.iOS.CSharp.targets";
-                        break;
-                    case nameof(Xamarin.Essentials.DevicePlatform.Android):
-                        outputType = "<OutputType>Library</OutputType>";
-                        targetType = "\\Xamarin\\Android\\Xamarin.Android.CSharp.targets";
-                        break;
-                    case nameof(Xamarin.Essentials.DevicePlatform.UWP):
-                        outputType = "<OutputType>AppContainerExe</OutputType>";
-                        targetType = "Microsoft.Windows.UI.Xaml.CSharp.targets";
-                        break;
-                    default:
-                        DisplayAlert(osName + " Project Folder", "Unsupported DevicePlatform [" + osName + "]", "ok");
+                    if (!Directory.Exists(projectFolderPath))
+                    {
+                        await DisplayAlert(osName + " Project Folder", "[" + projectFolderPath + "] failed Directory.Exists test.", "ok");
                         return null;
+                    }
+                    if (projFiles.Count > 1)
+                    {
+                        await DisplayAlert(osName + " Project Folder", "multiple .csproj files found in the " + osName + " project folder", "ok");
+                        return null;
+                    }
+                    if (projFiles.Count < 1)
+                    {
+                        await DisplayAlert(osName + " Project Folder", "no .csproj file found in the " + osName + " project folder", "ok");
+                        return null;
+                    }
+                    var file = projFiles[0];
+                    if (string.IsNullOrWhiteSpace(file.Path))
+                    {
+                        await DisplayAlert(osName + " Project Folder", "invalid filename for " + osName + " .csproj file", "ok");
+                        return null;
+                    }
+                    if (!File.Exists(file.Path))
+                    {
+                        await DisplayAlert(osName + " Project Folder", "candidate for " + osName + " project file [" + file + "] does not exist.", "ok");
+                        return null;
+                    }
+                    var text = file.ReadAllText();
+                    if (string.IsNullOrWhiteSpace(text))
+                    {
+                        await DisplayAlert(osName + " Project Folder", "candidate for " + osName + " project file [" + file + "] is empty.", "ok");
+                        return null;
+                    }
+                    var outputType = "";
+                    var targetType = "";
+                    switch (osName)
+                    {
+                        case nameof(Xamarin.Essentials.DevicePlatform.iOS):
+                            outputType = "<OutputType>Exe</OutputType>";
+                            targetType = "\\Xamarin\\iOS\\Xamarin.iOS.CSharp.targets";
+                            break;
+                        case nameof(Xamarin.Essentials.DevicePlatform.Android):
+                            outputType = "<OutputType>Library</OutputType>";
+                            targetType = "\\Xamarin\\Android\\Xamarin.Android.CSharp.targets";
+                            break;
+                        case nameof(Xamarin.Essentials.DevicePlatform.UWP):
+                            outputType = "<OutputType>AppContainerExe</OutputType>";
+                            targetType = "Microsoft.Windows.UI.Xaml.CSharp.targets";
+                            break;
+                        default:
+                            await DisplayAlert(osName + " Project Folder", "Unsupported DevicePlatform [" + osName + "]", "ok");
+                            return null;
+                    }
+                    if (!text.Contains(outputType) || !text.Contains(targetType))
+                        await DisplayAlert(osName + " Project Folder", "This folder's project file [" + file + "] doesn't appear to be an " + osName + " executable app project file.", "ok");
+                    else
+                        return file;
                 }
-                if (!text.Contains(outputType) || !text.Contains(targetType))
-                    DisplayAlert(osName + " Project Folder", "This folder's project file [" + fileName + "] doesn't appear to be an "+osName+" executable app project file.", "ok");
-                else
-                    return fileName;
             }
             return null;
         }
@@ -189,40 +194,41 @@ namespace AssetBuilder.Views
             return true;
         }
 
-        private void OnIosProjectFolderChanged(object sender, TextChangedEventArgs e)
+        async void OnIosProjectFolderChanged(object sender, TextChangedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(e.NewTextValue))
             {
                 Preferences.Current.IosOProjectFolder = null;
                 return;
             }
-            if (GetProjectFile(e.NewTextValue, Xamarin.Essentials.DevicePlatform.iOS) is string fileName)
+            var file = await GetProjectFile(e.NewTextValue, Xamarin.Essentials.DevicePlatform.iOS);
+            if (file is IStorageFile)
                 Preferences.Current.IosOProjectFolder = e.NewTextValue.Trim();
             else
                 _iosProjectFolderEntry.Text = e.OldTextValue;
         }
 
-        private void OnAndroidProjectFolderChanged(object sender, TextChangedEventArgs e)
+        async void OnAndroidProjectFolderChanged(object sender, TextChangedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(e.NewTextValue))
             {
                 Preferences.Current.AndroidProjectFolder = null;
                 return;
             }
-            if (GetProjectFile(e.NewTextValue, Xamarin.Essentials.DevicePlatform.Android) is string fileName)
+            if (await GetProjectFile(e.NewTextValue, Xamarin.Essentials.DevicePlatform.Android) is IStorageFile)
                 Preferences.Current.AndroidProjectFolder = e.NewTextValue.Trim();
             else
                 _androidProjectFolderEntry.Text = e.OldTextValue;
         }
 
-        private void OnUwpProjectFolderChanged(object sender, TextChangedEventArgs e)
+        async void OnUwpProjectFolderChanged(object sender, TextChangedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(e.NewTextValue))
             {
                 Preferences.Current.UwpProjectFolder = null;
                 return;
             }
-            if (GetProjectFile(e.NewTextValue, Xamarin.Essentials.DevicePlatform.UWP) is string fileName)
+            if (await GetProjectFile(e.NewTextValue, Xamarin.Essentials.DevicePlatform.UWP) is IStorageFile)
                 Preferences.Current.UwpProjectFolder = e.NewTextValue.Trim();
             else
                 _uwpProjectFolderEntry.Text = e.OldTextValue;
@@ -373,35 +379,35 @@ namespace AssetBuilder.Views
 
 
         #region Generate Icons
-        void OnGenerateIconsButtonClicked(object sender, EventArgs e)
+        async void OnGenerateIconsButtonClicked(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(Preferences.Current.SvgIconFile)
                 || !File.Exists(Preferences.Current.SvgIconFile))
             {
-                DisplayAlert(null, "Cannot open SVG file [" + Preferences.Current.SvgIconFile + "]", "cancel");
+                await DisplayAlert(null, "Cannot open SVG file [" + Preferences.Current.SvgIconFile + "]", "cancel");
                 return;
             }
 
-            var vector = GenerateVectorAndroidIcons(Preferences.Current.SvgIconFile);
+            var vector = await GenerateVectorAndroidIcons(Preferences.Current.SvgIconFile);
             GenerateRasterAndroidIcons(vector);
             GenerateIosIcons(vector);
             GenerateUwpIcons(vector);
 
-            DisplayAlert("Complate", "App Icons have been generated.", "ok");
+            await DisplayAlert("Complate", "App Icons have been generated.", "ok");
         }
 
-        AndroidVector.Vector GenerateVectorAndroidIcons(string svgPath)
+        async Task<AndroidVector.Vector> GenerateVectorAndroidIcons(string svgPath)
         {
             if (Svg2.GenerateAndroidVector(svgPath) is (AndroidVector.Vector vector, List<string> warnings))
             {
                 if (warnings.Count > 0)
-                    DisplayAlert("Warnings", string.Join("\n\n", warnings), "ok");
+                    await DisplayAlert("Warnings", string.Join("\n\n", warnings), "ok");
 
                 vector = vector.AspectClone();
             }
             else
             {
-                DisplayAlert("ERROR", "Failed to generate AndroidVector for unknown reason.", "ok");
+                await DisplayAlert("ERROR", "Failed to generate AndroidVector for unknown reason.", "ok");
                 vector = null;
             }
 
@@ -414,9 +420,9 @@ namespace AssetBuilder.Views
                 if (!Directory.Exists(mipmapFolder))
                     Directory.CreateDirectory(mipmapFolder);
 
-                if (GetProjectFile(Preferences.Current.AndroidProjectFolder, Xamarin.Essentials.DevicePlatform.Android) is string projectFilePath)
+                if (await GetProjectFile(Preferences.Current.AndroidProjectFolder, Xamarin.Essentials.DevicePlatform.Android) is IStorageFile storageFile)
                 {
-                    if (XDocument.Load(projectFilePath) is XDocument csprojDoc)
+                    if (XDocumentExtensions.Load(storageFile) is XDocument csprojDoc)
                     {
                         XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
                         if (csprojDoc.Descendants(ns + "AndroidResource").FirstOrDefault(e => e.Attribute("Include")?.Value == "Resources\\values\\styles.xml") is XElement firstAndroidResource)
@@ -428,14 +434,14 @@ namespace AssetBuilder.Views
                                 element.SetAttributeValue("Include", "Resources\\mipmap-anydpi-v26\\launcher_foreground.xml");
                                 androidResourceItemGroup.Add(element);
 
-                                File.WriteAllText(projectFilePath, XmlHeader + csprojDoc);
+                                StorageFile.WriteAllText(storageFile, XmlHeader + csprojDoc);
                             }
                         }
 
                     }
                     else
                     {
-                        DisplayAlert(null, "Could not load Android .csproj file as an XDocument", "ok");
+                        await DisplayAlert(null, "Could not load Android .csproj file as an XDocument", "ok");
                         return null;
                     }
 
@@ -624,22 +630,22 @@ namespace AssetBuilder.Views
 
 
         #region Generate Splash Screens and Images
-        void OnGenerateLaunchImageButtonClicked(object sender, EventArgs e)
+        async void OnGenerateLaunchImageButtonClicked(object sender, EventArgs e)
         {
                 
             if (string.IsNullOrWhiteSpace(MobileSplashSvg) || !File.Exists(MobileSplashSvg))
             {
-                DisplayAlert(null, "Cannot open SVG file [" + MobileSplashSvg + "]", "cancel");
+                await DisplayAlert(null, "Cannot open SVG file [" + MobileSplashSvg + "]", "cancel");
                 return;
             }
 
-            GenerateIosSplashScreen(GenerateAndroidSpashImage(GenerateUwpSplashAndLogoImages()));
+            await GenerateIosSplashScreen(await GenerateAndroidSpashImage(await GenerateUwpSplashAndLogoImages()));
 
-             DisplayAlert("Complete", "Launch Screens have been generated.", "ok");
+             await DisplayAlert("Complete", "Launch Screens have been generated.", "ok");
         }
 
         #region Android
-        AndroidVector.Vector GenerateAndroidSpashImage(AndroidVector.Vector vector)
+        async Task<AndroidVector.Vector> GenerateAndroidSpashImage(AndroidVector.Vector vector)
         {
             if (vector != null && !string.IsNullOrWhiteSpace(Preferences.Current.AndroidProjectFolder))
             {
@@ -687,12 +693,12 @@ namespace AssetBuilder.Views
                 }
                 catch (Exception e)
                 {
-                    DisplayAlert("SkiaSharp ERROR", "Failed to generate pre-v23 SDK Android splash image (drawable/splash_image.png) because of the following SkiaSharp exception:\n\n" + e.Message, "ok");
+                    await DisplayAlert("SkiaSharp ERROR", "Failed to generate pre-v23 SDK Android splash image (drawable/splash_image.png) because of the following SkiaSharp exception:\n\n" + e.Message, "ok");
                 }
 
-                if (GetProjectFile(Preferences.Current.AndroidProjectFolder, Xamarin.Essentials.DevicePlatform.Android) is string projectFilePath)
+                if (await GetProjectFile(Preferences.Current.AndroidProjectFolder, Xamarin.Essentials.DevicePlatform.Android) is IStorageFile projectFile)
                 {
-                    if (XDocument.Load(projectFilePath) is XDocument csprojDoc)
+                    if (XDocumentExtensions.Load(projectFile) is XDocument csprojDoc)
                     {
                         XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
                         if (csprojDoc.Descendants(ns + "AndroidResource").FirstOrDefault(e => e.Attribute("Include")?.Value == "Resources\\values\\styles.xml") is XElement firstAndroidResource)
@@ -717,7 +723,7 @@ namespace AssetBuilder.Views
                                 androidResourceItemGroup.Add(element);
 
 
-                                File.WriteAllText(projectFilePath, XmlHeader + csprojDoc);
+                                StorageFile.WriteAllText(projectFile, XmlHeader + csprojDoc);
                             }
                         }
 
@@ -730,13 +736,13 @@ namespace AssetBuilder.Views
                                 element.SetAttributeValue("Include", "SplashActivity.cs");
                                 sourceItemGroup.Add(element);
 
-                                File.WriteAllText(projectFilePath, XmlHeader + csprojDoc);
+                                StorageFile.WriteAllText(projectFile, XmlHeader + csprojDoc);
                             }
                         }
                     }
                     else
                     {
-                        DisplayAlert(null, "Could not load Android .csproj file as an XDocument", "ok");
+                        await DisplayAlert(null, "Could not load Android .csproj file as an XDocument", "ok");
                         return null;
                     }
 
@@ -809,24 +815,24 @@ namespace AssetBuilder.Views
         #endregion
 
         #region iOS Splash Screen and Image
-        void GenerateIosSplashScreen(AndroidVector.Vector vector)
+        async Task GenerateIosSplashScreen(AndroidVector.Vector vector)
         {
             if (!string.IsNullOrWhiteSpace(Preferences.Current.IosOProjectFolder))
             {
                 if (GenerateIosSplashPdf(vector) is string err0)
                 {
-                    DisplayAlert("Pdf Generation Error", err0, "ok");
+                    await DisplayAlert("Pdf Generation Error", err0, "ok");
                     return;
                 }
                 if (UpdateIosLaunchScreenStoryboard() is string err1)
                 {
-                    DisplayAlert("Update iOS LaunchScreen Storyboard Error", err1, "ok");
+                    await DisplayAlert("Update iOS LaunchScreen Storyboard Error", err1, "ok");
                     return;
                 }
 
-                if (UpdateIosCsproj() is string err2)
+                if (await UpdateIosCsproj() is string err2)
                 {
-                    DisplayAlert("Update iOS *.csproj Error", err2, "ok");
+                    await DisplayAlert("Update iOS *.csproj Error", err2, "ok");
                     return;
                 }
             }
@@ -887,11 +893,11 @@ namespace AssetBuilder.Views
             return null;
         }
 
-        public string UpdateIosCsproj()
+        async Task<string> UpdateIosCsproj()
         {
-            if (GetProjectFile(Preferences.Current.IosOProjectFolder, Xamarin.Essentials.DevicePlatform.iOS) is string projectFilePath)
+            if (await GetProjectFile(Preferences.Current.IosOProjectFolder, Xamarin.Essentials.DevicePlatform.iOS) is IStorageFile projectFile)
             {
-                if (XDocument.Load(projectFilePath) is XDocument document)
+                if (XDocumentExtensions.Load(projectFile) is XDocument document)
                 {
                     XNamespace ns = document.Root.Attribute("xmlns").Value;
                     foreach (var itemGroup in document.Descendants(ns + "ItemGroup"))
@@ -917,7 +923,7 @@ namespace AssetBuilder.Views
                                 itemGroup.Add(imageAsset);
 
                                 var text = XmlHeader + document;
-                                File.WriteAllText(projectFilePath, text);
+                                StorageFile.WriteAllText(projectFile, text);
 
                                 return null;
                             }
@@ -963,7 +969,7 @@ namespace AssetBuilder.Views
             { "LargeTile.scale-400.png", 1240 },
         };
 
-        AndroidVector.Vector GenerateUwpSplashAndLogoImages()
+        async Task<AndroidVector.Vector> GenerateUwpSplashAndLogoImages()
         {
             AndroidVector.Vector mobileVector = null;
             if (GenerateUwpRectangleSplashAndLogoImages() is AndroidVector.Vector squareVector && Preferences.Current.MobileSplashSource == MobileSplashSource.Rect310)
@@ -971,9 +977,9 @@ namespace AssetBuilder.Views
             if (GenerateUwpSquareSplashAndLogoImages() is AndroidVector.Vector rectVector && Preferences.Current.MobileSplashSource == MobileSplashSource.Square)
                 mobileVector = rectVector;
 
-            if (GetProjectFile(Preferences.Current.UwpProjectFolder, Xamarin.Essentials.DevicePlatform.UWP) is string projectFilePath)
+            if (await GetProjectFile(Preferences.Current.UwpProjectFolder, Xamarin.Essentials.DevicePlatform.UWP) is IStorageFile projectFile)
             {
-                if (XDocument.Load(projectFilePath) is XDocument document)
+                if (XDocumentExtensions.Load(projectFile) is XDocument document)
                 {
                     XNamespace ns = document.Root.Attribute("xmlns").Value;
                     var found = false;
@@ -995,12 +1001,12 @@ namespace AssetBuilder.Views
 
 
                             var text = XmlHeader + document;
-                            File.WriteAllText(projectFilePath, text);
+                            StorageFile.WriteAllText(projectFile, text);
                             break;
                         }
                     }
                     if (!found)
-                        DisplayAlert("UWP Splash Images", "Could not find <ItemGroup>, in UWP's .csproj file, that contains icon, logo, and splash images", "ok");
+                        await DisplayAlert("UWP Splash Images", "Could not find <ItemGroup>, in UWP's .csproj file, that contains icon, logo, and splash images", "ok");
                 }
             }
             return mobileVector;

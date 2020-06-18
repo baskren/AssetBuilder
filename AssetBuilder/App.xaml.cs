@@ -12,7 +12,7 @@ namespace AssetBuilder
         {
             InitializeComponent();
 
-            MainPage = new IconPage();
+            MainPage = new MainPage();
         }
 
         protected override void OnStart()
