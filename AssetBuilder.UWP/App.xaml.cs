@@ -49,6 +49,7 @@ namespace AssetBuilder.UWP
                 rootFrame = new Frame();
 
                 rootFrame.NavigationFailed += OnNavigationFailed;
+                P42.Storage.Platform.Init();
                 P42.Utils.UWP.Settings.Init(this);
                 Xamarin.Forms.Forms.Init(e);
 

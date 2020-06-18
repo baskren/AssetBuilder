@@ -12,7 +12,7 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18362.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -205,6 +205,10 @@
     <ProjectReference Include="..\PdfSharpCore\SixLabors\ImageSharp\src\ImageSharp\ImageSharp.csproj">
       <Project>{c8e89b69-9154-4ed1-9bd3-f55d028735ad}</Project>
       <Name>ImageSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Storage\Source\P42.Storage.UWP\P42.Storage.UWP.csproj">
+      <Project>{1bc6a216-8097-498f-aa9e-4d45dbf0a037}</Project>
+      <Name>P42.Storage.UWP</Name>
     </ProjectReference>
     <ProjectReference Include="..\Svg2AndroidVector\Svg2AndroidVector.csproj">
       <Project>{3caf1812-07a4-4958-a3a3-04c3fbccb330}</Project>
