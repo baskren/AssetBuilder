@@ -66,7 +66,7 @@ namespace AndroidVector
         }
 
 
-        public List<string> ToPdfDocument(string filePath, Color backgroundColor)
+        public List<string> ToPdfDocument(System.IO.Stream stream, Color backgroundColor)
         {
             var doc = new PdfSharpCore.Pdf.PdfDocument();
             if (doc.Version < 14)
@@ -83,23 +83,40 @@ namespace AndroidVector
             var warnings = new List<string>();
             using (XGraphics gfx = XGraphics.FromPdfPage(page))
             {
-                gfx.DrawRectangle(new XSolidBrush(backgroundColor.ToXColor()), new XRect(-72, -72, page.Width.Point+72, page.Height.Point+72));
+                gfx.DrawRectangle(new XSolidBrush(backgroundColor.ToXColor()), new XRect(-72, -72, page.Width.Point + 72, page.Height.Point + 72));
                 gfx.ScaleTransform(page.Width / ViewportWidth, page.Height / ViewportHeight);
                 AddToPdf(gfx, warnings);
             }
 
-            doc.Save(filePath);
+            doc.Save(stream);
             return warnings;
+        }
+
+        public List<string> ToPdfDocument(string filePath, Color backgroundColor)
+        {
+            using (var stream = System.IO.File.OpenWrite(filePath))
+            {
+                return ToPdfDocument(stream, backgroundColor);
+            }
+        }
+
+        public List<string> ToPdfDocument(P42.Storage.IStorageFile storageFile, Color backgroundColor)
+        {
+
+            using (var stream = storageFile.OpenWrite())
+            {
+                return ToPdfDocument(stream, backgroundColor);
+            }
         }
 
         /// <summary>
         /// Generates a PNG from the AndroidVector
         /// </summary>
-        /// <param name="path">where to save the PNG</param>
+        /// <param name="stream">where to save the PNG</param>
         /// <param name="backgroundColor">background color for the PNG</param>
         /// <param name="imageSize">size of vector image (centered) in the PNG</param>
         /// <param name="bitmapSize">size of the PNG</param>
-        public void ToPng(string path, Color backgroundColor,  Size imageSize = default, Size bitmapSize = default)
+        public void ToPng(System.IO.Stream stream, Color backgroundColor, Size imageSize = default, Size bitmapSize = default)
         {
             if (imageSize == default)
                 imageSize = new Size((int)Width.As(Unit.Dp), (int)Height.As(Unit.Dp));
@@ -113,20 +130,57 @@ namespace AndroidVector
                     var g = backgroundColor.G;
                     var b = backgroundColor.B;
                     var a = backgroundColor.A;
+
+                    var hScale = imageSize.Width / ViewportWidth;
+                    var vScale = imageSize.Height / ViewportHeight;
+                    var scale = (float)Math.Min(hScale, vScale);
+
+                    var scaledWidth = (float)(scale * ViewportWidth);
+                    var scaledHeight = (float)(scale * ViewportHeight);
+
                     canvas.Clear(new SKColor(r, g, b, a));
-                    canvas.Translate(bitmapSize.Width / 2 - imageSize.Width / 2, bitmapSize.Height / 2 - imageSize.Height / 2);
-                    canvas.Scale((float)(imageSize.Width / ViewportWidth), (float)(imageSize.Height / ViewportHeight));
+                    canvas.Translate(bitmapSize.Width / 2 - scaledWidth / 2, bitmapSize.Height / 2 - scaledHeight / 2);
+                    canvas.Scale(scale);
                     AddToSKCanvas(canvas);
 
                     using (var image = SKImage.FromBitmap(bitmap))
                     {
                         var skdata = image.Encode(SKEncodedImageFormat.Png, 50);
-                        using (var stream = System.IO.File.OpenWrite(path))
-                        {
-                            skdata.SaveTo(stream);
-                        }
+                        skdata.SaveTo(stream);
                     }
                 }
+            }
+        }
+
+
+
+        /// <summary>
+        /// Generates a PNG from the AndroidVector
+        /// </summary>
+        /// <param name="file">where to save the PNG</param>
+        /// <param name="backgroundColor">background color for the PNG</param>
+        /// <param name="imageSize">size of vector image (centered) in the PNG</param>
+        /// <param name="bitmapSize">size of the PNG</param>
+        public void ToPng(P42.Storage.IStorageFile file, Color backgroundColor, Size imageSize = default, Size bitmapSize = default)
+        {
+            using (var stream = file.OpenWrite())
+            {
+                ToPng(stream, backgroundColor, imageSize, bitmapSize);
+            }
+        }
+
+        /// <summary>
+        /// Generates a PNG from the AndroidVector
+        /// </summary>
+        /// <param name="path">where to save the PNG</param>
+        /// <param name="backgroundColor">background color for the PNG</param>
+        /// <param name="imageSize">size of vector image (centered) in the PNG</param>
+        /// <param name="bitmapSize">size of the PNG</param>
+        public void ToPng(string path, Color backgroundColor,  Size imageSize = default, Size bitmapSize = default)
+        {
+            using (var stream = System.IO.File.OpenWrite(path))
+            {
+                ToPng(stream, backgroundColor, imageSize, bitmapSize);
             }
         }
 

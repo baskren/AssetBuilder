@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.MacOS;
 using Foundation;
@@ -407,3 +408,4 @@ namespace AssetBuilder.Mac
 	}
 
 }
+*/

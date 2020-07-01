@@ -40,150 +40,39 @@
                         Text="iOS: "
                         HorizontalTextAlignment="End"
                         />
-                    <Frame
-                        x:Name="_iosProjectFolderFrame"
-                        BackgroundColor="White"
-                        BorderColor="DarkGray"
-                        CornerRadius="4"
-                        Margin="0"
+                    <AB:ProjectFolderPicker
+                        x:Name="_iosProjectFolderPicker"
+                        Placeholder="click to select iOS platform project folder"
                         Grid.Row="1"
                         Grid.Column="1"
-                        HasShadow="False"
-                        Padding="2"
                         >
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="40"/>
-                            </Grid.ColumnDefinitions>
-                            <AB:Label
-                                x:Name="_iosProjectFolderEntry"
-                                HorizontalOptions="Fill"
-                                VerticalOptions="Fill"
-                                VerticalTextAlignment="Center"
-                                Placeholder="click to select iOS platform project folder"
-                                >
-                                <AB:Label.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Tapped="TapGestureRecognizer_Tapped"/>
-                                </AB:Label.GestureRecognizers>
-                            </AB:Label>
-                            <Label
-                                x:Name="_iosProjectFolderClearButton"
-                                FontFamily="MaterialIcons"
-                                Text="ⓧ"
-                                Grid.Column="1"
-                                HorizontalOptions="Fill"
-                                VerticalOptions="Fill"
-                                HorizontalTextAlignment="Center"
-                                VerticalTextAlignment="Center"
-                                >
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
-
-                    </Frame>
+                    </AB:ProjectFolderPicker>
 
                     <Label
                         Grid.Row="2"
                         VerticalOptions="Center"
                         HorizontalTextAlignment="End"
                         Text="Android: "/>
-                    <Frame
-                        x:Name="_androidProjectFolderFrame"
-                        BackgroundColor="White"
-                        BorderColor="DarkGray"
-                        CornerRadius="4"
-                        Margin="0"
+                    <AB:ProjectFolderPicker
+                        x:Name="_androidProjectFolderPicker"
+                        Placeholder="click to select Android platform project folder"
                         Grid.Row="2"
                         Grid.Column="1"
-                        HasShadow="False"
-                        Padding="2"
                         >
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="40"/>
-                            </Grid.ColumnDefinitions>
-                            <AB:Label
-                                x:Name="_androidProjectFolderEntry"
-                                HorizontalOptions="Fill"
-                                VerticalOptions="Fill"
-                                VerticalTextAlignment="Center"
-                                Placeholder="click to select Android platform project folder"
-                                >
-                                <AB:Label.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Tapped="TapGestureRecognizer_Tapped"/>
-                                </AB:Label.GestureRecognizers>
-                            </AB:Label>
-                            <Label
-                                x:Name="_androidProjectFolderClearButton"
-                                FontFamily="MaterialIcons"
-                                Text="ⓧ"
-                                Grid.Column="1"
-                                HorizontalOptions="Fill"
-                                VerticalOptions="Fill"
-                                HorizontalTextAlignment="Center"
-                                VerticalTextAlignment="Center"
-                                >
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
-                    </Frame>
+                    </AB:ProjectFolderPicker>
+
                     <Label
                         Grid.Row="3"
                         VerticalOptions="Center"
                         HorizontalTextAlignment="End"
                         Text="UWP: "/>
-                    <Frame
-                        x:Name="_uwpProjectFolderFrame"
-                        BackgroundColor="White"
-                        BorderColor="DarkGray"
-                        CornerRadius="4"
-                        Margin="0"
+                    <AB:ProjectFolderPicker
+                        x:Name="_uwpProjectFolderPicker"
+                        Placeholder="click to select UWP platform project folder"
                         Grid.Row="3"
                         Grid.Column="1"
-                        HasShadow="False"
-                        Padding="2"
                         >
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="40"/>
-                            </Grid.ColumnDefinitions>
-                            <AB:Label
-                                x:Name="_uwpProjectFolderEntry"
-                                HorizontalOptions="Fill"
-                                VerticalOptions="Fill"
-                                VerticalTextAlignment="Center"
-                                Placeholder="click to select UWP platform project folder"
-                                >
-                                <AB:Label.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Tapped="TapGestureRecognizer_Tapped"/>
-                                </AB:Label.GestureRecognizers>
-                            </AB:Label>
-                            <Label
-                                x:Name="_uwpProjectFolderClearButton"
-                                FontFamily="MaterialIcons"
-                                Text="ⓧ"
-                                Grid.Column="1"
-                                HorizontalOptions="Fill"
-                                VerticalOptions="Fill"
-                                HorizontalTextAlignment="Center"
-                                VerticalTextAlignment="Center"
-                                >
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
-                    </Frame>
+                    </AB:ProjectFolderPicker>
                 </Grid>
             </Frame>
 
@@ -264,49 +153,13 @@
                         HorizontalTextAlignment="End"
                         FontFamily="MaterialIcons"
                         />
-                    <Frame
-                        x:Name="_iconSvgFileFrame"
-                        BackgroundColor="White"
-                        BorderColor="DarkGray"
-                        CornerRadius="4"
-                        Margin="0"
+                    <AB:SvgFilePicker
+                        x:Name="_iconSvgFilePicker"
+                        Placeholder="click to select icon SVG file"
                         Grid.Row="2"
                         Grid.Column="1"
-                        HasShadow="False"
-                        Padding="2"
                         >
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="40"/>
-                            </Grid.ColumnDefinitions>
-                            <AB:Label
-                                x:Name="_iconSvgFileEntry"
-                                VerticalTextAlignment="Center"
-                                HorizontalOptions="FillAndExpand"
-                                Placeholder="click to select icon SVG file"
-                                >
-                                <AB:Label.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Tapped="TapGestureRecognizer_Tapped"/>
-                                </AB:Label.GestureRecognizers>
-                            </AB:Label>
-                            <Label
-                                x:Name="_iconSvgFileClearButton"
-                                FontFamily="MaterialIcons"
-                                Text="ⓧ"
-                                Grid.Column="1"
-                                HorizontalOptions="Fill"
-                                VerticalOptions="Fill"
-                                HorizontalTextAlignment="Center"
-                                VerticalTextAlignment="Center"
-                                >
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
-                    </Frame>
+                    </AB:SvgFilePicker>
                     <Button
                         x:Name="_generateIconsButton"
                         Text="Generate Icons"
@@ -432,49 +285,13 @@
                             HorizontalOptions="Center"
                             />
                     </Grid>
-                    <Frame
-                        x:Name="_squareSvgLaunchImageFrame"
-                        BackgroundColor="White"
-                        BorderColor="DarkGray"
-                        CornerRadius="4"
-                        Margin="0"
+                    <AB:SvgFilePicker
+                        x:Name="_squareSvgLaunchImagePicker"
+                        Placeholder="click to select square (1:1) SVG file"
                         Grid.Row="2"
                         Grid.Column="1"
-                        HasShadow="False"
-                        Padding="2"
                         >
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="40"/>
-                            </Grid.ColumnDefinitions>
-                            <AB:Label
-                                x:Name="_squareSvgLaunchImageEntry"
-                                VerticalTextAlignment="Center"
-                                HorizontalOptions="FillAndExpand"
-                                Placeholder="click to select square (1:1) SVG file"
-                                >
-                                <AB:Label.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Tapped="TapGestureRecognizer_Tapped"/>
-                                </AB:Label.GestureRecognizers>
-                            </AB:Label>
-                            <Label
-                                x:Name="_squareSvgLaunchImageClearButton"
-                                FontFamily="MaterialIcons"
-                                Text="ⓧ"
-                                Grid.Column="1"
-                                HorizontalOptions="Fill"
-                                VerticalOptions="Fill"
-                                HorizontalTextAlignment="Center"
-                                VerticalTextAlignment="Center"
-                                >
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
-                    </Frame>
+                    </AB:SvgFilePicker>
 
                     <Grid
                         Grid.Row="3">
@@ -510,49 +327,13 @@
                             HorizontalOptions="Center"
                             />
                     </Grid>
-                    <Frame
-                        x:Name="_rect310SvgLaunchImageFrame"
-                        BackgroundColor="White"
-                        BorderColor="DarkGray"
-                        CornerRadius="4"
-                        Margin="0"
+                    <AB:SvgFilePicker
+                        x:Name="_rect310SvgLaunchImagePicker"
+                        Placeholder="click to select rectangular (310:150) SVG file"
                         Grid.Row="3"
                         Grid.Column="1"
-                        HasShadow="False"
-                        Padding="2"
                         >
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="40"/>
-                            </Grid.ColumnDefinitions>
-                            <AB:Label
-                                x:Name="_rect310SvgLaunchImageEntry"
-                                VerticalTextAlignment="Center"
-                                HorizontalOptions="FillAndExpand"
-                                Placeholder="click to select rectangular (310:150) SVG file"
-                                >
-                                <AB:Label.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Tapped="TapGestureRecognizer_Tapped"/>
-                                </AB:Label.GestureRecognizers>
-                            </AB:Label>
-                            <Label
-                                x:Name="_rect310SvgLaunchImageClearButton"
-                                FontFamily="MaterialIcons"
-                                Text="ⓧ"
-                                Grid.Column="1"
-                                HorizontalOptions="Fill"
-                                VerticalOptions="Fill"
-                                HorizontalTextAlignment="Center"
-                                VerticalTextAlignment="Center"
-                                >
-                                <Label.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped"/>
-                                </Label.GestureRecognizers>
-                            </Label>
-                        </Grid>
-                    </Frame>
+                    </AB:SvgFilePicker>
 
 
                     <Button

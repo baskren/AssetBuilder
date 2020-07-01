@@ -127,7 +127,7 @@
     <Compile Include="Extensions\ColorExtensions.cs" />
     <Compile Include="Extensions\FontExtensions.cs" />
     <Compile Include="Extensions\AlignmentExtensions.cs" />
-    <Compile Include="LabelRenderer.cs" />
+    <Compile Include="DragAndDropLabelRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />

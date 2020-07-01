@@ -15,7 +15,7 @@ namespace AssetBuilder.Mac
 	{
 		internal static bool IsDefault(this Span self)
 		{
-			return self.FontFamily == null && self.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Label), true) &&
+			return self.FontFamily == null && self.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(StorageFilePicker), true) &&
 					self.FontAttributes == FontAttributes.None;
 		}
 

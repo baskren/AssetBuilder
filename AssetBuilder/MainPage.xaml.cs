@@ -21,6 +21,8 @@ namespace AssetBuilder.Views
     {
         const string XmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
 
+
+        #region Construction / Initialization
         public MainPage()
         {
             InitializeComponent();
@@ -32,48 +34,64 @@ namespace AssetBuilder.Views
 
             Preferences.Current.PropertyChanged += OnPreferencesChanged;
 
-            _iconSvgFileEntry.TextChanged += OnIconSvgFileChanged;
-            _iosProjectFolderEntry.TextChanged += OnIosProjectFolderChanged;
-            _androidProjectFolderEntry.TextChanged += OnAndroidProjectFolderChanged;
-            _uwpProjectFolderEntry.TextChanged += OnUwpProjectFolderChanged;
-            _squareSvgLaunchImageEntry.TextChanged += OnSquareSvgLaunchImageEntryChanged;
-            _rect310SvgLaunchImageEntry.TextChanged += OnRect310SvgLaunchImageEntryChanged;
+            _iosProjectFolderPicker.ProjectPlatform = Xamarin.Essentials.DevicePlatform.iOS;
+            _androidProjectFolderPicker.ProjectPlatform = Xamarin.Essentials.DevicePlatform.Android;
+            _uwpProjectFolderPicker.ProjectPlatform = Xamarin.Essentials.DevicePlatform.UWP;
+
+            _iosProjectFolderPicker.Page = this;
+            _androidProjectFolderPicker.Page = this;
+            _uwpProjectFolderPicker.Page = this;
+            _iconSvgFilePicker.Page = this;
+            _squareSvgLaunchImagePicker.Page = this;
+            _rect310SvgLaunchImagePicker.Page = this;
+
+
+
+            _iosProjectFolderPicker.StorageFolderChanged += OnIosProjectFolderChanged;
+            _androidProjectFolderPicker.StorageFolderChanged += OnAndroidProjectFolderChanged;
+            _uwpProjectFolderPicker.StorageFolderChanged += OnUwpProjectFolderChanged;
+
+            _iconSvgFilePicker.StorageFileChanged += OnIconSvgFileChanged;
+            _squareSvgLaunchImagePicker.StorageFileChanged += OnSquareSvgLaunchImageEntryChanged;
+            _rect310SvgLaunchImagePicker.StorageFileChanged += OnRect310SvgLaunchImageEntryChanged;
 
             _mobileUseSquareSplashImageCheckBox.CheckedChanged += MobileSourceCheckBoxChanged;
             _mobileUseRect310SplashImageCheckBox.CheckedChanged += MobileSourceCheckBoxChanged;
 
-            _iconSvgFileEntry.Text = Preferences.Current.SvgIconFile;
-            _iosProjectFolderEntry.Text = Preferences.Current.IosOProjectFolder;
-            _androidProjectFolderEntry.Text = Preferences.Current.AndroidProjectFolder;
-            _uwpProjectFolderEntry.Text = Preferences.Current.UwpProjectFolder;
-            _splashPageBackgroundColorEntry.Text = Preferences.Current.SplashBackgroundColor.ToHex();
-            _iconBackgroundColorEntry.Text = Preferences.Current.IconBackgroundColor.ToHex();
-            _squareSvgLaunchImageEntry.Text = Preferences.Current.SquareSvgSplashImageFile;
-            _rect310SvgLaunchImageEntry.Text = Preferences.Current.Rect310SvgSplashImageFile;
+            LoadPreferences();
 
-            UpdateMobileSplashSource();
-
-            UpdateButtonAbility();
-
-            OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.SplashBackgroundColor)));
-            OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.IconBackgroundColor)));
-            OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.AndroidProjectFolder)));
-            OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.IosOProjectFolder)));
-            OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.UwpProjectFolder)));
         }
 
-        private void MobileSourceCheckBoxChanged(object sender, CheckedChangedEventArgs e)
+        void LoadPreferences()
         {
-            if (_mobileUseSquareSplashImageCheckBox.IsChecked)
-                Preferences.Current.MobileSplashSource = MobileSplashSource.Square;
-            else if (_mobileUseRect310SplashImageCheckBox.IsChecked)
-                Preferences.Current.MobileSplashSource = MobileSplashSource.Rect310;
-            //else if (_mobileUseRect620SplashImageCheckBox.IsChecked)
-            //    Preferences.Current.MobileSplashSource = MobileSplashSource.Rect620;
-            else
-                Preferences.Current.MobileSplashSource = MobileSplashSource.None;
-        }
+            Device.BeginInvokeOnMainThread(async () =>
+            {
+                await _iosProjectFolderPicker.FolderFromPathAsync(Preferences.Current.IosOProjectFolder);
+                await _androidProjectFolderPicker.FolderFromPathAsync(Preferences.Current.AndroidProjectFolder);
+                await _uwpProjectFolderPicker.FolderFromPathAsync(Preferences.Current.UwpProjectFolder);
 
+                _splashPageBackgroundColorEntry.Text = Preferences.Current.SplashBackgroundColor.ToHex();
+                _iconBackgroundColorEntry.Text = Preferences.Current.IconBackgroundColor.ToHex();
+
+                await _iconSvgFilePicker.FileFromPathAsync(Preferences.Current.SvgIconFile);
+                await _squareSvgLaunchImagePicker.FileFromPathAsync(Preferences.Current.SquareSvgSplashImageFile);
+                await _rect310SvgLaunchImagePicker.FileFromPathAsync(Preferences.Current.Rect310SvgSplashImageFile);
+
+                UpdateMobileSplashSource();
+
+                UpdateButtonAbility();
+
+                OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.SplashBackgroundColor)));
+                OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.IconBackgroundColor)));
+                OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.AndroidProjectFolder)));
+                OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.IosOProjectFolder)));
+                OnPreferencesChanged(this, new PropertyChangedEventArgs(nameof(Preferences.UwpProjectFolder)));
+            });
+        }
+        #endregion
+
+
+        #region Preferences Change Handlers
         private void OnPreferencesChanged(object sender, PropertyChangedEventArgs e)
         {
             UpdateButtonAbility();
@@ -95,211 +113,142 @@ namespace AssetBuilder.Views
             else if (e.PropertyName == nameof(Preferences.Rect310SvgSplashImageFile))
                 UpdateMobileSplashSource();
         }
-
-
-
-        #region Entry event Handlers
-
-        #region Project Folders
-        async Task<P42.Storage.IStorageFile> GetProjectFile(string projectFolderPath, Xamarin.Essentials.DevicePlatform platform)
-        {
-            if (string.IsNullOrWhiteSpace(projectFolderPath))
-                return null;
-            var osName = platform.ToString();
-            if (await P42.Storage.StorageFolder.GetFolderFromPathAsync(projectFolderPath) is P42.Storage.IStorageFolder projectFolder)
-            {
-                if (await projectFolder.GetFilesAsync("*.csproj") is IReadOnlyList<P42.Storage.IStorageFile> projFiles)
-                {
-                    if (!Directory.Exists(projectFolderPath))
-                    {
-                        await DisplayAlert(osName + " Project Folder", "[" + projectFolderPath + "] failed Directory.Exists test.", "ok");
-                        return null;
-                    }
-                    if (projFiles.Count > 1)
-                    {
-                        await DisplayAlert(osName + " Project Folder", "multiple .csproj files found in the " + osName + " project folder", "ok");
-                        return null;
-                    }
-                    if (projFiles.Count < 1)
-                    {
-                        await DisplayAlert(osName + " Project Folder", "no .csproj file found in the " + osName + " project folder", "ok");
-                        return null;
-                    }
-                    var file = projFiles[0];
-                    if (string.IsNullOrWhiteSpace(file.Path))
-                    {
-                        await DisplayAlert(osName + " Project Folder", "invalid filename for " + osName + " .csproj file", "ok");
-                        return null;
-                    }
-                    if (!File.Exists(file.Path))
-                    {
-                        await DisplayAlert(osName + " Project Folder", "candidate for " + osName + " project file [" + file + "] does not exist.", "ok");
-                        return null;
-                    }
-                    var text = file.ReadAllText();
-                    if (string.IsNullOrWhiteSpace(text))
-                    {
-                        await DisplayAlert(osName + " Project Folder", "candidate for " + osName + " project file [" + file + "] is empty.", "ok");
-                        return null;
-                    }
-                    var outputType = "";
-                    var targetType = "";
-                    switch (osName)
-                    {
-                        case nameof(Xamarin.Essentials.DevicePlatform.iOS):
-                            outputType = "<OutputType>Exe</OutputType>";
-                            targetType = "\\Xamarin\\iOS\\Xamarin.iOS.CSharp.targets";
-                            break;
-                        case nameof(Xamarin.Essentials.DevicePlatform.Android):
-                            outputType = "<OutputType>Library</OutputType>";
-                            targetType = "\\Xamarin\\Android\\Xamarin.Android.CSharp.targets";
-                            break;
-                        case nameof(Xamarin.Essentials.DevicePlatform.UWP):
-                            outputType = "<OutputType>AppContainerExe</OutputType>";
-                            targetType = "Microsoft.Windows.UI.Xaml.CSharp.targets";
-                            break;
-                        default:
-                            await DisplayAlert(osName + " Project Folder", "Unsupported DevicePlatform [" + osName + "]", "ok");
-                            return null;
-                    }
-                    if (!text.Contains(outputType) || !text.Contains(targetType))
-                        await DisplayAlert(osName + " Project Folder", "This folder's project file [" + file + "] doesn't appear to be an " + osName + " executable app project file.", "ok");
-                    else
-                        return file;
-                }
-            }
-            return null;
-        }
-
-        bool IsSvgFile(string svgFilePath)
-        {
-            if (string.IsNullOrWhiteSpace(svgFilePath))
-                return false;
-            if (!File.Exists(svgFilePath))
-            {
-                DisplayAlert("SVG File", "File [" + svgFilePath + "] failed File.Exists test.", "ok");
-                return false;
-            }
-            var text = File.ReadAllText(svgFilePath);
-            if (string.IsNullOrWhiteSpace(text))
-            {
-                DisplayAlert("SVG File", "File [" + svgFilePath + "] is empty.", "ok");
-                return false;
-            }
-            if (!text.Contains("<svg") || !text.Contains("http://www.w3.org/2000/svg"))
-            {
-                DisplayAlert("SVG File", "File [" + svgFilePath + "] doesn't appear to have SVG content.", "ok");
-                return false;
-            }
-            return true;
-        }
-
-        async void OnIosProjectFolderChanged(object sender, TextChangedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(e.NewTextValue))
-            {
-                Preferences.Current.IosOProjectFolder = null;
-                return;
-            }
-            var file = await GetProjectFile(e.NewTextValue, Xamarin.Essentials.DevicePlatform.iOS);
-            if (file is IStorageFile)
-                Preferences.Current.IosOProjectFolder = e.NewTextValue.Trim();
-            else
-                _iosProjectFolderEntry.Text = e.OldTextValue;
-        }
-
-        async void OnAndroidProjectFolderChanged(object sender, TextChangedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(e.NewTextValue))
-            {
-                Preferences.Current.AndroidProjectFolder = null;
-                return;
-            }
-            if (await GetProjectFile(e.NewTextValue, Xamarin.Essentials.DevicePlatform.Android) is IStorageFile)
-                Preferences.Current.AndroidProjectFolder = e.NewTextValue.Trim();
-            else
-                _androidProjectFolderEntry.Text = e.OldTextValue;
-        }
-
-        async void OnUwpProjectFolderChanged(object sender, TextChangedEventArgs e)
-        {
-            if (string.IsNullOrWhiteSpace(e.NewTextValue))
-            {
-                Preferences.Current.UwpProjectFolder = null;
-                return;
-            }
-            if (await GetProjectFile(e.NewTextValue, Xamarin.Essentials.DevicePlatform.UWP) is IStorageFile)
-                Preferences.Current.UwpProjectFolder = e.NewTextValue.Trim();
-            else
-                _uwpProjectFolderEntry.Text = e.OldTextValue;
-        }
         #endregion
 
 
-        #region SVG Files
-        private void OnIconSvgFileChanged(object sender, TextChangedEventArgs e)
+        #region Entry event Handlers
+        private void MobileSourceCheckBoxChanged(object sender, CheckedChangedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(e.NewTextValue))
-            {
-                Preferences.Current.SvgIconFile = null;
-                return;
-            }
-            if (IsSvgFile(e.NewTextValue))
-                Preferences.Current.SvgIconFile = e.NewTextValue;
+            if (_mobileUseSquareSplashImageCheckBox.IsChecked)
+                Preferences.Current.MobileSplashSource = MobileSplashSource.Square;
+            else if (_mobileUseRect310SplashImageCheckBox.IsChecked)
+                Preferences.Current.MobileSplashSource = MobileSplashSource.Rect310;
             else
-                _iconSvgFileEntry.Text = e.OldTextValue;
+                Preferences.Current.MobileSplashSource = MobileSplashSource.None;
         }
 
-        private void OnSquareSvgLaunchImageEntryChanged(object sender, TextChangedEventArgs e)
+        private void OnIosProjectFolderChanged(object sender, StorageFolderChangedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(e.NewTextValue))
+            Preferences.Current.IosOProjectFolder = e.StorageFolder?.Path;
+        }
+
+        private void OnAndroidProjectFolderChanged(object sender, StorageFolderChangedEventArgs e)
+        {
+            Preferences.Current.AndroidProjectFolder = e.StorageFolder?.Path;
+        }
+
+        private void OnUwpProjectFolderChanged(object sender, StorageFolderChangedEventArgs e)
+        {
+            Preferences.Current.UwpProjectFolder = e.StorageFolder?.Path;
+        }
+
+        private void OnIconSvgFileChanged(object sender, StorageFileChangedEventArgs e)
+        {
+            Preferences.Current.SvgIconFile = e.StorageFile?.Path;
+        }
+
+        private void OnSquareSvgLaunchImageEntryChanged(object sender, StorageFileChangedEventArgs e)
+        {
+            if (e.StorageFile is null)
             {
                 Preferences.Current.SquareSvgSplashImageFile = null;
                 _mobileUseSquareSplashImageCheckBox.IsEnabled = false;
                 _mobileUseSquareSplashImageCheckBox.IsChecked = false;
-                return;
-            }
-            if (IsSvgFile(e.NewTextValue))
-            {
-                Preferences.Current.SquareSvgSplashImageFile = e.NewTextValue;
-                _mobileUseSquareSplashImageCheckBox.IsEnabled = true;
-                _mobileUseSquareSplashImageCheckBox.IsChecked = string.IsNullOrWhiteSpace(Preferences.Current.Rect310SvgSplashImageFile); // && string.IsNullOrWhiteSpace(Preferences.Current.Rect620SvgSplashImageFile);
             }
             else
-                _squareSvgLaunchImageEntry.Text = e.OldTextValue;
+            {
+                Preferences.Current.SquareSvgSplashImageFile = e.StorageFile.Path;
+                _mobileUseSquareSplashImageCheckBox.IsEnabled = true;
+                _mobileUseSquareSplashImageCheckBox.IsChecked = string.IsNullOrWhiteSpace(Preferences.Current.Rect310SvgSplashImageFile); 
+            }
             UpdateMobileSplashSource();
         }
 
-        private void OnRect310SvgLaunchImageEntryChanged(object sender, TextChangedEventArgs e)
+        private void OnRect310SvgLaunchImageEntryChanged(object sender, StorageFileChangedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(e.NewTextValue))
+            if (e.StorageFile is null)
             {
                 Preferences.Current.Rect310SvgSplashImageFile = null;
                 _mobileUseRect310SplashImageCheckBox.IsEnabled = false;
                 _mobileUseRect310SplashImageCheckBox.IsChecked = false;
-                return;
-            }
-            if (IsSvgFile(e.NewTextValue))
-            {
-                Preferences.Current.Rect310SvgSplashImageFile = e.NewTextValue;
-                _mobileUseRect310SplashImageCheckBox.IsEnabled = true;
-                _mobileUseRect310SplashImageCheckBox.IsChecked = string.IsNullOrWhiteSpace(Preferences.Current.SquareSvgSplashImageFile);// && string.IsNullOrWhiteSpace(Preferences.Current.Rect620SvgSplashImageFile);
             }
             else
-                _rect310SvgLaunchImageEntry.Text = e.OldTextValue;
+            {
+                Preferences.Current.Rect310SvgSplashImageFile = e.StorageFile.Path;
+                _mobileUseRect310SplashImageCheckBox.IsEnabled = true;
+                _mobileUseRect310SplashImageCheckBox.IsChecked = string.IsNullOrWhiteSpace(Preferences.Current.SquareSvgSplashImageFile);
+            }
+            UpdateMobileSplashSource();
         }
-        #endregion
+
+        async void TapGestureRecognizer_Tapped(object sender, EventArgs e)
+        {
+            if (sender is Frame frame)
+            {
+                if (frame == _splashPageBackgroundColorFrame)
+                    Preferences.Current.SplashBackgroundColor = await ColorPickerDialog.Show(Content as Grid, "Splash Screen Background", Preferences.Current.SplashBackgroundColor, null);
+                else if (frame == _iconBackgroundColorFrame)
+                    Preferences.Current.IconBackgroundColor = await ColorPickerDialog.Show(Content as Grid, "Icon Background", Preferences.Current.IconBackgroundColor, null);
+            }
+        }
 
         #endregion
 
 
         #region methods
+
+
+        #region UI Helpers
+        ContentView spinnerContentView;
+        void ShowSpinner()
+        {
+            if (spinnerContentView != null)
+                return;
+
+            if (this.Content is Grid grid)
+            {
+                var rows = grid.RowDefinitions.Count;
+                var columns = grid.ColumnDefinitions.Count;
+
+                var spinner = new Xamarin.Forms.ActivityIndicator
+                {
+                    IsEnabled = true,
+                    IsRunning = true,
+                    Color = Color.White,
+                    HorizontalOptions = LayoutOptions.Center,
+                    VerticalOptions = LayoutOptions.Center,
+                };
+
+                spinnerContentView = new ContentView
+                {
+                    BackgroundColor = Color.FromRgba(0, 0, 0, 0.5),
+                    HorizontalOptions = LayoutOptions.Fill,
+                    VerticalOptions = LayoutOptions.Fill,
+                    Content = spinner
+                };
+
+                if (rows > 0)
+                    Grid.SetRowSpan(spinnerContentView, rows);
+                if (columns > 0)
+                    Grid.SetColumnSpan(spinnerContentView, columns);
+                grid.Children.Add(spinnerContentView);
+            }
+        }
+
+        void HideSpinner()
+        {
+            if (this.Content is Grid grid && spinnerContentView != null)
+            {
+                grid.Children.Remove(spinnerContentView);
+                spinnerContentView = null;
+            }
+        }
+
         void UpdateButtonAbility()
         {
             _generateIconsButton.IsEnabled = Preferences.Current.IsIconEnabled;
             _generateLaunchImagesButton.IsEnabled = Preferences.Current.IsSplashEnabled;
         }
-
         bool firstUpdateMobileSplashSource = true;
         void UpdateMobileSplashSource()
         {
@@ -318,91 +267,59 @@ namespace AssetBuilder.Views
                     _mobileUseRect310SplashImageCheckBox.IsChecked = false;
                 }
             }
-
             _mobileUseSquareSplashImageCheckBox.IsChecked = Preferences.Current.MobileSplashSource == MobileSplashSource.Square;
             _mobileUseRect310SplashImageCheckBox.IsChecked = Preferences.Current.MobileSplashSource == MobileSplashSource.Rect310;
-        }
 
-        string MobileSplashSvg
+            firstUpdateMobileSplashSource = false;
+        }
+        #endregion
+
+
+        #region File Helpers
+        async Task<IStorageFile> CopyEmbeddedResourceToFolder(string embeddedResourceId, string fileName, IStorageFolder folder)
         {
-            get
+            if (!await folder.FileExists(fileName))
             {
-                if (Preferences.Current.MobileSplashSource == MobileSplashSource.Square)
-                    return Preferences.Current.SquareSvgSplashImageFile;
-                else if (Preferences.Current.MobileSplashSource == MobileSplashSource.Rect310)
-                    return Preferences.Current.Rect310SvgSplashImageFile;
+                if (await folder.CreateFileAsync(fileName) is IStorageFile file)
+                {
+                    var localVersionPath = await EmbeddedResourceCache.LocalStorageFullPathForEmbeddedResourceAsync(embeddedResourceId);
+                    var text = File.ReadAllText(localVersionPath);
+                    file.WriteAllText(text);
+                    return file;
+                }
                 else
-                    return null;
+                    await DisplayAlert(null, "Cannot create " + fileName + " in folder [" + folder.Path + "].", "ok");
             }
-        }
+            return null;
 
-        async void TapGestureRecognizer_Tapped(System.Object sender, System.EventArgs e)
-        {
-            if (sender is Xamarin.Forms.Frame frame)
-            {
-                if (frame == _splashPageBackgroundColorFrame)
-                    Preferences.Current.SplashBackgroundColor = await ColorPickerDialog.Show(Content as Grid, "Splash Screen Background", Preferences.Current.SplashBackgroundColor, null);
-                else if (frame == _iconBackgroundColorFrame)
-                    Preferences.Current.IconBackgroundColor = await ColorPickerDialog.Show(Content as Grid, "Icon Background", Preferences.Current.IconBackgroundColor, null);
-            }
-            else if (sender is AssetBuilder.Label label)
-            {
-                //                await DisplayAlert(null, label.Placeholder.ToString(), "ok");
-                if (label == _androidProjectFolderEntry || label == _iosProjectFolderEntry || label == _uwpProjectFolderEntry)
-                {
-                    if (await P42.Storage.Pickers.PickSingleFolderAsync()  is P42.Storage.IStorageFolder folder)
-                        label.Text = folder.Path;
-                }
-                else if (await P42.Storage.Pickers.PickSingleFileAsync() is P42.Storage.IStorageFile fileData)
-                {
-                    label.Text = fileData.Path;
-                }
-            }
-            else if (sender is Xamarin.Forms.Label xfLabel)
-            {
-                if (xfLabel == _uwpProjectFolderClearButton)
-                    _uwpProjectFolderEntry.Text = null;
-                else if (xfLabel == _androidProjectFolderClearButton)
-                    _androidProjectFolderEntry.Text = null;
-                else if (xfLabel == _iosProjectFolderClearButton)
-                    _iosProjectFolderEntry.Text = null;
-                else if (xfLabel == _iconSvgFileClearButton)
-                    _iconSvgFileEntry.Text = null;
-                else if (xfLabel == _squareSvgLaunchImageClearButton)
-                    _squareSvgLaunchImageEntry.Text = null;
-                else if (xfLabel == _rect310SvgLaunchImageClearButton)
-                    _rect310SvgLaunchImageEntry.Text = null;
-                //else if (xfLabel == _rect620SvgLaunchImageClearButton)
-                //    _rect620SvgLaunchImageEntry.Text = null;
-            }
         }
+        #endregion
 
 
         #region Generate Icons
         async void OnGenerateIconsButtonClicked(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(Preferences.Current.SvgIconFile)
-                || !File.Exists(Preferences.Current.SvgIconFile))
+            ShowSpinner();
+            if (_iconSvgFilePicker.StorageFile is null)
             {
                 await DisplayAlert(null, "Cannot open SVG file [" + Preferences.Current.SvgIconFile + "]", "cancel");
                 return;
             }
+            var vector = await GenerateVectorAndroidIcons();
+            await GenerateRasterAndroidIcons(vector);
+            await GenerateIosIcons(vector);
+            await GenerateUwpIcons(vector);
 
-            var vector = await GenerateVectorAndroidIcons(Preferences.Current.SvgIconFile);
-            GenerateRasterAndroidIcons(vector);
-            GenerateIosIcons(vector);
-            GenerateUwpIcons(vector);
-
-            await DisplayAlert("Complate", "App Icons have been generated.", "ok");
+            await DisplayAlert("Complete", "App Icons have been generated.", "ok");
+            HideSpinner();
         }
 
-        async Task<AndroidVector.Vector> GenerateVectorAndroidIcons(string svgPath)
+        async Task<AndroidVector.Vector> GenerateVectorAndroidIcons()
         {
-            if (Svg2.GenerateAndroidVector(svgPath) is (AndroidVector.Vector vector, List<string> warnings))
+            if (Svg2.GenerateAndroidVector(_iconSvgFilePicker.StorageFile) is (AndroidVector.Vector vector, List<string> warnings))
             {
                 if (warnings.Count > 0)
                     await DisplayAlert("Warnings", string.Join("\n\n", warnings), "ok");
-
                 vector = vector.AspectClone();
             }
             else
@@ -411,16 +328,11 @@ namespace AssetBuilder.Views
                 vector = null;
             }
 
-            if (!string.IsNullOrWhiteSpace(Preferences.Current.AndroidProjectFolder))
+            if (_androidProjectFolderPicker.StorageFolder != null)
             {
-                var resourcesFolder = Path.Combine(Preferences.Current.AndroidProjectFolder, "Resources");
-                if (!Directory.Exists(resourcesFolder))
-                    Directory.CreateDirectory(resourcesFolder);
-                var mipmapFolder = Path.Combine(resourcesFolder, "mipmap-anydpi-v26");
-                if (!Directory.Exists(mipmapFolder))
-                    Directory.CreateDirectory(mipmapFolder);
+                var resourcesFolder = await _androidProjectFolderPicker.StorageFolder.GetOrCreateFolderAsync("Resources");
 
-                if (await GetProjectFile(Preferences.Current.AndroidProjectFolder, Xamarin.Essentials.DevicePlatform.Android) is IStorageFile storageFile)
+                if (await _androidProjectFolderPicker.GetProjectFile() is IStorageFile storageFile)
                 {
                     if (XDocumentExtensions.Load(storageFile) is XDocument csprojDoc)
                     {
@@ -434,7 +346,7 @@ namespace AssetBuilder.Views
                                 element.SetAttributeValue("Include", "Resources\\mipmap-anydpi-v26\\launcher_foreground.xml");
                                 androidResourceItemGroup.Add(element);
 
-                                StorageFile.WriteAllText(storageFile, XmlHeader + csprojDoc);
+                                StorageFileExtensions.WriteAllText(storageFile, XmlHeader + csprojDoc);
                             }
                         }
 
@@ -445,122 +357,133 @@ namespace AssetBuilder.Views
                         return null;
                     }
 
-                    var valuesFolder = Path.Combine(resourcesFolder, "values");
-                    var colorsPath = Path.Combine(valuesFolder, "colors.xml");
-                    var colorsDocument = XDocument.Load(colorsPath);
-                    var colors = colorsDocument.Root;
-                    if (colors.Name.ToString() == "resources")
+                    var valuesFolder = await resourcesFolder?.GetOrCreateFolderAsync( "values");
+                    if (await valuesFolder?.GetFileAsync("colors.xml") is IStorageFile colorsFile)
                     {
-                        var color = colors.Elements("color").FirstOrDefault(e => e.Attribute("name") is XAttribute name && name.Value == "launcher_background");
-                        if (color is null)
+                        var colorsDocument = XDocumentExtensions.Load(colorsFile);
+                        var colors = colorsDocument.Root;
+                        if (colors.Name.ToString() == "resources")
                         {
-                            color = new XElement("color");
-                            color.SetAttributeValue("name", "launcher_background");
-                            colors.Add(color);
-                        }
-                        color.Value = Preferences.Current.IconBackgroundColor.ToHex();
+                            var color = colors.Elements("color").FirstOrDefault(e => e.Attribute("name") is XAttribute name && name.Value == "launcher_background");
+                            if (color is null)
+                            {
+                                color = new XElement("color");
+                                color.SetAttributeValue("name", "launcher_background");
+                                colors.Add(color);
+                            }
+                            color.Value = Preferences.Current.IconBackgroundColor.ToHex();
 
-                        var text = XmlHeader + colorsDocument.ToString();
-                        File.WriteAllText(colorsPath, text);
+                            var text = XmlHeader + colorsDocument.ToString();
+                            StorageFileExtensions.WriteAllText(colorsFile, text);
+                        }
                     }
+                    else
+                        await DisplayAlert("Error", "Could not find values/colors.xml in Android project","ok");
 
 
                     if (vector != null)
                     {
-                        // through pure Android cruelty, we have to do this.  What a mess.
-                        var tmpVector = AndroidVector.BaseElementExtensions.Copy(vector);
-                        tmpVector.Width = new AndroidVector.UnitizedFloat(117, AndroidVector.Unit.Dp);
-                        tmpVector.Height = new AndroidVector.UnitizedFloat(117, AndroidVector.Unit.Dp);
-                        tmpVector.ViewportWidth *= 1.5;
-                        tmpVector.ViewportHeight *= 1.5;
-                        tmpVector.SvgTransforms.Add(AndroidVector.Matrix.CreateTranslate((float)(tmpVector.ViewportWidth / 6), (float)(tmpVector.ViewportHeight / 6)));
-                        tmpVector.ApplySvgTransforms();
-                        tmpVector.PurgeDefaults();
-                        File.WriteAllText(Path.Combine(mipmapFolder, "launcher_foreground.xml"), tmpVector.ToString());
+                        if (await resourcesFolder?.GetOrCreateFolderAsync("mipmap-anydpi-v26") is IStorageFolder mipmapFolder)
+                        {
+                            // through pure Android cruelty, we have to do this.  What a mess.
+                            var tmpVector = AndroidVector.BaseElementExtensions.Copy(vector);
+                            tmpVector.Width = new AndroidVector.UnitizedFloat(117, AndroidVector.Unit.Dp);
+                            tmpVector.Height = new AndroidVector.UnitizedFloat(117, AndroidVector.Unit.Dp);
+                            tmpVector.ViewportWidth *= 1.5;
+                            tmpVector.ViewportHeight *= 1.5;
+                            tmpVector.SvgTransforms.Add(AndroidVector.Matrix.CreateTranslate((float)(tmpVector.ViewportWidth / 6), (float)(tmpVector.ViewportHeight / 6)));
+                            tmpVector.ApplySvgTransforms();
+                            tmpVector.PurgeDefaults();
+                            var launcher_foreground = await mipmapFolder.GetOrCreateFileAsync("launcher_foreground.xml");
+                            StorageFileExtensions.WriteAllText(launcher_foreground, tmpVector.ToString());
+                        }
+                        else
+                            await DisplayAlert("Error", "Could not find or create Resources/mipmap-anydpi-v26 in Android project", "ok");
                     }
                 }
             }
             return vector;
         }
 
-        void GenerateRasterAndroidIcons(AndroidVector.Vector vector)
+        async Task GenerateRasterAndroidIcons(AndroidVector.Vector vector)
         {
-            if (string.IsNullOrWhiteSpace(Preferences.Current.AndroidProjectFolder))
+            if (_androidProjectFolderPicker.StorageFolder is null)
                 return;
 
-            if (!Directory.Exists(Preferences.Current.AndroidProjectFolder))
+            var folders = await _androidProjectFolderPicker.StorageFolder.GetFoldersAsync();
+            foreach (var folder in folders)
+                System.Diagnostics.Debug.WriteLine("folder: " + folder.Path);
+
+            if (await _androidProjectFolderPicker.StorageFolder.GetFolderAsync("Resources") is IStorageFolder resourcesFolder)
             {
-                DisplayAlert(null, "Invaid Android Project Folder", "ok");
-                return;
-            }
-            var dest = Path.Combine(new string[] { Preferences.Current.AndroidProjectFolder, "Resources" });
-            if (!Directory.Exists(dest))
-            {
-                DisplayAlert(null, "Cannot find Android Resources folder [" + dest + "]", "ok");
-                return;
-            }
-            foreach (var folder in Directory.GetDirectories(dest))
-            {
-                foreach (var path in Directory.GetFiles(folder))
+                var resourceFolders = await resourcesFolder.GetFoldersAsync();
+                foreach (var targetFolder in resourceFolders)
                 {
-                    if (Path.GetFileName(path).ToLower() == "icon.png")
+                    var targetFiles = await targetFolder.GetFilesAsync();
+                    foreach (var targetFile in targetFiles)
                     {
-                        int size = 0;
-                        using (var inputStream = File.OpenRead(path))
+                        if (targetFile.Name.ToLower() == "icon.png")
                         {
-                            var bitmap = SKBitmap.Decode(inputStream);
-                            if (bitmap.Width == bitmap.Height && bitmap.Width > 10)
-                                size = bitmap.Width;
+                            int size = 0;
+                            using (var inputStream = targetFile.OpenRead()) //File.OpenRead(targetFile))
+                            {
+                                var bitmap = SKBitmap.Decode(inputStream);
+                                if (bitmap.Width == bitmap.Height && bitmap.Width > 10)
+                                    size = bitmap.Width;
+                            }
+                            if (size > 0)
+                                vector.ToPng(targetFile, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
                         }
-                        if (size > 0)
-                            vector.ToPng(path, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
-                    }
-                    if (Path.GetFileName(path).ToLower() == "launcher_foreground.png")
-                    {
-                        int size = 0;
-                        using (var inputStream = File.OpenRead(path))
+                        if (targetFile.Name.ToLower() == "launcher_foreground.png")
                         {
-                            var bitmap = SKBitmap.Decode(inputStream);
-                            if (bitmap.Width == bitmap.Height && bitmap.Width > 10)
-                                size = bitmap.Width;
+                            int size = 0;
+                            using (var inputStream = targetFile.OpenRead())
+                            {
+                                var bitmap = SKBitmap.Decode(inputStream);
+                                if (bitmap.Width == bitmap.Height && bitmap.Width > 10)
+                                    size = bitmap.Width;
+                            }
+                            if (size > 0)
+                                vector.ToPng(targetFile, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size * 2 / 3, size * 2 / 3), new System.Drawing.Size(size, size));
                         }
-                        if (size > 0)
-                            vector.ToPng(path, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size * 2 / 3, size * 2 / 3), new System.Drawing.Size(size, size));
                     }
                 }
             }
+            else
+                await DisplayAlert(null, "Cannot find Android Resources folder in Android Project Folder [" + _androidProjectFolderPicker.StorageFolder.Path + "]", "ok");
         }
 
-        void GenerateIosIcons(AndroidVector.Vector vector)
+        async Task GenerateIosIcons(AndroidVector.Vector vector)
         {
-            if (string.IsNullOrWhiteSpace(Preferences.Current.IosOProjectFolder))
+            if (_iosProjectFolderPicker.StorageFolder is null)
                 return;
 
-            if (!Directory.Exists(Preferences.Current.IosOProjectFolder))
+            var xcassettsFolder = await _iosProjectFolderPicker.StorageFolder.GetFolderAsync("Assets.xcassets");
+            if (await (xcassettsFolder?.GetFolderAsync("AppIcon.appiconset") ?? Task.FromResult<IStorageFolder>(null)) is IStorageFolder appIconSetFolder)
             {
-                DisplayAlert(null, "Invaid iOS Project Folder", "ok");
-                return;
-            }
-            var dest = Path.Combine(new string[] { Preferences.Current.IosOProjectFolder, "Assets.xcassets", "AppIcon.appiconset" });
-            if (!Directory.Exists(dest))
-            {
-                DisplayAlert(null, "Cannot find iOS icons folder [" + dest + "]", "ok");
-                return;
-            }
-
-            foreach (var path in Directory.GetFiles(dest))
-            {
-                if (Path.GetExtension(path).ToLower() == ".png"
-                    && Path.GetFileNameWithoutExtension(path).ToLower().StartsWith("icon")
-                    && int.TryParse(Path.GetFileNameWithoutExtension(path).Substring(4), out int size)
-                    )
+                var iconFiles = await appIconSetFolder.GetFilesAsync();
+                foreach (var iconFile in iconFiles)
                 {
-                    vector.ToPng(path, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
+                    if (iconFile.FileType.ToLower() == "png"
+                        && iconFile.Name.ToLower().StartsWith("icon")
+                        )
+                    {
+                        int size = -1;
+                        using (var stream = iconFile.OpenRead())
+                        {
+                            var bitmap = SKBitmap.Decode(stream);
+                            size = bitmap.Width;
+                        }
+                        vector.ToPng(iconFile, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
+                    }
                 }
             }
+            else
+                await DisplayAlert(null, "Cannot find iOS project's Assets.xcassets/AppIcon.appiconset folder", "ok");
+
         }
 
-        static Dictionary<string, int> UwpIcons = new Dictionary<string, int>
+        static readonly Dictionary<string, int> UwpIcons = new Dictionary<string, int>
         {
             { "BadgeLogo.scale-100.png", 24 },
             { "BadgeLogo.scale-125.png", 30 },
@@ -601,29 +524,22 @@ namespace AssetBuilder.Views
             { "SmallTile.scale-400.png", 248 },
         };
 
-        void GenerateUwpIcons(AndroidVector.Vector vector)
+        async Task GenerateUwpIcons(AndroidVector.Vector vector)
         {
-            if (string.IsNullOrWhiteSpace(Preferences.Current.UwpProjectFolder))
+            if (_uwpProjectFolderPicker.StorageFolder is null)
                 return;
 
-            if (!Directory.Exists(Preferences.Current.UwpProjectFolder))
+            if (await _uwpProjectFolderPicker.StorageFolder.GetFolderAsync("Assets") is IStorageFolder assetsFolder)
             {
-                DisplayAlert(null, "Invaid UWP Project Folder", "ok");
-                return;
+                foreach (var kvp in UwpIcons)
+                {
+                    var file = await assetsFolder.GetOrCreateFileAsync(kvp.Key);
+                    var size = kvp.Value;
+                    vector.ToPng(file, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
+                }
             }
-            var dest = Path.Combine(new string[] { Preferences.Current.UwpProjectFolder, "Assets" });
-            if (!Directory.Exists(dest))
-            {
-                DisplayAlert(null, "Cannot find UWP Assets folder [" + dest + "]", "ok");
-                return;
-            }
-
-            foreach (var kvp in UwpIcons)
-            {
-                var path = Path.Combine(dest,kvp.Key);
-                var size = kvp.Value;
-                vector.ToPng(path, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
-            }
+            else
+                await DisplayAlert(null, "Cannot find UWP Assets folder in UWP project folder [" + _uwpProjectFolderPicker.StorageFolder.Path + "]", "ok");
         }
 
         #endregion
@@ -632,49 +548,54 @@ namespace AssetBuilder.Views
         #region Generate Splash Screens and Images
         async void OnGenerateLaunchImageButtonClicked(object sender, EventArgs e)
         {
-                
-            if (string.IsNullOrWhiteSpace(MobileSplashSvg) || !File.Exists(MobileSplashSvg))
-            {
-                await DisplayAlert(null, "Cannot open SVG file [" + MobileSplashSvg + "]", "cancel");
-                return;
+            ShowSpinner();
+            if (await GenerateUwpSplashAndLogoImages() is AndroidVector.Vector mobileSplashVector)
+            { 
+                await GenerateAndroidSpashImage(mobileSplashVector);
+                await GenerateIosSplashScreen(mobileSplashVector);
             }
+            else
+                await DisplayAlert(null, "No mobile splash image has been generated.", "ok");
 
-            await GenerateIosSplashScreen(await GenerateAndroidSpashImage(await GenerateUwpSplashAndLogoImages()));
-
-             await DisplayAlert("Complete", "Launch Screens have been generated.", "ok");
+            await DisplayAlert("Complete", "Launch Screens have been generated.", "ok");
+            HideSpinner();
         }
 
         #region Android
         async Task<AndroidVector.Vector> GenerateAndroidSpashImage(AndroidVector.Vector vector)
         {
-            if (vector != null && !string.IsNullOrWhiteSpace(Preferences.Current.AndroidProjectFolder))
+            if (vector != null && _androidProjectFolderPicker.StorageFolder is IStorageFolder projectFolder)
             {
-
-                var resourcesFolder = Path.Combine(Preferences.Current.AndroidProjectFolder, "Resources");
-                if (!Directory.Exists(resourcesFolder))
-                    Directory.CreateDirectory(resourcesFolder);
-                var drawableFolder = Path.Combine(resourcesFolder, "drawable");
-                if (!Directory.Exists(drawableFolder))
-                    Directory.CreateDirectory(drawableFolder);
-                var drawable23Folder = Path.Combine(resourcesFolder, "drawable-v23");
-                if (!Directory.Exists(drawable23Folder))
-                    Directory.CreateDirectory(drawable23Folder);
+                if (!(await projectFolder.GetOrCreateFolderAsync("Resources") is IStorageFolder resourcesFolder))
+                {
+                    await DisplayAlert(null, "Cannot open or create Resources folder in [" + projectFolder.Path + "]", "ok");
+                    return vector;
+                }
+                if (!(await resourcesFolder.GetOrCreateFolderAsync("drawable") is IStorageFolder drawableFolder))
+                {
+                    await DisplayAlert(null, "Cannot open or create drawable folder in [" + resourcesFolder.Path + "]", "ok");
+                    return vector;
+                }
+                if (!(await resourcesFolder.GetOrCreateFolderAsync("drawable-v23") is IStorageFolder drawable23Folder))
+                {
+                    await DisplayAlert(null, "Cannot open or create drawable-v23 folder in [" + resourcesFolder.Path + "]", "ok");
+                    return vector;
+                }
 
                 var splashActivityFileName = "SplashActivity.cs";
-                var splashActivityPath = Path.Combine(Preferences.Current.AndroidProjectFolder, splashActivityFileName);
-                if (!File.Exists(splashActivityPath))
-                    GetType().Assembly.TryCopyResource("AssetBuilder.Resources." + splashActivityFileName, splashActivityPath);
+                await CopyEmbeddedResourceToFolder("AssetBuilder.Resources." + splashActivityFileName, splashActivityFileName, _androidProjectFolderPicker.StorageFolder);
 
                 var splashBackgroundFileName = "background_splash.xml";
-                var splashBackgroundPath = Path.Combine(drawableFolder, splashBackgroundFileName);
-                if (!File.Exists(splashBackgroundPath))
-                    GetType().Assembly.TryCopyResource("AssetBuilder.Resources.drawable." + splashBackgroundFileName, splashBackgroundPath);
-                var v23splashBackgroundPath = Path.Combine(drawable23Folder, splashBackgroundFileName);
-                if (!File.Exists(v23splashBackgroundPath))
-                    GetType().Assembly.TryCopyResource("AssetBuilder.Resources.drawable-v23." + splashBackgroundFileName, v23splashBackgroundPath);
+                await CopyEmbeddedResourceToFolder("AssetBuilder.Resources." + splashBackgroundFileName, splashBackgroundFileName, drawableFolder);
+                await CopyEmbeddedResourceToFolder("AssetBuilder.Resources.drawable-v23." + splashBackgroundFileName, splashBackgroundFileName, drawable23Folder);
 
-
-                File.WriteAllText(Path.Combine(drawable23Folder, "splash_image.xml"), vector.ToString());
+                if (await drawable23Folder.GetOrCreateFileAsync("splash_image.xml") is IStorageFile splashImageXmlFile)
+                    await splashImageXmlFile.WriteAllTextAsync(vector.ToString());
+                else
+                {
+                    await DisplayAlert(null, "Cannot open or create splash_image.xml in [" + drawable23Folder.Path + "]", "ok");
+                    return vector;
+                }
 
                 try
                 {
@@ -689,14 +610,24 @@ namespace AssetBuilder.Views
                         else
                             size = new System.Drawing.Size((int)Math.Ceiling(300 * aspect), 300);
                     }
-                    vector.ToPng(Path.Combine(drawableFolder, "splash_image.png"), Color.Transparent, size);
+                    if (await drawableFolder.GetOrCreateFileAsync("splash_image.png") is IStorageFile splashImagePngFile)
+                    {
+                        vector.ToPng(splashImagePngFile, Color.Transparent, size);
+                    }
+                    else
+                    {
+                        await DisplayAlert(null, "Cannot open or create splash_image.png in [" + drawableFolder.Path + "]", "ok");
+                        return vector;
+                    }
+
                 }
                 catch (Exception e)
                 {
                     await DisplayAlert("SkiaSharp ERROR", "Failed to generate pre-v23 SDK Android splash image (drawable/splash_image.png) because of the following SkiaSharp exception:\n\n" + e.Message, "ok");
+                    return vector;
                 }
 
-                if (await GetProjectFile(Preferences.Current.AndroidProjectFolder, Xamarin.Essentials.DevicePlatform.Android) is IStorageFile projectFile)
+                if (_androidProjectFolderPicker.ProjectFile is IStorageFile projectFile)
                 {
                     if (XDocumentExtensions.Load(projectFile) is XDocument csprojDoc)
                     {
@@ -722,8 +653,7 @@ namespace AssetBuilder.Views
                                 element.SetAttributeValue("Include", "Resources\\drawable-v23\\splash_image.xml");
                                 androidResourceItemGroup.Add(element);
 
-
-                                StorageFile.WriteAllText(projectFile, XmlHeader + csprojDoc);
+                                StorageFileExtensions.WriteAllText(projectFile, XmlHeader + csprojDoc);
                             }
                         }
 
@@ -736,7 +666,7 @@ namespace AssetBuilder.Views
                                 element.SetAttributeValue("Include", "SplashActivity.cs");
                                 sourceItemGroup.Add(element);
 
-                                StorageFile.WriteAllText(projectFile, XmlHeader + csprojDoc);
+                                StorageFileExtensions.WriteAllText(projectFile, XmlHeader + csprojDoc);
                             }
                         }
                     }
@@ -746,68 +676,103 @@ namespace AssetBuilder.Views
                         return null;
                     }
 
-                    var valuesFolder = Path.Combine(resourcesFolder, "values");
-                    var stylesPath = Path.Combine(valuesFolder, "styles.xml");
-                    var stylesDocument = XDocument.Load(stylesPath);
-                    var styles = stylesDocument.Root;
-                    if (styles.Name.ToString() == "resources")
+                    //var valuesFolder = Path.Combine(resourcesFolder, "values");
+                    if (!(await resourcesFolder.GetFolderAsync("values") is IStorageFolder valuesFolder))
                     {
-                        if (!styles.Elements("style").Any(e => e.Attribute("name")?.Value == "SplashTheme"))
-                        {
-                            XNamespace ns = "android";
-                            var item = new XElement("item", "@drawable/background_splash");
-                            item.SetAttributeValue("name", ns + "windowBackground");
-                            var style = new XElement("style", item);
-                            style.SetAttributeValue("name", "SplashTheme");
-                            style.SetAttributeValue("parent", "Theme.AppCompat.NoActionBar");
-                            styles.Add(style);
+                        await DisplayAlert(null, "Cannot get values folder in [" + resourcesFolder.Path + "]", "ok");
+                        return vector;
+                    }
 
-                            var text = XmlHeader + stylesDocument.ToString().Replace("{android}", "android:");
-                            File.WriteAllText(stylesPath, text);
+                    if (await valuesFolder.GetFileAsync("styles.xml") is IStorageFile stylesFile)
+                    {
+                        var stylesDocument = XDocumentExtensions.Load(stylesFile);
+                        var styles = stylesDocument.Root;
+                        if (styles.Name.ToString() == "resources")
+                        {
+                            if (!styles.Elements("style").Any(e => e.Attribute("name")?.Value == "SplashTheme"))
+                            {
+                                XNamespace ns = "android";
+                                var item = new XElement("item", "@drawable/background_splash");
+                                item.SetAttributeValue("name", ns + "windowBackground");
+                                var style = new XElement("style", item);
+                                style.SetAttributeValue("name", "SplashTheme");
+                                style.SetAttributeValue("parent", "Theme.AppCompat.NoActionBar");
+                                styles.Add(style);
+
+                                var text = XmlHeader + stylesDocument.ToString().Replace("{android}", "android:");
+                                StorageFileExtensions.WriteAllText(stylesFile, text);
+                            }
                         }
                     }
-
-                    var colorsPath = Path.Combine(valuesFolder, "colors.xml");
-                    var colorsDocument = XDocument.Load(colorsPath);
-                    var colors = colorsDocument.Root;
-                    if (colors.Name.ToString() == "resources")
+                    else
                     {
-                        var color = colors.Elements("color").FirstOrDefault(e => e.Attribute("name") is XAttribute name && name.Value == "splash_background");
-                        if (color is null)
+                        await DisplayAlert(null, "Cannot open styles.xml file in [" + valuesFolder.Path + "]", "ok");
+                        return vector;
+                    }
+
+                    if (await valuesFolder.GetFileAsync("colors.xml") is IStorageFile colorsFile)
+                    {
+                        var colorsDocument = XDocumentExtensions.Load(colorsFile);
+                        var colors = colorsDocument.Root;
+                        if (colors.Name.ToString() == "resources")
                         {
-                            color = new XElement("color");
-                            color.SetAttributeValue("name", "splash_background");
-                            colors.Add(color);
+                            var color = colors.Elements("color").FirstOrDefault(e => e.Attribute("name") is XAttribute name && name.Value == "splash_background");
+                            if (color is null)
+                            {
+                                color = new XElement("color");
+                                color.SetAttributeValue("name", "splash_background");
+                                colors.Add(color);
+                            }
+                            color.Value = Preferences.Current.SplashBackgroundColor.ToHex();
+
+                            var text = XmlHeader + colorsDocument.ToString();
+                            StorageFileExtensions.WriteAllText(colorsFile, text);
                         }
-                        color.Value = Preferences.Current.SplashBackgroundColor.ToHex();
-
-                        var text = XmlHeader + colorsDocument.ToString();
-                        File.WriteAllText(colorsPath, text);
+                    }
+                    else
+                    {
+                        await DisplayAlert(null, "Cannot open colors.xml file in [" + valuesFolder.Path + "]", "ok");
+                        return vector;
                     }
 
-                    //DisplayAlert(null, "Don't forget to set MainLauncher=\"false\" in " + Path.Combine(Preferences.Current.AndroidProjectFolder + "MainActivity.cs") + ".", "ok");
-                    string namespaceLine = null;
-                    var mainActivityPath = Path.Combine(Preferences.Current.AndroidProjectFolder, "MainActivity.cs");
-                    var mainActivityLines = File.ReadAllLines(mainActivityPath);
-                    var updatedLines = new List<string>();
-                    foreach (var line in mainActivityLines)
+                    if (await _androidProjectFolderPicker.StorageFolder.GetFileAsync("MainActivity.cs") is IStorageFile mainActivityFile)
                     {
-                        if (line.StartsWith("namespace"))
-                            namespaceLine = line;
-                        updatedLines.Add(line.Replace("MainLauncher = true", "MainLauncher = false"));
-                    }
-                    File.WriteAllLines(mainActivityPath, updatedLines);
+                        string namespaceLine = null;
+                        var mainActivityPath = Path.Combine(Preferences.Current.AndroidProjectFolder, "MainActivity.cs");
+                        var mainActivityLines = File.ReadAllLines(mainActivityPath);
+                        var updatedLines = new List<string>();
+                        foreach (var line in mainActivityLines)
+                        {
+                            if (line.StartsWith("namespace"))
+                                namespaceLine = line;
+                            updatedLines.Add(line.Replace("MainLauncher = true", "MainLauncher = false"));
+                        }
+                        File.WriteAllLines(mainActivityPath, updatedLines);
 
-                    var splashActivityLines = File.ReadAllLines(splashActivityPath);
-                    updatedLines = new List<string>();
-                    foreach (var line in splashActivityLines)
-                    {
-                        if (line.StartsWith("namespace"))
-                            updatedLines.Add(namespaceLine);
+                        if (await _androidProjectFolderPicker.StorageFolder.GetFileAsync(splashActivityFileName) is IStorageFile splashActivityFile)
+                        {
+                            var splashActivityLines = StorageFileExtensions.ReadAllLines(splashActivityFile);
+                            updatedLines = new List<string>();
+                            foreach (var line in splashActivityLines)
+                            {
+                                if (line.StartsWith("namespace"))
+                                    updatedLines.Add(namespaceLine);
+                                else
+                                    updatedLines.Add(line);
+                            }
+                            splashActivityFile.WriteAllLines(updatedLines);
+                        }
                         else
-                            updatedLines.Add(line);
+                        {
+                            await DisplayAlert(null, "Cannot open "+splashBackgroundFileName+" file in [" + _androidProjectFolderPicker.StorageFolder.Path + "]", "ok");
+                            return vector;
+                        }
                     }
-                    File.WriteAllLines(splashActivityPath, updatedLines);
+                    else
+                    {
+                        await DisplayAlert(null, "Cannot open MainActivity.cs file in [" + _androidProjectFolderPicker.StorageFolder.Path + "]", "ok");
+                        return vector;
+                    }
                 }
             }
             return vector;
@@ -817,20 +782,20 @@ namespace AssetBuilder.Views
         #region iOS Splash Screen and Image
         async Task GenerateIosSplashScreen(AndroidVector.Vector vector)
         {
-            if (!string.IsNullOrWhiteSpace(Preferences.Current.IosOProjectFolder))
+            if (_iosProjectFolderPicker.StorageFolder != null)
             {
-                if (GenerateIosSplashPdf(vector) is string err0)
+                if (await GenerateIosSplashPdf(vector) is string err0)
                 {
                     await DisplayAlert("Pdf Generation Error", err0, "ok");
                     return;
                 }
-                if (UpdateIosLaunchScreenStoryboard() is string err1)
+                if (await UpdateIosLaunchScreenStoryboard() is string err1)
                 {
                     await DisplayAlert("Update iOS LaunchScreen Storyboard Error", err1, "ok");
                     return;
                 }
 
-                if (await UpdateIosCsproj() is string err2)
+                if (UpdateIosCsproj() is string err2)
                 {
                     await DisplayAlert("Update iOS *.csproj Error", err2, "ok");
                     return;
@@ -838,44 +803,52 @@ namespace AssetBuilder.Views
             }
         }
 
-        public string GenerateIosSplashPdf(AndroidVector.Vector vector)
+        public async Task<string> GenerateIosSplashPdf(AndroidVector.Vector vector)
         {
+            if (_iosProjectFolderPicker.StorageFolder is null)
+                return null;
             if (vector is null)
                 return "AndroidVector was not generated and thus not available to convert to PDF for iOS LaunchImage.";
 
-            if (string.IsNullOrWhiteSpace(Preferences.Current.IosOProjectFolder) || !Directory.Exists(Preferences.Current.IosOProjectFolder))
-                return "Invalid iOS Project Folder";
+            if (!(await _iosProjectFolderPicker.StorageFolder.GetOrCreateFolderAsync("Assets.xcassets") is IStorageFolder xcassetsFolder))
+                return "Cannot open Assets.xcassets folder in [" + _iosProjectFolderPicker.StorageFolder.Path + "]";
 
-            var destDir = Path.Combine(new string[] { Preferences.Current.IosOProjectFolder, "Assets.xcassets", "Splash.imageset" });
-            if (!Directory.Exists(destDir))
+            if (await xcassetsFolder.GetFolderAsync("Splash.imageset") is IStorageFolder splashImageSetFolder)
+                await CopyEmbeddedResourceToFolder("AssetBuilder.Resources.Contents.json", "Contents.json", splashImageSetFolder);
+            else
+                return "Cannot open or create Splash.imageset folder in [" + xcassetsFolder.Path + "]";
+
+            var launchImagePdfFileName = "LaunchImage.pdf";
+            if (await splashImageSetFolder.GetFileAsync(launchImagePdfFileName) is IStorageFile oldLaunchImagePdfFile)
+                await oldLaunchImagePdfFile.DeleteAsync();
+
+            if (await splashImageSetFolder.CreateFileAsync(launchImagePdfFileName) is IStorageFile launchImagePdfFile)
             {
-                Directory.CreateDirectory(destDir);
-                GetType().Assembly.TryCopyResource("AssetBuilder.Resources.Contents.json", Path.Combine(destDir, "Contents.json"));
+                try
+                {
+                    var warnings = vector.ToPdfDocument(launchImagePdfFile, Preferences.Current.SplashBackgroundColor);
+                    if (warnings!=null && warnings.Count > 0)
+                        return string.Join("\n\n", warnings);
+                }
+                catch (Exception e)
+                {
+                    return "Could not generate PDF for iOS LaunchImage because of the following AndroidVector.ToPdfDocument error:\n\n" + e.Message;
+                }
             }
-
-            var pdfPath = Path.Combine(destDir, "LaunchImage.pdf");
-            if (File.Exists(pdfPath))
-                File.Delete(pdfPath);
-
-            try
-            {
-                vector.ToPdfDocument(pdfPath, Preferences.Current.SplashBackgroundColor);
-            }
-            catch (Exception e)
-            {
-                return "Could not generate PDF for iOS LaunchImage because of the following AndroidVector.ToPdfDocument error:\n\n" + e.Message;
-            }
-
             return null;
         }
 
-        public string UpdateIosLaunchScreenStoryboard()
+        public async Task<string> UpdateIosLaunchScreenStoryboard()
         {
-            var resourcesFolder = Path.Combine(Preferences.Current.IosOProjectFolder, "Resources");
-            var launchScreenPath = Path.Combine(resourcesFolder, "LaunchScreen.storyboard");
-            GetType().Assembly.TryCopyResource("AssetBuilder.Resources.LaunchScreen.storyboard", launchScreenPath);
+            if (_iosProjectFolderPicker.StorageFolder is null)
+                return null;
 
-            var document = XDocument.Load("file://" + launchScreenPath);
+            if (!(await _iosProjectFolderPicker.StorageFolder.GetOrCreateFolderAsync("Resources") is IStorageFolder resourcesFolder))
+                return "Could not get or create Resources folder in iOS project folder ["+_iosProjectFolderPicker.StorageFolder+"].";
+            if (!(await resourcesFolder.GetFileAsync("LaunchScreen.storyboard") is IStorageFile launchScreenStoryboardFile))
+                launchScreenStoryboardFile = await CopyEmbeddedResourceToFolder("AssetBuilder.Resources.LaunchScreen.storyboard", "LaunchScreen.storyboard", resourcesFolder);
+
+            var document = XDocumentExtensions.Load(launchScreenStoryboardFile);
             if (document.Descendants("color") is IEnumerable<XElement> colorElements)
             {
                 if (colorElements.FirstOrDefault(e=>e.Attribute("key")?.Value == "backgroundColor") is XElement backgroundColor)
@@ -889,13 +862,13 @@ namespace AssetBuilder.Views
 
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n";
             var text = xmlHeader + document;
-             File.WriteAllText(launchScreenPath, text);
+            StorageFileExtensions.WriteAllText(launchScreenStoryboardFile, text);
             return null;
         }
 
-        async Task<string> UpdateIosCsproj()
+        string UpdateIosCsproj()
         {
-            if (await GetProjectFile(Preferences.Current.IosOProjectFolder, Xamarin.Essentials.DevicePlatform.iOS) is IStorageFile projectFile)
+            if (_iosProjectFolderPicker.ProjectFile is IStorageFile projectFile)
             {
                 if (XDocumentExtensions.Load(projectFile) is XDocument document)
                 {
@@ -923,7 +896,7 @@ namespace AssetBuilder.Views
                                 itemGroup.Add(imageAsset);
 
                                 var text = XmlHeader + document;
-                                StorageFile.WriteAllText(projectFile, text);
+                                StorageFileExtensions.WriteAllText(projectFile, text);
 
                                 return null;
                             }
@@ -937,7 +910,7 @@ namespace AssetBuilder.Views
         #endregion
 
         #region UWP Splash
-        static Dictionary<string, System.Drawing.Size> UwpRectangularSplashImages = new Dictionary<string, System.Drawing.Size>
+        static readonly Dictionary<string, System.Drawing.Size> UwpRectangularSplashImages = new Dictionary<string, System.Drawing.Size>
         {
             { "SplashScreen.scale-100.png", new System.Drawing.Size(620, 300) },
             { "SplashScreen.scale-120.png", new System.Drawing.Size(775, 375) },
@@ -950,7 +923,7 @@ namespace AssetBuilder.Views
             { "Wide310x150Logo.scale-200.png", new System.Drawing.Size(620, 300) },
             { "Wide310x150Logo.scale-400.png", new System.Drawing.Size(1240, 600) },
         };
-        static Dictionary<string, int> UwpSquareLogoImages = new Dictionary<string, int>
+        static readonly Dictionary<string, int> UwpSquareLogoImages = new Dictionary<string, int>
         {
             { "Square150x150Logo.scale-100.png", 150 },
             { "Square150x150Logo.scale-125.png", 188 },
@@ -972,12 +945,12 @@ namespace AssetBuilder.Views
         async Task<AndroidVector.Vector> GenerateUwpSplashAndLogoImages()
         {
             AndroidVector.Vector mobileVector = null;
-            if (GenerateUwpRectangleSplashAndLogoImages() is AndroidVector.Vector squareVector && Preferences.Current.MobileSplashSource == MobileSplashSource.Rect310)
+            if (await GenerateUwpRectangleSplashAndLogoImages() is AndroidVector.Vector squareVector && Preferences.Current.MobileSplashSource == MobileSplashSource.Rect310)
                 mobileVector = squareVector;
-            if (GenerateUwpSquareSplashAndLogoImages() is AndroidVector.Vector rectVector && Preferences.Current.MobileSplashSource == MobileSplashSource.Square)
+            if (await GenerateUwpSquareSplashAndLogoImages() is AndroidVector.Vector rectVector && Preferences.Current.MobileSplashSource == MobileSplashSource.Square)
                 mobileVector = rectVector;
 
-            if (await GetProjectFile(Preferences.Current.UwpProjectFolder, Xamarin.Essentials.DevicePlatform.UWP) is IStorageFile projectFile)
+            if (_uwpProjectFolderPicker.ProjectFile is IStorageFile projectFile)
             {
                 if (XDocumentExtensions.Load(projectFile) is XDocument document)
                 {
@@ -1001,7 +974,7 @@ namespace AssetBuilder.Views
 
 
                             var text = XmlHeader + document;
-                            StorageFile.WriteAllText(projectFile, text);
+                            StorageFileExtensions.WriteAllText(projectFile, text);
                             break;
                         }
                     }
@@ -1012,51 +985,67 @@ namespace AssetBuilder.Views
             return mobileVector;
         }
 
-        AndroidVector.Vector GenerateUwpSquareSplashAndLogoImages()
+        async Task<AndroidVector.Vector> GenerateUwpSquareSplashAndLogoImages()
         {
-            if (string.IsNullOrWhiteSpace(Preferences.Current.SquareSvgSplashImageFile))
+            if (_squareSvgLaunchImagePicker.StorageFile is null)
                 return null;
 
-            if (Svg2.GenerateAndroidVector(Preferences.Current.SquareSvgSplashImageFile) is (AndroidVector.Vector vector, List<string> warnings))
+            if (Svg2.GenerateAndroidVector(_squareSvgLaunchImagePicker.StorageFile) is (AndroidVector.Vector vector, List<string> warnings))
             {
                 if (warnings.Count > 0 && Preferences.Current.MobileSplashSource != MobileSplashSource.Square)
-                    DisplayAlert("Square Splash Image Warnings", string.Join("\n\n", warnings), "ok");
+                    await DisplayAlert("Square Splash Image Warnings", string.Join("\n\n", warnings), "ok");
 
-                if (!string.IsNullOrWhiteSpace(Preferences.Current.UwpProjectFolder))
+                if (_uwpProjectFolderPicker.StorageFolder != null)
                 {
-                    var folder = Path.Combine(Preferences.Current.UwpProjectFolder, "Assets");
-                    foreach (var kvp in UwpSquareLogoImages)
-                        vector.ToPng(Path.Combine(folder, kvp.Key), Color.Transparent, new System.Drawing.Size(kvp.Value, kvp.Value));
+                    if (await _uwpProjectFolderPicker.StorageFolder.GetOrCreateFolderAsync("Assets") is IStorageFolder assetsFolder)
+                    {
+                        foreach (var kvp in UwpSquareLogoImages)
+                        {
+                            var file = await assetsFolder.GetOrCreateFileAsync(kvp.Key);
+                            vector.ToPng(file, Color.Transparent, new System.Drawing.Size(kvp.Value, kvp.Value));
+                        }
+                    }
+                    else
+                        await DisplayAlert("ERROR", "Failed to generate UWP Square Splash images because could not find Assets folder in UWP project folder ["+_uwpProjectFolderPicker.StorageFolder.Path+"].", "ok");
                 }
             }
             else
             {
-                DisplayAlert("ERROR", "Failed to generate UWP Square Splash images for unknown reason.", "ok");
+                await DisplayAlert("ERROR", "Failed to generate UWP Square Splash images for unknown reason.", "ok");
                 vector = null;
             }
             return vector;
         }
 
-        AndroidVector.Vector GenerateUwpRectangleSplashAndLogoImages()
+        async Task<AndroidVector.Vector> GenerateUwpRectangleSplashAndLogoImages()
         {
-            if (string.IsNullOrWhiteSpace(Preferences.Current.Rect310SvgSplashImageFile))
+            if (_rect310SvgLaunchImagePicker.StorageFile is null)
                 return null;
 
-            if (Svg2.GenerateAndroidVector(Preferences.Current.Rect310SvgSplashImageFile) is (AndroidVector.Vector vector, List<string> warnings))
+
+            if (Svg2.GenerateAndroidVector(_rect310SvgLaunchImagePicker.StorageFile) is (AndroidVector.Vector vector, List<string> warnings))
             {
                 if (warnings.Count > 0 && Preferences.Current.MobileSplashSource != MobileSplashSource.Square)
-                    DisplayAlert("Rectangle Splash Image Warnings", string.Join("\n\n", warnings), "ok");
+                    await DisplayAlert("Rectangle Splash Image Warnings", string.Join("\n\n", warnings), "ok");
 
-                if (!string.IsNullOrWhiteSpace(Preferences.Current.UwpProjectFolder))
+                if (_uwpProjectFolderPicker.StorageFolder != null)
                 {
-                    var folder = Path.Combine(Preferences.Current.UwpProjectFolder, "Assets");
-                    foreach (var kvp in UwpRectangularSplashImages)
-                        vector.ToPng(Path.Combine(folder, kvp.Key), Color.Transparent, kvp.Value);
+                    if (await _uwpProjectFolderPicker.StorageFolder.GetOrCreateFolderAsync("Assets") is IStorageFolder assetsFolder)
+                    {
+                        foreach (var kvp in UwpRectangularSplashImages)
+                        { 
+                            var file = await assetsFolder.GetOrCreateFileAsync(kvp.Key);
+                            vector.ToPng(file, Color.Transparent, kvp.Value);
+                        }
+                    }
+                    else
+                        await DisplayAlert("ERROR", "Failed to generate UWP rectangular Splash images because could not find Assets folder in UWP project folder [" + _uwpProjectFolderPicker.StorageFolder.Path + "].", "ok");
                 }
+
             }
             else
             {
-                DisplayAlert("ERROR", "Failed to generate UWP Square Splash images for unknown reason.", "ok");
+                await DisplayAlert("ERROR", "Failed to generate UWP rectangular Splash images for unknown reason.", "ok");
                 vector = null;
             }
             return vector;
@@ -1066,6 +1055,7 @@ namespace AssetBuilder.Views
         #endregion
 
         #endregion
+
 
 
     }

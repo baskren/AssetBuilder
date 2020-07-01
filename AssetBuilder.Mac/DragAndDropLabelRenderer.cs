@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.ComponentModel;
 using System.Linq;
 using AppKit;
@@ -6,14 +7,14 @@ using Foundation;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.MacOS;
 
-[assembly: ExportRenderer(typeof(AssetBuilder.Label), typeof(AssetBuilder.Mac.LabelRenderer))]
+[assembly: ExportRenderer(typeof(AssetBuilder.DragAndDropLabel), typeof(AssetBuilder.Mac.DragAndDropLabelRenderer))]
 namespace AssetBuilder.Mac
 {
-    public class LabelRenderer : Xamarin.Forms.Platform.MacOS.LabelRenderer
+    public class DragAndDropLabelRenderer : Xamarin.Forms.Platform.MacOS.LabelRenderer
     {
 		bool IsElementOrControlEmpty => Element == null || Control == null;
 
-		public LabelRenderer() : base()
+		public DragAndDropLabelRenderer() : base()
         {
             RegisterForDraggedTypes(new string[] { "NSFilenamesPboardType" });
         }
@@ -34,7 +35,6 @@ namespace AssetBuilder.Mac
 				UpdatePlaceholder();
 			else if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
 				UpdatePlaceholder();
-
 
 			base.OnElementPropertyChanged(sender, e);
         }
@@ -90,7 +90,7 @@ namespace AssetBuilder.Mac
 			if (IsElementOrControlEmpty)
 				return;
 
-			if (Element is AssetBuilder.Label element)
+			if (Element is AssetBuilder.DragAndDropLabel element)
 			{
 				var formatted = (FormattedString)element.Placeholder;
 
@@ -111,3 +111,4 @@ namespace AssetBuilder.Mac
 
 	}
 }
+*/

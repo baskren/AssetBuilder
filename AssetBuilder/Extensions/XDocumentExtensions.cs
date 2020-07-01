@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace AssetBuilder
@@ -7,11 +8,11 @@ namespace AssetBuilder
     {
         public static XDocument Load(P42.Storage.IStorageFile storageFile)
         {
-            if (storageFile?.OpenRead() is System.IO.FileStream stream)
-            {
-                return XDocument.Load(stream);
-            }
+            if (storageFile?.ReadAllText() is string xlmText)
+                return XDocument.Parse(xlmText);
             return null;
         }
+
+
     }
 }
