@@ -249,28 +249,24 @@ namespace AssetBuilder.Views
             _generateIconsButton.IsEnabled = Preferences.Current.IsIconEnabled;
             _generateLaunchImagesButton.IsEnabled = Preferences.Current.IsSplashEnabled;
         }
-        bool firstUpdateMobileSplashSource = true;
+
         void UpdateMobileSplashSource()
         {
-            if (!firstUpdateMobileSplashSource)
-            {
-                if (string.IsNullOrWhiteSpace(Preferences.Current.SquareSvgSplashImageFile))
-                {
-                    Preferences.Current.SquareSvgSplashImageFile = null;
-                    _mobileUseSquareSplashImageCheckBox.IsEnabled = false;
-                    _mobileUseSquareSplashImageCheckBox.IsChecked = false;
-                }
-                if (string.IsNullOrWhiteSpace(Preferences.Current.Rect310SvgSplashImageFile))
-                {
-                    Preferences.Current.Rect310SvgSplashImageFile = null;
-                    _mobileUseRect310SplashImageCheckBox.IsEnabled = false;
-                    _mobileUseRect310SplashImageCheckBox.IsChecked = false;
-                }
-            }
-            _mobileUseSquareSplashImageCheckBox.IsChecked = Preferences.Current.MobileSplashSource == MobileSplashSource.Square;
-            _mobileUseRect310SplashImageCheckBox.IsChecked = Preferences.Current.MobileSplashSource == MobileSplashSource.Rect310;
+            _mobileUseSquareSplashImageCheckBox.IsEnabled = _squareSvgLaunchImagePicker.StorageFile != null;
+            if (_squareSvgLaunchImagePicker.StorageFile == null)
+                _mobileUseSquareSplashImageCheckBox.IsChecked = false;
 
-            firstUpdateMobileSplashSource = false;
+            _mobileUseRect310SplashImageCheckBox.IsEnabled = _rect310SvgLaunchImagePicker.StorageFile != null;
+            if (_rect310SvgLaunchImagePicker.StorageFile == null)
+                _mobileUseRect310SplashImageCheckBox.IsChecked = false;
+
+            if (!_mobileUseSquareSplashImageCheckBox.IsChecked && !_mobileUseRect310SplashImageCheckBox.IsChecked)
+            {
+                if (_squareSvgLaunchImagePicker.StorageFile != null)
+                    _mobileUseSquareSplashImageCheckBox.IsChecked = true;
+                else if (_rect310SvgLaunchImagePicker.StorageFile != null)
+                    _mobileUseRect310SplashImageCheckBox.IsChecked = true;
+            }
         }
         #endregion
 
@@ -425,26 +421,46 @@ namespace AssetBuilder.Views
                         if (targetFile.Name.ToLower() == "icon.png")
                         {
                             int size = 0;
-                            using (var inputStream = targetFile.OpenRead()) //File.OpenRead(targetFile))
+                            if (await targetFile.ReadAllBytesAsync() is byte[] bytes)
                             {
-                                var bitmap = SKBitmap.Decode(inputStream);
+                                var bitmap = SKBitmap.Decode(bytes);
                                 if (bitmap.Width == bitmap.Height && bitmap.Width > 10)
                                     size = bitmap.Width;
                             }
+                            else
+                            {
+                                await DisplayAlert(null, "Cannot read data from icon file [" + targetFile.Path + "] to determine size ... and thus cannot update it with SVG icon artwork", "ok");
+                                return;
+                            }
                             if (size > 0)
                                 vector.ToPng(targetFile, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
+                            else
+                            {
+                                await DisplayAlert(null, "The icon file [" + targetFile.Path + "] was found to be [" + size + "] pixels wide ... and thus cannot update it with SVG icon artwork", "ok");
+                                return;
+                            }
                         }
                         if (targetFile.Name.ToLower() == "launcher_foreground.png")
                         {
                             int size = 0;
-                            using (var inputStream = targetFile.OpenRead())
+                            if (await targetFile.ReadAllBytesAsync() is byte[] bytes)
                             {
-                                var bitmap = SKBitmap.Decode(inputStream);
+                                var bitmap = SKBitmap.Decode(bytes);
                                 if (bitmap.Width == bitmap.Height && bitmap.Width > 10)
                                     size = bitmap.Width;
                             }
+                            else
+                            {
+                                await DisplayAlert(null, "Cannot read data from icon file [" + targetFile.Path + "] to determine size ... and thus cannot update it with SVG icon artwork", "ok");
+                                return;
+                            }
                             if (size > 0)
                                 vector.ToPng(targetFile, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size * 2 / 3, size * 2 / 3), new System.Drawing.Size(size, size));
+                            else
+                            {
+                                await DisplayAlert(null, "The icon file [" + targetFile.Path + "] was found to be [" + size + "] pixels wide ... and thus cannot update it with SVG icon artwork", "ok");
+                                return;
+                            }
                         }
                     }
                 }
@@ -468,13 +484,24 @@ namespace AssetBuilder.Views
                         && iconFile.Name.ToLower().StartsWith("icon")
                         )
                     {
-                        int size = -1;
-                        using (var stream = iconFile.OpenRead())
+                        int size = 0;
+                        if (await iconFile.ReadAllBytesAsync() is byte[] bytes)
                         {
-                            var bitmap = SKBitmap.Decode(stream);
+                            var bitmap = SKBitmap.Decode(bytes);
                             size = bitmap.Width;
                         }
-                        vector.ToPng(iconFile, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
+                        else
+                        {
+                            await DisplayAlert(null, "Cannot read data from icon file [" + iconFile.Path + "] to determine size ... and thus cannot update it with SVG icon artwork", "ok");
+                            return;
+                        }
+                        if (size > 0)
+                            vector.ToPng(iconFile, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
+                        else
+                        {
+                            await DisplayAlert(null, "The icon file [" + iconFile.Path + "] was found to be ["+size+"] pixels wide ... and thus cannot update it with SVG icon artwork", "ok");
+                            return;
+                        }
                     }
                 }
             }

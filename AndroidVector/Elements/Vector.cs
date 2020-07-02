@@ -102,10 +102,12 @@ namespace AndroidVector
 
         public List<string> ToPdfDocument(P42.Storage.IStorageFile storageFile, Color backgroundColor)
         {
-
-            using (var stream = storageFile.OpenWrite())
+            using (var stream = new System.IO.MemoryStream())
             {
-                return ToPdfDocument(stream, backgroundColor);
+                var results = ToPdfDocument(stream, backgroundColor);
+                var bytes = stream.ToArray();
+                storageFile.WriteAllBytes(bytes);
+                return results;
             }
         }
 
@@ -163,9 +165,11 @@ namespace AndroidVector
         /// <param name="bitmapSize">size of the PNG</param>
         public void ToPng(P42.Storage.IStorageFile file, Color backgroundColor, Size imageSize = default, Size bitmapSize = default)
         {
-            using (var stream = file.OpenWrite())
+            using (var stream = new System.IO.MemoryStream())
             {
                 ToPng(stream, backgroundColor, imageSize, bitmapSize);
+                var bytes = stream.ToArray();
+                file.WriteAllBytes(bytes);
             }
         }
 
