@@ -16,7 +16,7 @@
 
   <Properties>
     <DisplayName>AssetBuilder.UWP</DisplayName>
-    <PublisherDisplayName>ben</PublisherDisplayName>
+    <PublisherDisplayName>42nd Parallel</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
 

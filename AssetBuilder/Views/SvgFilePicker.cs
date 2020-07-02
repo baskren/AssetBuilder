@@ -7,21 +7,6 @@ namespace AssetBuilder
 {
     public class SvgFilePicker : StorageFilePicker
     {
-        #region Page
-        /// <summary>
-        /// Backing store for SvgFilePicker Page property
-        /// </summary>
-        public static readonly BindableProperty PageProperty = BindableProperty.Create(nameof(Page), typeof(Page), typeof(SvgFilePicker), default);
-        /// <summary>
-        /// controls value of .Page property
-        /// </summary>
-        public Page Page
-        {
-            get => (Page)GetValue(PageProperty);
-            set => SetValue(PageProperty, value);
-        }
-        #endregion
-
         #region Fields
         IStorageFile oldFile;
         #endregion

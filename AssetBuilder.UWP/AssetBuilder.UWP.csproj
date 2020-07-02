@@ -11,8 +11,8 @@
     <AssemblyName>AssetBuilder.UWP</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
-    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.18362.0</TargetPlatformVersion>
-    <TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.19041.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -194,6 +194,10 @@
       <Project>{763e0b79-bc83-4491-a69b-66126f574685}</Project>
       <Name>PdfSharpCore</Name>
     </ProjectReference>
+    <ProjectReference Include="..\PdfSharpCore\SixLabors\Core\src\SixLabors.Core\SixLabors.Core.csproj">
+      <Project>{9a4c3ac5-c672-422c-85ea-6f4dd26b891d}</Project>
+      <Name>SixLabors.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\PdfSharpCore\SixLabors\Fonts\src\SixLabors.Fonts\SixLabors.Fonts.csproj">
       <Project>{f6449184-cb8e-4178-96e7-efb3b183712d}</Project>
       <Name>SixLabors.Fonts</Name>
@@ -209,6 +213,10 @@
     <ProjectReference Include="..\Storage\Source\P42.Storage.UWP\P42.Storage.UWP.csproj">
       <Project>{1bc6a216-8097-498f-aa9e-4d45dbf0a037}</Project>
       <Name>P42.Storage.UWP</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Storage\Source\P42.Storage\P42.Storage.csproj">
+      <Project>{300bc454-4bbb-4d76-92a9-828a2eb4c23d}</Project>
+      <Name>P42.Storage</Name>
     </ProjectReference>
     <ProjectReference Include="..\Svg2AndroidVector\Svg2AndroidVector.csproj">
       <Project>{3caf1812-07a4-4958-a3a3-04c3fbccb330}</Project>

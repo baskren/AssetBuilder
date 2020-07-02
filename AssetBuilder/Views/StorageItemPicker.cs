@@ -90,6 +90,7 @@ namespace AssetBuilder
 
         #endregion
 
+
         #region VisualElements
         Grid grid = new Grid
         {
@@ -105,7 +106,8 @@ namespace AssetBuilder
             VerticalOptions = LayoutOptions.Fill,
             HorizontalOptions = LayoutOptions.Fill,
             HorizontalTextAlignment = TextAlignment.Start,
-            VerticalTextAlignment = TextAlignment.Start,
+            VerticalTextAlignment = TextAlignment.Center,
+            BackgroundColor = Color.White
         };
 
         Label clearLabel = new Label

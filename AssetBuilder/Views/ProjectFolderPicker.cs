@@ -62,8 +62,7 @@ namespace AssetBuilder
                 else
                 {
                     var task = GetProjectFile();
-                    if (!task.IsCompleted)
-                        task.RunSynchronously();
+                    task.Wait();
                     if (task.Result is null)
                     {
                         StorageFolder = oldFolder;
@@ -84,10 +83,12 @@ namespace AssetBuilder
 
         public async Task<IStorageFile> GetProjectFile()
         {
+            await Task.Delay(5).ConfigureAwait(false); 
+
             var osName =  ProjectPlatform.ToString();
             if (StorageFolder is null)
                 return null;
-            if (await StorageFolder.GetFilesAsync("*.csproj") is IReadOnlyList<IStorageFile> projFiles)
+            if (await StorageFolder.GetFilesAsync("*.csproj").ConfigureAwait(false) is IReadOnlyList<IStorageFile> projFiles)
             {
                 if (projFiles.Count > 1)
                 {
@@ -105,7 +106,7 @@ namespace AssetBuilder
                     DisplayAlert(osName + " Project Folder", "Invalid filename for " + osName + " .csproj file. [" + StorageFolder.Path + "].", "ok");
                     return null;
                 }
-                var text = file.ReadAllText();
+                var text = await file.ReadAllTextAsync();
                 if (string.IsNullOrWhiteSpace(text))
                 {
                     DisplayAlert(osName + " Project Folder", "Candidate for " + osName + " project file [" + file.Path + "], in this folder [" + StorageFolder.Path + "], is empty.", "ok");
