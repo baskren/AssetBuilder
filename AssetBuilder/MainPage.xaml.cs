@@ -278,7 +278,7 @@ namespace AssetBuilder.Views
             {
                 if (await folder.CreateFileAsync(fileName) is IStorageFile file)
                 {
-                    var localVersionPath = await EmbeddedResourceCache.LocalStorageFullPathForEmbeddedResourceAsync(embeddedResourceId);
+                    var localVersionPath = await EmbeddedResourceCache.LocalStorageFullPathForEmbeddedResourceAsync(embeddedResourceId, GetType().Assembly);
                     var text = File.ReadAllText(localVersionPath);
                     await file.WriteAllTextAsync(text);
                     return file;
@@ -480,7 +480,7 @@ namespace AssetBuilder.Views
                 var iconFiles = await appIconSetFolder.GetFilesAsync();
                 foreach (var iconFile in iconFiles)
                 {
-                    if (iconFile.FileType.ToLower() == "png"
+                    if (iconFile.FileType.ToLower() == ".png"
                         && iconFile.Name.ToLower().StartsWith("icon")
                         )
                     {
@@ -765,8 +765,7 @@ namespace AssetBuilder.Views
                     if (await _androidProjectFolderPicker.StorageFolder.GetFileAsync("MainActivity.cs") is IStorageFile mainActivityFile)
                     {
                         string namespaceLine = null;
-                        var mainActivityPath = Path.Combine(Preferences.Current.AndroidProjectFolder, "MainActivity.cs");
-                        var mainActivityLines = File.ReadAllLines(mainActivityPath);
+                        var mainActivityLines = await mainActivityFile.ReadAllLinesAsync();
                         var updatedLines = new List<string>();
                         foreach (var line in mainActivityLines)
                         {
@@ -774,7 +773,7 @@ namespace AssetBuilder.Views
                                 namespaceLine = line;
                             updatedLines.Add(line.Replace("MainLauncher = true", "MainLauncher = false"));
                         }
-                        File.WriteAllLines(mainActivityPath, updatedLines);
+                        await mainActivityFile.WriteAllLinesAsync(updatedLines);
 
                         if (await _androidProjectFolderPicker.StorageFolder.GetFileAsync(splashActivityFileName) is IStorageFile splashActivityFile)
                         {
@@ -840,7 +839,7 @@ namespace AssetBuilder.Views
             if (!(await _iosProjectFolderPicker.StorageFolder.GetOrCreateFolderAsync("Assets.xcassets") is IStorageFolder xcassetsFolder))
                 return "Cannot open Assets.xcassets folder in [" + _iosProjectFolderPicker.StorageFolder.Path + "]";
 
-            if (await xcassetsFolder.GetFolderAsync("Splash.imageset") is IStorageFolder splashImageSetFolder)
+            if (await xcassetsFolder.GetOrCreateFolderAsync("Splash.imageset") is IStorageFolder splashImageSetFolder)
                 await CopyEmbeddedResourceToFolder("AssetBuilder.Resources.Contents.json", "Contents.json", splashImageSetFolder);
             else
                 return "Cannot open or create Splash.imageset folder in [" + xcassetsFolder.Path + "]";
