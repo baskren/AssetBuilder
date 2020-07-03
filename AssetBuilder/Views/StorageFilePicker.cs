@@ -27,7 +27,7 @@ namespace AssetBuilder
         public event EventHandler<StorageFileChangedEventArgs> StorageFileChanged;
 
 
-        public async Task<bool> FileFromPathAsync(string path)
+        public async Task<bool> SetStorageFileFromPathAsync(string path)
         {
             if (!string.IsNullOrWhiteSpace(path) && await StorageFileExtensions.GetFileFromPathAsync(path) is IStorageFile file)
             {

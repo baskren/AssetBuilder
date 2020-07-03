@@ -27,7 +27,7 @@ namespace AssetBuilder
 
 
 
-        public async Task<bool> FolderFromPathAsync(string path)
+        public async Task<bool> SetStorageFolderFromPathAsync(string path)
         {
             if (!string.IsNullOrWhiteSpace(path) && await StorageFolderExtensions.GetFolderFromPathAsync(path) is IStorageFolder folder)
             {

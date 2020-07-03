@@ -66,16 +66,16 @@ namespace AssetBuilder.Views
         {
             Device.BeginInvokeOnMainThread(async () =>
             {
-                await _iosProjectFolderPicker.FolderFromPathAsync(Preferences.Current.IosOProjectFolder);
-                await _androidProjectFolderPicker.FolderFromPathAsync(Preferences.Current.AndroidProjectFolder);
-                await _uwpProjectFolderPicker.FolderFromPathAsync(Preferences.Current.UwpProjectFolder);
+                await _iosProjectFolderPicker.SetStorageFolderFromPathAsync(Preferences.Current.IosOProjectFolder);
+                await _androidProjectFolderPicker.SetStorageFolderFromPathAsync(Preferences.Current.AndroidProjectFolder);
+                await _uwpProjectFolderPicker.SetStorageFolderFromPathAsync(Preferences.Current.UwpProjectFolder);
 
                 _splashPageBackgroundColorEntry.Text = Preferences.Current.SplashBackgroundColor.ToHex();
                 _iconBackgroundColorEntry.Text = Preferences.Current.IconBackgroundColor.ToHex();
 
-                await _iconSvgFilePicker.FileFromPathAsync(Preferences.Current.SvgIconFile);
-                await _squareSvgLaunchImagePicker.FileFromPathAsync(Preferences.Current.SquareSvgSplashImageFile);
-                await _rect310SvgLaunchImagePicker.FileFromPathAsync(Preferences.Current.Rect310SvgSplashImageFile);
+                await _iconSvgFilePicker.SetStorageFileFromPathAsync(Preferences.Current.SvgIconFile);
+                await _squareSvgLaunchImagePicker.SetStorageFileFromPathAsync(Preferences.Current.SquareSvgSplashImageFile);
+                await _rect310SvgLaunchImagePicker.SetStorageFileFromPathAsync(Preferences.Current.Rect310SvgSplashImageFile);
 
                 UpdateMobileSplashSource();
 
