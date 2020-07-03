@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using PdfSharpCore.Drawing;
@@ -100,13 +101,13 @@ namespace AndroidVector
             }
         }
 
-        public List<string> ToPdfDocument(P42.Storage.IStorageFile storageFile, Color backgroundColor)
+        public async Task<List<string>> ToPdfDocumentAsync(P42.Storage.IStorageFile storageFile, Color backgroundColor)
         {
             using (var stream = new System.IO.MemoryStream())
             {
                 var results = ToPdfDocument(stream, backgroundColor);
                 var bytes = stream.ToArray();
-                storageFile.WriteAllBytes(bytes);
+                await storageFile.WriteAllBytesAsync(bytes);
                 return results;
             }
         }
@@ -163,13 +164,13 @@ namespace AndroidVector
         /// <param name="backgroundColor">background color for the PNG</param>
         /// <param name="imageSize">size of vector image (centered) in the PNG</param>
         /// <param name="bitmapSize">size of the PNG</param>
-        public void ToPng(P42.Storage.IStorageFile file, Color backgroundColor, Size imageSize = default, Size bitmapSize = default)
+        public async Task ToPngAsync(P42.Storage.IStorageFile file, Color backgroundColor, Size imageSize = default, Size bitmapSize = default)
         {
             using (var stream = new System.IO.MemoryStream())
             {
                 ToPng(stream, backgroundColor, imageSize, bitmapSize);
                 var bytes = stream.ToArray();
-                file.WriteAllBytes(bytes);
+                await file.WriteAllBytesAsync(bytes);
             }
         }
 

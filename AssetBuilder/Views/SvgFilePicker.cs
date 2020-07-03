@@ -21,18 +21,21 @@ namespace AssetBuilder
             base.OnPropertyChanged(propertyName);
             if (propertyName == StorageItemProperty.PropertyName)
             {
-                var text = StorageFile.ReadAllText();
-                if (string.IsNullOrWhiteSpace(text))
+                Xamarin.Forms.Device.BeginInvokeOnMainThread(async () =>
                 {
-                    Page?.DisplayAlert("SVG File", "File [" + StorageFile.Path + "] is empty.", "ok");
-                    StorageFile = oldFile;
-                }
-                if (!text.Contains("<svg") || !text.Contains("http://www.w3.org/2000/svg"))
-                {
-                    Page?.DisplayAlert("SVG File", "File [" + StorageFile.Path + "] doesn't appear to have SVG content.", "ok");
-                    StorageFile = oldFile;
-                }
-                oldFile = StorageFile;
+                    var text = await StorageFile.ReadAllTextAsync();
+                    if (string.IsNullOrWhiteSpace(text))
+                    {
+                        Page?.DisplayAlert("SVG File", "File [" + StorageFile.Path + "] is empty.", "ok");
+                        StorageFile = oldFile;
+                    }
+                    if (!text.Contains("<svg") || !text.Contains("http://www.w3.org/2000/svg"))
+                    {
+                        Page?.DisplayAlert("SVG File", "File [" + StorageFile.Path + "] doesn't appear to have SVG content.", "ok");
+                        StorageFile = oldFile;
+                    }
+                    oldFile = StorageFile;
+                });
             }
         }
 

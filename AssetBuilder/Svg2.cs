@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using AndroidVector;
@@ -21,9 +22,9 @@ namespace AssetBuilder
             }
         }
 
-        public static (Vector vector, List<string> warnings) GenerateAndroidVector(P42.Storage.IStorageFile svgFile)
+        public static async Task<(Vector vector, List<string> warnings)> GenerateAndroidVectorAsync(P42.Storage.IStorageFile svgFile)
         {
-            if (svgFile.ReadAllText() is string svgText)
+            if (await svgFile.ReadAllTextAsync() is string svgText)
                 return GenerateAndroidVector(svgText);
             return (null, new List<string> { "Cannot read text from file ["+svgFile.Path+"]" });
         }

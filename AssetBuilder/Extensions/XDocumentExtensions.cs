@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -6,9 +7,9 @@ namespace AssetBuilder
 {
     public static class XDocumentExtensions
     {
-        public static XDocument Load(P42.Storage.IStorageFile storageFile)
+        public static async Task<XDocument> LoadAsync(P42.Storage.IStorageFile storageFile)
         {
-            if (storageFile?.ReadAllText() is string xlmText)
+            if (await storageFile?.ReadAllTextAsync() is string xlmText)
                 return XDocument.Parse(xlmText);
             return null;
         }

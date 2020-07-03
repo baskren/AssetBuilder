@@ -280,7 +280,7 @@ namespace AssetBuilder.Views
                 {
                     var localVersionPath = await EmbeddedResourceCache.LocalStorageFullPathForEmbeddedResourceAsync(embeddedResourceId);
                     var text = File.ReadAllText(localVersionPath);
-                    file.WriteAllText(text);
+                    await file.WriteAllTextAsync(text);
                     return file;
                 }
                 else
@@ -312,7 +312,7 @@ namespace AssetBuilder.Views
 
         async Task<AndroidVector.Vector> GenerateVectorAndroidIcons()
         {
-            if (Svg2.GenerateAndroidVector(_iconSvgFilePicker.StorageFile) is (AndroidVector.Vector vector, List<string> warnings))
+            if (await Svg2.GenerateAndroidVectorAsync(_iconSvgFilePicker.StorageFile) is (AndroidVector.Vector vector, List<string> warnings))
             {
                 if (warnings.Count > 0)
                     await DisplayAlert("Warnings", string.Join("\n\n", warnings), "ok");
@@ -330,7 +330,7 @@ namespace AssetBuilder.Views
 
                 if (await _androidProjectFolderPicker.GetProjectFile() is IStorageFile storageFile)
                 {
-                    if (XDocumentExtensions.Load(storageFile) is XDocument csprojDoc)
+                    if (await XDocumentExtensions.LoadAsync(storageFile) is XDocument csprojDoc)
                     {
                         XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
                         if (csprojDoc.Descendants(ns + "AndroidResource").FirstOrDefault(e => e.Attribute("Include")?.Value == "Resources\\values\\styles.xml") is XElement firstAndroidResource)
@@ -342,7 +342,7 @@ namespace AssetBuilder.Views
                                 element.SetAttributeValue("Include", "Resources\\mipmap-anydpi-v26\\launcher_foreground.xml");
                                 androidResourceItemGroup.Add(element);
 
-                                StorageFileExtensions.WriteAllText(storageFile, XmlHeader + csprojDoc);
+                                await StorageFileExtensions.WriteAllTextAsync(storageFile, XmlHeader + csprojDoc);
                             }
                         }
 
@@ -356,7 +356,7 @@ namespace AssetBuilder.Views
                     var valuesFolder = await resourcesFolder?.GetOrCreateFolderAsync( "values");
                     if (await valuesFolder?.GetFileAsync("colors.xml") is IStorageFile colorsFile)
                     {
-                        var colorsDocument = XDocumentExtensions.Load(colorsFile);
+                        var colorsDocument = await XDocumentExtensions.LoadAsync(colorsFile);
                         var colors = colorsDocument.Root;
                         if (colors.Name.ToString() == "resources")
                         {
@@ -370,7 +370,7 @@ namespace AssetBuilder.Views
                             color.Value = Preferences.Current.IconBackgroundColor.ToHex();
 
                             var text = XmlHeader + colorsDocument.ToString();
-                            StorageFileExtensions.WriteAllText(colorsFile, text);
+                            await StorageFileExtensions.WriteAllTextAsync(colorsFile, text);
                         }
                     }
                     else
@@ -391,7 +391,7 @@ namespace AssetBuilder.Views
                             tmpVector.ApplySvgTransforms();
                             tmpVector.PurgeDefaults();
                             var launcher_foreground = await mipmapFolder.GetOrCreateFileAsync("launcher_foreground.xml");
-                            StorageFileExtensions.WriteAllText(launcher_foreground, tmpVector.ToString());
+                            await StorageFileExtensions.WriteAllTextAsync(launcher_foreground, tmpVector.ToString());
                         }
                         else
                             await DisplayAlert("Error", "Could not find or create Resources/mipmap-anydpi-v26 in Android project", "ok");
@@ -433,7 +433,7 @@ namespace AssetBuilder.Views
                                 return;
                             }
                             if (size > 0)
-                                vector.ToPng(targetFile, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
+                                await vector.ToPngAsync(targetFile, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
                             else
                             {
                                 await DisplayAlert(null, "The icon file [" + targetFile.Path + "] was found to be [" + size + "] pixels wide ... and thus cannot update it with SVG icon artwork", "ok");
@@ -455,7 +455,7 @@ namespace AssetBuilder.Views
                                 return;
                             }
                             if (size > 0)
-                                vector.ToPng(targetFile, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size * 2 / 3, size * 2 / 3), new System.Drawing.Size(size, size));
+                                await vector.ToPngAsync(targetFile, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size * 2 / 3, size * 2 / 3), new System.Drawing.Size(size, size));
                             else
                             {
                                 await DisplayAlert(null, "The icon file [" + targetFile.Path + "] was found to be [" + size + "] pixels wide ... and thus cannot update it with SVG icon artwork", "ok");
@@ -496,7 +496,7 @@ namespace AssetBuilder.Views
                             return;
                         }
                         if (size > 0)
-                            vector.ToPng(iconFile, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
+                            await vector.ToPngAsync(iconFile, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
                         else
                         {
                             await DisplayAlert(null, "The icon file [" + iconFile.Path + "] was found to be ["+size+"] pixels wide ... and thus cannot update it with SVG icon artwork", "ok");
@@ -562,7 +562,7 @@ namespace AssetBuilder.Views
                 {
                     var file = await assetsFolder.GetOrCreateFileAsync(kvp.Key);
                     var size = kvp.Value;
-                    vector.ToPng(file, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
+                    await vector.ToPngAsync(file, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
                 }
             }
             else
@@ -639,7 +639,7 @@ namespace AssetBuilder.Views
                     }
                     if (await drawableFolder.GetOrCreateFileAsync("splash_image.png") is IStorageFile splashImagePngFile)
                     {
-                        vector.ToPng(splashImagePngFile, Color.Transparent, size);
+                        await vector.ToPngAsync(splashImagePngFile, Color.Transparent, size);
                     }
                     else
                     {
@@ -656,7 +656,7 @@ namespace AssetBuilder.Views
 
                 if (_androidProjectFolderPicker.ProjectFile is IStorageFile projectFile)
                 {
-                    if (XDocumentExtensions.Load(projectFile) is XDocument csprojDoc)
+                    if (await XDocumentExtensions.LoadAsync(projectFile) is XDocument csprojDoc)
                     {
                         XNamespace ns = "http://schemas.microsoft.com/developer/msbuild/2003";
                         if (csprojDoc.Descendants(ns + "AndroidResource").FirstOrDefault(e => e.Attribute("Include")?.Value == "Resources\\values\\styles.xml") is XElement firstAndroidResource)
@@ -680,7 +680,7 @@ namespace AssetBuilder.Views
                                 element.SetAttributeValue("Include", "Resources\\drawable-v23\\splash_image.xml");
                                 androidResourceItemGroup.Add(element);
 
-                                StorageFileExtensions.WriteAllText(projectFile, XmlHeader + csprojDoc);
+                                await StorageFileExtensions.WriteAllTextAsync(projectFile, XmlHeader + csprojDoc);
                             }
                         }
 
@@ -693,7 +693,7 @@ namespace AssetBuilder.Views
                                 element.SetAttributeValue("Include", "SplashActivity.cs");
                                 sourceItemGroup.Add(element);
 
-                                StorageFileExtensions.WriteAllText(projectFile, XmlHeader + csprojDoc);
+                                await StorageFileExtensions.WriteAllTextAsync(projectFile, XmlHeader + csprojDoc);
                             }
                         }
                     }
@@ -712,7 +712,7 @@ namespace AssetBuilder.Views
 
                     if (await valuesFolder.GetFileAsync("styles.xml") is IStorageFile stylesFile)
                     {
-                        var stylesDocument = XDocumentExtensions.Load(stylesFile);
+                        var stylesDocument = await XDocumentExtensions.LoadAsync(stylesFile);
                         var styles = stylesDocument.Root;
                         if (styles.Name.ToString() == "resources")
                         {
@@ -727,7 +727,7 @@ namespace AssetBuilder.Views
                                 styles.Add(style);
 
                                 var text = XmlHeader + stylesDocument.ToString().Replace("{android}", "android:");
-                                StorageFileExtensions.WriteAllText(stylesFile, text);
+                                await StorageFileExtensions.WriteAllTextAsync(stylesFile, text);
                             }
                         }
                     }
@@ -739,7 +739,7 @@ namespace AssetBuilder.Views
 
                     if (await valuesFolder.GetFileAsync("colors.xml") is IStorageFile colorsFile)
                     {
-                        var colorsDocument = XDocumentExtensions.Load(colorsFile);
+                        var colorsDocument = await XDocumentExtensions.LoadAsync(colorsFile);
                         var colors = colorsDocument.Root;
                         if (colors.Name.ToString() == "resources")
                         {
@@ -753,7 +753,7 @@ namespace AssetBuilder.Views
                             color.Value = Preferences.Current.SplashBackgroundColor.ToHex();
 
                             var text = XmlHeader + colorsDocument.ToString();
-                            StorageFileExtensions.WriteAllText(colorsFile, text);
+                            await StorageFileExtensions.WriteAllTextAsync(colorsFile, text);
                         }
                     }
                     else
@@ -778,7 +778,7 @@ namespace AssetBuilder.Views
 
                         if (await _androidProjectFolderPicker.StorageFolder.GetFileAsync(splashActivityFileName) is IStorageFile splashActivityFile)
                         {
-                            var splashActivityLines = StorageFileExtensions.ReadAllLines(splashActivityFile);
+                            var splashActivityLines = await StorageFileExtensions.ReadAllLinesAsync(splashActivityFile);
                             updatedLines = new List<string>();
                             foreach (var line in splashActivityLines)
                             {
@@ -787,7 +787,7 @@ namespace AssetBuilder.Views
                                 else
                                     updatedLines.Add(line);
                             }
-                            splashActivityFile.WriteAllLines(updatedLines);
+                            await splashActivityFile.WriteAllLinesAsync(updatedLines);
                         }
                         else
                         {
@@ -822,7 +822,7 @@ namespace AssetBuilder.Views
                     return;
                 }
 
-                if (UpdateIosCsproj() is string err2)
+                if (await UpdateIosCsproj() is string err2)
                 {
                     await DisplayAlert("Update iOS *.csproj Error", err2, "ok");
                     return;
@@ -853,7 +853,7 @@ namespace AssetBuilder.Views
             {
                 try
                 {
-                    var warnings = vector.ToPdfDocument(launchImagePdfFile, Preferences.Current.SplashBackgroundColor);
+                    var warnings = await vector.ToPdfDocumentAsync(launchImagePdfFile, Preferences.Current.SplashBackgroundColor);
                     if (warnings!=null && warnings.Count > 0)
                         return string.Join("\n\n", warnings);
                 }
@@ -875,7 +875,7 @@ namespace AssetBuilder.Views
             if (!(await resourcesFolder.GetFileAsync("LaunchScreen.storyboard") is IStorageFile launchScreenStoryboardFile))
                 launchScreenStoryboardFile = await CopyEmbeddedResourceToFolder("AssetBuilder.Resources.LaunchScreen.storyboard", "LaunchScreen.storyboard", resourcesFolder);
 
-            var document = XDocumentExtensions.Load(launchScreenStoryboardFile);
+            var document = await XDocumentExtensions.LoadAsync(launchScreenStoryboardFile);
             if (document.Descendants("color") is IEnumerable<XElement> colorElements)
             {
                 if (colorElements.FirstOrDefault(e=>e.Attribute("key")?.Value == "backgroundColor") is XElement backgroundColor)
@@ -889,15 +889,15 @@ namespace AssetBuilder.Views
 
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n";
             var text = xmlHeader + document;
-            StorageFileExtensions.WriteAllText(launchScreenStoryboardFile, text);
+            await StorageFileExtensions.WriteAllTextAsync(launchScreenStoryboardFile, text);
             return null;
         }
 
-        string UpdateIosCsproj()
+        async Task<string> UpdateIosCsproj()
         {
             if (_iosProjectFolderPicker.ProjectFile is IStorageFile projectFile)
             {
-                if (XDocumentExtensions.Load(projectFile) is XDocument document)
+                if (await XDocumentExtensions.LoadAsync(projectFile) is XDocument document)
                 {
                     XNamespace ns = document.Root.Attribute("xmlns").Value;
                     foreach (var itemGroup in document.Descendants(ns + "ItemGroup"))
@@ -923,7 +923,7 @@ namespace AssetBuilder.Views
                                 itemGroup.Add(imageAsset);
 
                                 var text = XmlHeader + document;
-                                StorageFileExtensions.WriteAllText(projectFile, text);
+                                await StorageFileExtensions.WriteAllTextAsync(projectFile, text);
 
                                 return null;
                             }
@@ -979,7 +979,7 @@ namespace AssetBuilder.Views
 
             if (_uwpProjectFolderPicker.ProjectFile is IStorageFile projectFile)
             {
-                if (XDocumentExtensions.Load(projectFile) is XDocument document)
+                if (await XDocumentExtensions.LoadAsync(projectFile) is XDocument document)
                 {
                     XNamespace ns = document.Root.Attribute("xmlns").Value;
                     var found = false;
@@ -1001,7 +1001,7 @@ namespace AssetBuilder.Views
 
 
                             var text = XmlHeader + document;
-                            StorageFileExtensions.WriteAllText(projectFile, text);
+                            await StorageFileExtensions.WriteAllTextAsync(projectFile, text);
                             break;
                         }
                     }
@@ -1017,7 +1017,7 @@ namespace AssetBuilder.Views
             if (_squareSvgLaunchImagePicker.StorageFile is null)
                 return null;
 
-            if (Svg2.GenerateAndroidVector(_squareSvgLaunchImagePicker.StorageFile) is (AndroidVector.Vector vector, List<string> warnings))
+            if (await Svg2.GenerateAndroidVectorAsync(_squareSvgLaunchImagePicker.StorageFile) is (AndroidVector.Vector vector, List<string> warnings))
             {
                 if (warnings.Count > 0 && Preferences.Current.MobileSplashSource != MobileSplashSource.Square)
                     await DisplayAlert("Square Splash Image Warnings", string.Join("\n\n", warnings), "ok");
@@ -1029,7 +1029,7 @@ namespace AssetBuilder.Views
                         foreach (var kvp in UwpSquareLogoImages)
                         {
                             var file = await assetsFolder.GetOrCreateFileAsync(kvp.Key);
-                            vector.ToPng(file, Color.Transparent, new System.Drawing.Size(kvp.Value, kvp.Value));
+                            await vector.ToPngAsync(file, Color.Transparent, new System.Drawing.Size(kvp.Value, kvp.Value));
                         }
                     }
                     else
@@ -1050,7 +1050,7 @@ namespace AssetBuilder.Views
                 return null;
 
 
-            if (Svg2.GenerateAndroidVector(_rect310SvgLaunchImagePicker.StorageFile) is (AndroidVector.Vector vector, List<string> warnings))
+            if (await Svg2.GenerateAndroidVectorAsync(_rect310SvgLaunchImagePicker.StorageFile) is (AndroidVector.Vector vector, List<string> warnings))
             {
                 if (warnings.Count > 0 && Preferences.Current.MobileSplashSource != MobileSplashSource.Square)
                     await DisplayAlert("Rectangle Splash Image Warnings", string.Join("\n\n", warnings), "ok");
@@ -1062,7 +1062,7 @@ namespace AssetBuilder.Views
                         foreach (var kvp in UwpRectangularSplashImages)
                         { 
                             var file = await assetsFolder.GetOrCreateFileAsync(kvp.Key);
-                            vector.ToPng(file, Color.Transparent, kvp.Value);
+                            await vector.ToPngAsync(file, Color.Transparent, kvp.Value);
                         }
                     }
                     else
