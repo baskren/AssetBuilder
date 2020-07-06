@@ -302,43 +302,6 @@ namespace Svg2AndroidVector
             return avGroup;
         }
 
-        /*
-        public static void AddUse(XElement svgElement, AndroidVector.Group avGroup, List<string> warnings)
-        {
-            const string typeName = "use";
-            if (svgElement.Name != Namespace.Svg + typeName)
-                throw new ArgumentException("argument is not the expected <" + typeName + "> SVG element");
-
-
-            if (svgElement.Attribute(Namespace.xlinkNs + "href") is XAttribute hrefAttribute)
-            {
-                if (!hrefAttribute.Value.StartsWith("#"))
-                {
-                    warnings.AddWarning("Ignoring <use id='" + svgElement.Attribute("id")?.Value + "' xlink:href='" + hrefAttribute.Value + "' because xlink:href attribute is not a local anchor.");
-                    return;
-                }
-                var href = hrefAttribute.Value.Trim(new char[] { '#', ' ' });
-                var root = svgElement.GetRoot();
-                if (root.Descendants().Where(e => e.Attribute("id")?.Value == href).FirstOrDefault() is XElement useElement)
-                {
-                    avGroup = NestGroup(avGroup);
-                    if (useElement.Attribute("x") is XAttribute xAttribute && AttributeExtensions.TryGetValueInPx(xAttribute, out float x))
-                        avGroup.SetAttributeValue(AndroidVector.Namespace.AndroidVector + "translateX", x);
-                    if (useElement.Attribute("y") is XAttribute yAttribute && AttributeExtensions.TryGetValueInPx(yAttribute, out float y))
-                        avGroup.SetAttributeValue(AndroidVector.Namespace.AndroidVector + "translateY", y);
-                    avGroup = ClipConverter.ConvertClipPathAttribute(svgElement, avGroup, warnings);
-                    CommonAttributes.SetTransforms(svgElement, avGroup, warnings);
-                    CommonAttributes.ProcessAttributes(svgElement, avGroup, new List<string> { "x", "y" }, warnings);
-                    ProcessGroupContents(svgElement, avGroup, warnings);
-                    return;
-                }
-                warnings.AddWarning("Ignoring <use id='" + svgElement.Attribute("id")?.Value + "' xlink:href='" + hrefAttribute.Value + "' because could not find element referenced by xlink:href attribute.");
-                return;
-            }
-            warnings.AddWarning("Ignoring <use id='" + svgElement.Attribute("id")?.Value + "'> because cannot find xlink:href attribute.");
-        }
-        */
-
         public static void AddSvg(XElement svgElement, AndroidVector.Group avGroup, List<string> warnings)
         {
             const string typeName = "svg";

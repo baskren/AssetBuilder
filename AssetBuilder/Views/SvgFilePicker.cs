@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using P42.Storage;
+using P42.SandboxedStorage;
 using Xamarin.Forms;
 
 namespace AssetBuilder
 {
-    public class SvgFilePicker : StorageFilePicker
+    public class SvgFilePicker : StorageFilePickerHybridView
     {
         #region Fields
         IStorageFile oldFile;
@@ -21,20 +21,28 @@ namespace AssetBuilder
             base.OnPropertyChanged(propertyName);
             if (propertyName == StorageItemProperty.PropertyName)
             {
-                Xamarin.Forms.Device.BeginInvokeOnMainThread(async () =>
+                Device.BeginInvokeOnMainThread(async () =>
                 {
-                    var text = await StorageFile.ReadAllTextAsync();
-                    if (string.IsNullOrWhiteSpace(text))
+                    try
                     {
-                        Page?.DisplayAlert("SVG File", "File [" + StorageFile.Path + "] is empty.", "ok");
+                        var text = await StorageFile.ReadAllTextAsync();
+                        if (string.IsNullOrWhiteSpace(text))
+                        {
+                            Page?.DisplayAlert("SVG File", "File [" + StorageFile.Path + "] is empty.", "ok");
+                            StorageFile = oldFile;
+                        }
+                        if (!text.Contains("<svg") || !text.Contains("http://www.w3.org/2000/svg"))
+                        {
+                            Page?.DisplayAlert("SVG File", "File [" + StorageFile.Path + "] doesn't appear to have SVG content.", "ok");
+                            StorageFile = oldFile;
+                        }
+                        oldFile = StorageFile;
+                    }
+                    catch(Exception e)
+                    {
+                        Device.BeginInvokeOnMainThread(()=> Page?.DisplayAlert("Exception", e.Message, "ok"));
                         StorageFile = oldFile;
                     }
-                    if (!text.Contains("<svg") || !text.Contains("http://www.w3.org/2000/svg"))
-                    {
-                        Page?.DisplayAlert("SVG File", "File [" + StorageFile.Path + "] doesn't appear to have SVG content.", "ok");
-                        StorageFile = oldFile;
-                    }
-                    oldFile = StorageFile;
                 });
             }
         }

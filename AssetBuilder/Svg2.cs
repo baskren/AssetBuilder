@@ -22,7 +22,7 @@ namespace AssetBuilder
             }
         }
 
-        public static async Task<(Vector vector, List<string> warnings)> GenerateAndroidVectorAsync(P42.Storage.IStorageFile svgFile)
+        public static async Task<(Vector vector, List<string> warnings)> GenerateAndroidVectorAsync(P42.SandboxedStorage.IStorageFile svgFile)
         {
             if (await svgFile.ReadAllTextAsync() is string svgText)
                 return GenerateAndroidVector(svgText);

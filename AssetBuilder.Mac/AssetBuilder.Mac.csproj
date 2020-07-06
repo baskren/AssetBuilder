@@ -23,8 +23,8 @@
     <DefineConstants>DEBUG;</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <EnableCodeSigning>false</EnableCodeSigning>
-    <CodeSigningKey>Mac Developer</CodeSigningKey>
+    <EnableCodeSigning>true</EnableCodeSigning>
+    <CodeSigningKey>Mac Developer: Benjamin Askren (9Y3W8XBH64)</CodeSigningKey>
     <CreatePackage>false</CreatePackage>
     <EnablePackageSigning>false</EnablePackageSigning>
     <IncludeMonoRuntime>false</IncludeMonoRuntime>
@@ -36,7 +36,9 @@
     <XamMacArch>x86_64</XamMacArch>
     <AOTMode>None</AOTMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <UseHardenedRuntime>true</UseHardenedRuntime>
+    <PackageSigningKey>3rd Party Mac Developer Installer: 42nd Parallel (KKD88FVWF5)</PackageSigningKey>
+    <CodeSignProvision>Asset Generator for Xamarin - Mac Development</CodeSignProvision>
+    <CodeSignEntitlements>Entitlements.plist</CodeSignEntitlements>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -45,9 +47,9 @@
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <EnableCodeSigning>false</EnableCodeSigning>
+    <EnableCodeSigning>true</EnableCodeSigning>
     <CreatePackage>true</CreatePackage>
-    <EnablePackageSigning>false</EnablePackageSigning>
+    <EnablePackageSigning>true</EnablePackageSigning>
     <IncludeMonoRuntime>true</IncludeMonoRuntime>
     <UseSGen>true</UseSGen>
     <UseRefCounting>true</UseRefCounting>
@@ -58,6 +60,9 @@
     <AOTMode>None</AOTMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseHardenedRuntime>true</UseHardenedRuntime>
+    <CodeSigningKey>3rd Party Mac Developer Application: 42nd Parallel (KKD88FVWF5)</CodeSigningKey>
+    <PackageSigningKey>3rd Party Mac Developer Installer: 42nd Parallel (KKD88FVWF5)</PackageSigningKey>
+    <CodeSignProvision>Asset Generator for Xamarin - Mac Distribution</CodeSignProvision>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -126,9 +131,6 @@
     </Compile>
     <Compile Include="EntryRenderer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Extensions\FormattedStringExtensions.cs" />
-    <Compile Include="Extensions\ColorExtensions.cs" />
-    <Compile Include="Extensions\FontExtensions.cs" />
     <Compile Include="Extensions\AlignmentExtensions.cs" />
     <Compile Include="DragAndDropLabelRenderer.cs" />
   </ItemGroup>
@@ -168,17 +170,17 @@
       <Project>{9A4C3AC5-C672-422C-85EA-6F4DD26B891D}</Project>
       <Name>SixLabors.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Storage\Source\P42.Storage\P42.Storage.csproj">
-      <Project>{300BC454-4BBB-4D76-92A9-828A2EB4C23D}</Project>
-      <Name>P42.Storage</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Storage\Source\P42.Storage.MacOS\P42.Storage.MacOS.csproj">
-      <Project>{0692A4E7-F045-4392-8823-FC644890E562}</Project>
-      <Name>P42.Storage.MacOS</Name>
-    </ProjectReference>
     <ProjectReference Include="..\P42.Utils\P42.Utils.MacOS\P42.Utils.MacOS.csproj">
       <Project>{1015AA6E-6277-40D6-8A17-3092F368DC0C}</Project>
       <Name>P42.Utils.MacOS</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\P42.SandboxedStorage\Source\P42.SandboxedStorage\P42.SandboxedStorage.csproj">
+      <Project>{300BC454-4BBB-4D76-92A9-828A2EB4C23D}</Project>
+      <Name>P42.SandboxedStorage</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\P42.SandboxedStorage\Source\P42.SandboxedStorage.MacOS\P42.SandboxedStorage.MacOS.csproj">
+      <Project>{0692A4E7-F045-4392-8823-FC644890E562}</Project>
+      <Name>P42.SandboxedStorage.MacOS</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />

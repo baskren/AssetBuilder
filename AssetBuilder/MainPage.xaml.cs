@@ -10,7 +10,7 @@ using P42.Utils;
 using Amporis.Xamarin.Forms.ColorPicker;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using P42.Storage;
+using P42.SandboxedStorage;
 
 namespace AssetBuilder.Views
 {

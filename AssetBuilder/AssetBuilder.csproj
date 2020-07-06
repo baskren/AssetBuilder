@@ -33,7 +33,7 @@
     <ProjectReference Include="..\AndroidVector\AndroidVector.csproj" />
     <ProjectReference Include="..\Svg2AndroidVector\Svg2AndroidVector.csproj" />
     <ProjectReference Include="..\PdfSharpCore\PdfSharpCore\PdfSharpCore.csproj" />
-    <ProjectReference Include="..\Storage\Source\P42.Storage\P42.Storage.csproj" />
+    <ProjectReference Include="..\P42.SandboxedStorage\Source\P42.SandboxedStorage\P42.SandboxedStorage.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Resources\Contents.json" />

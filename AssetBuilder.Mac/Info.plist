@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>AssetBuilder.Mac</string>
+	<string>AssetBuilder</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.p42.AssetBuilder-Mac</string>
+	<string>com.p42.AssetGenerator</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
@@ -29,6 +29,6 @@
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/AppIcon.appiconset</string>
 	<key>CFBundleDisplayName</key>
-	<string>AssetBuilder.Mac</string>
+	<string>Asset Builder for Xamarin</string>
 </dict>
 </plist>

@@ -101,7 +101,7 @@ namespace AndroidVector
             }
         }
 
-        public async Task<List<string>> ToPdfDocumentAsync(P42.Storage.IStorageFile storageFile, Color backgroundColor)
+        public async Task<List<string>> ToPdfDocumentAsync(P42.SandboxedStorage.IStorageFile storageFile, Color backgroundColor)
         {
             using (var stream = new System.IO.MemoryStream())
             {
@@ -164,7 +164,7 @@ namespace AndroidVector
         /// <param name="backgroundColor">background color for the PNG</param>
         /// <param name="imageSize">size of vector image (centered) in the PNG</param>
         /// <param name="bitmapSize">size of the PNG</param>
-        public async Task ToPngAsync(P42.Storage.IStorageFile file, Color backgroundColor, Size imageSize = default, Size bitmapSize = default)
+        public async Task ToPngAsync(P42.SandboxedStorage.IStorageFile file, Color backgroundColor, Size imageSize = default, Size bitmapSize = default)
         {
             using (var stream = new System.IO.MemoryStream())
             {
