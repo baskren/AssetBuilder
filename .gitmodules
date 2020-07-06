@@ -6,4 +6,4 @@
 	url = https://github.com/baskren/P42.Utils.git
 [submodule "Storage"]
 	path = Storage
-	url = https://github.com/baskren/Storage.git
+url=https://github.com/baskren/P42.StandboxedStorage.git
