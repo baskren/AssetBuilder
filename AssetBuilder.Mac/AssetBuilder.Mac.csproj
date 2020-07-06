@@ -168,13 +168,13 @@
       <Project>{9A4C3AC5-C672-422C-85EA-6F4DD26B891D}</Project>
       <Name>SixLabors.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Storage\Source\P42.Storage\P42.Storage.csproj">
+    <ProjectReference Include="..\Storage\Source\P42.SandboxedStorage\P42.SandboxedStorage.csproj">
       <Project>{300BC454-4BBB-4D76-92A9-828A2EB4C23D}</Project>
-      <Name>P42.Storage</Name>
+      <Name>P42.SandboxedStorage</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Storage\Source\P42.Storage.MacOS\P42.Storage.MacOS.csproj">
+    <ProjectReference Include="..\Storage\Source\P42.SandboxedStorage.MacOS\P42.SandboxedStorage.MacOS.csproj">
       <Project>{0692A4E7-F045-4392-8823-FC644890E562}</Project>
-      <Name>P42.Storage.MacOS</Name>
+      <Name>P42.SandboxedStorage.MacOS</Name>
     </ProjectReference>
     <ProjectReference Include="..\P42.Utils\P42.Utils.MacOS\P42.Utils.MacOS.csproj">
       <Project>{1015AA6E-6277-40D6-8A17-3092F368DC0C}</Project>

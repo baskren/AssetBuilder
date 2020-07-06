@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using P42.Storage;
+using P42.SandboxedStorage;
 using Xamarin.Forms;
 
 namespace AssetBuilder

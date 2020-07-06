@@ -25,7 +25,7 @@ namespace AssetBuilder.Mac
         {
             Forms.Init();
             P42.Utils.MacOS.Settings.Init();
-            P42.Storage.Platform.Init();
+            P42.SandboxedStorage.Platform.Init();
             LoadApplication(new App());
             base.DidFinishLaunching(notification);
         }

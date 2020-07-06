@@ -16,7 +16,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PdfSharpCore\PdfSharpCore\PdfSharpCore.csproj" />
-    <ProjectReference Include="..\Storage\Source\P42.Storage\P42.Storage.csproj" />
+    <ProjectReference Include="..\Storage\Source\P42.SandboxedStorage\P42.SandboxedStorage.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="SkiaSharp" Version="1.68.3" />
