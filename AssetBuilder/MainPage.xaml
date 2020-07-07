@@ -37,29 +37,29 @@
                     <Label
                         Grid.Row="1"
                         VerticalOptions="Center"
+                        HorizontalTextAlignment="End"
+                        Text="Android: "/>
+                    <AB:ProjectFolderPicker
+                        x:Name="_androidProjectFolderPicker"
+                        Placeholder="click to select Android platform project folder"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        />
+
+
+                    <Label
+                        Grid.Row="2"
+                        VerticalOptions="Center"
                         Text="iOS: "
                         HorizontalTextAlignment="End"
                         />
                     <AB:ProjectFolderPicker
                         x:Name="_iosProjectFolderPicker"
                         Placeholder="click to select iOS platform project folder"
-                        Grid.Row="1"
+                        Grid.Row="2"
                         Grid.Column="1"
-                        >
-                    </AB:ProjectFolderPicker>
+                        />
 
-                    <Label
-                        Grid.Row="2"
-                        VerticalOptions="Center"
-                        HorizontalTextAlignment="End"
-                        Text="Android: "/>
-                    <AB:ProjectFolderPicker
-                        x:Name="_androidProjectFolderPicker"
-                        Placeholder="click to select Android platform project folder"
-                        Grid.Row="2"
-                        Grid.Column="1"
-                        >
-                    </AB:ProjectFolderPicker>
 
                     <Label
                         Grid.Row="3"
@@ -71,9 +71,9 @@
                         Placeholder="click to select UWP platform project folder"
                         Grid.Row="3"
                         Grid.Column="1"
-                        >
-                    </AB:ProjectFolderPicker>
-                </Grid>
+                        />
+
+                    </Grid>
             </Frame>
 
             <Frame
@@ -158,8 +158,8 @@
                         Placeholder="click to select icon SVG file"
                         Grid.Row="2"
                         Grid.Column="1"
-                        >
-                    </AB:SvgFilePicker>
+                        />
+
                     <Button
                         x:Name="_generateIconsButton"
                         Text="Generate Icons"
@@ -290,8 +290,8 @@
                         Placeholder="click to select square (1:1) SVG file"
                         Grid.Row="2"
                         Grid.Column="1"
-                        >
-                    </AB:SvgFilePicker>
+                        />
+
 
                     <Grid
                         Grid.Row="3">
@@ -332,8 +332,8 @@
                         Placeholder="click to select rectangular (310:150) SVG file"
                         Grid.Row="3"
                         Grid.Column="1"
-                        >
-                    </AB:SvgFilePicker>
+                        />
+
 
 
                     <Button

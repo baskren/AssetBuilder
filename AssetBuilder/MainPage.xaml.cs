@@ -613,7 +613,7 @@ namespace AssetBuilder.Views
                 await CopyEmbeddedResourceToFolder("AssetBuilder.Resources." + splashActivityFileName, splashActivityFileName, _androidProjectFolderPicker.StorageFolder);
 
                 var splashBackgroundFileName = "background_splash.xml";
-                await CopyEmbeddedResourceToFolder("AssetBuilder.Resources." + splashBackgroundFileName, splashBackgroundFileName, drawableFolder);
+                await CopyEmbeddedResourceToFolder("AssetBuilder.Resources.drawable." + splashBackgroundFileName, splashBackgroundFileName, drawableFolder);
                 await CopyEmbeddedResourceToFolder("AssetBuilder.Resources.drawable-v23." + splashBackgroundFileName, splashBackgroundFileName, drawable23Folder);
 
                 if (await drawable23Folder.GetOrCreateFileAsync("splash_image.xml") is IStorageFile splashImageXmlFile)
