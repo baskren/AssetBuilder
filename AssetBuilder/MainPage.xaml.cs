@@ -274,7 +274,7 @@ namespace AssetBuilder.Views
         #region File Helpers
         async Task<IStorageFile> CopyEmbeddedResourceToFolder(string embeddedResourceId, string fileName, IStorageFolder folder)
         {
-            if (!await folder.FileExists(fileName))
+            if (!folder.FileExists(fileName))
             {
                 if (await folder.CreateFileAsync(fileName) is IStorageFile file)
                 {
@@ -342,7 +342,7 @@ namespace AssetBuilder.Views
                                 element.SetAttributeValue("Include", "Resources\\mipmap-anydpi-v26\\launcher_foreground.xml");
                                 androidResourceItemGroup.Add(element);
 
-                                await StorageFileExtensions.WriteAllTextAsync(storageFile, XmlHeader + csprojDoc);
+                                await storageFile.WriteAllTextAsync(XmlHeader + csprojDoc);
                             }
                         }
 
@@ -370,7 +370,7 @@ namespace AssetBuilder.Views
                             color.Value = Preferences.Current.IconBackgroundColor.ToHex();
 
                             var text = XmlHeader + colorsDocument.ToString();
-                            await StorageFileExtensions.WriteAllTextAsync(colorsFile, text);
+                            await colorsFile.WriteAllTextAsync(text);
                         }
                     }
                     else
@@ -391,7 +391,7 @@ namespace AssetBuilder.Views
                             tmpVector.ApplySvgTransforms();
                             tmpVector.PurgeDefaults();
                             var launcher_foreground = await mipmapFolder.GetOrCreateFileAsync("launcher_foreground.xml");
-                            await StorageFileExtensions.WriteAllTextAsync(launcher_foreground, tmpVector.ToString());
+                            await launcher_foreground.WriteAllTextAsync(tmpVector.ToString());
                         }
                         else
                             await DisplayAlert("Error", "Could not find or create Resources/mipmap-anydpi-v26 in Android project", "ok");
@@ -680,7 +680,7 @@ namespace AssetBuilder.Views
                                 element.SetAttributeValue("Include", "Resources\\drawable-v23\\splash_image.xml");
                                 androidResourceItemGroup.Add(element);
 
-                                await StorageFileExtensions.WriteAllTextAsync(projectFile, XmlHeader + csprojDoc);
+                                await projectFile.WriteAllTextAsync(XmlHeader + csprojDoc);
                             }
                         }
 
@@ -693,7 +693,7 @@ namespace AssetBuilder.Views
                                 element.SetAttributeValue("Include", "SplashActivity.cs");
                                 sourceItemGroup.Add(element);
 
-                                await StorageFileExtensions.WriteAllTextAsync(projectFile, XmlHeader + csprojDoc);
+                                await projectFile.WriteAllTextAsync(XmlHeader + csprojDoc);
                             }
                         }
                     }
@@ -727,7 +727,7 @@ namespace AssetBuilder.Views
                                 styles.Add(style);
 
                                 var text = XmlHeader + stylesDocument.ToString().Replace("{android}", "android:");
-                                await StorageFileExtensions.WriteAllTextAsync(stylesFile, text);
+                                await stylesFile.WriteAllTextAsync(text);
                             }
                         }
                     }
@@ -753,7 +753,7 @@ namespace AssetBuilder.Views
                             color.Value = Preferences.Current.SplashBackgroundColor.ToHex();
 
                             var text = XmlHeader + colorsDocument.ToString();
-                            await StorageFileExtensions.WriteAllTextAsync(colorsFile, text);
+                            await colorsFile.WriteAllTextAsync(text);
                         }
                     }
                     else
@@ -777,7 +777,7 @@ namespace AssetBuilder.Views
 
                         if (await _androidProjectFolderPicker.StorageFolder.GetFileAsync(splashActivityFileName) is IStorageFile splashActivityFile)
                         {
-                            var splashActivityLines = await StorageFileExtensions.ReadAllLinesAsync(splashActivityFile);
+                            var splashActivityLines = await splashActivityFile.ReadAllLinesAsync();
                             updatedLines = new List<string>();
                             foreach (var line in splashActivityLines)
                             {
@@ -888,7 +888,7 @@ namespace AssetBuilder.Views
 
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n";
             var text = xmlHeader + document;
-            await StorageFileExtensions.WriteAllTextAsync(launchScreenStoryboardFile, text);
+            await launchScreenStoryboardFile.WriteAllTextAsync(text);
             return null;
         }
 
@@ -922,7 +922,7 @@ namespace AssetBuilder.Views
                                 itemGroup.Add(imageAsset);
 
                                 var text = XmlHeader + document;
-                                await StorageFileExtensions.WriteAllTextAsync(projectFile, text);
+                                await projectFile.WriteAllTextAsync(text);
 
                                 return null;
                             }
@@ -1000,7 +1000,7 @@ namespace AssetBuilder.Views
 
 
                             var text = XmlHeader + document;
-                            await StorageFileExtensions.WriteAllTextAsync(projectFile, text);
+                            await projectFile.WriteAllTextAsync(text);
                             break;
                         }
                     }

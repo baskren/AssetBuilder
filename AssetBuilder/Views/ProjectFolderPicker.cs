@@ -7,7 +7,7 @@ using Xamarin.Forms;
 
 namespace AssetBuilder
 {
-    public class ProjectFolderPicker : StorageFolderPicker
+    public class ProjectFolderPicker : StorageFolderPickerHybridView
     {
         #region Properties
 
@@ -88,6 +88,8 @@ namespace AssetBuilder
             var osName =  ProjectPlatform.ToString();
             if (StorageFolder is null)
                 return null;
+
+
             if (await StorageFolder.GetFilesAsync("*.csproj").ConfigureAwait(false) is IReadOnlyList<IStorageFile> projFiles)
             {
                 if (projFiles.Count > 1)

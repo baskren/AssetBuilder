@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using P42.SandboxedStorage;
 using Xamarin.Forms;
-
+/*
 namespace AssetBuilder
 {
     public abstract class StorageItemPicker : Frame, IDisposable
@@ -216,3 +216,4 @@ namespace AssetBuilder
 
     }
 }
+*/

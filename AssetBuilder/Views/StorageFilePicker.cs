@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using P42.SandboxedStorage;
-
+/*
 namespace AssetBuilder
 {
     public class StorageFilePicker : StorageItemPicker
@@ -60,3 +60,4 @@ namespace AssetBuilder
             => StorageFile = storageFile;
     }
 }
+*/

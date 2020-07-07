@@ -9,13 +9,13 @@ using UIColor = AppKit.NSColor;
 using UITextAlignment = AppKit.NSTextAlignment;
 namespace AssetBuilder.Mac
 {
-
+	/*
 
 	public static class FormattedStringExtensions
 	{
 		internal static bool IsDefault(this Span self)
 		{
-			return self.FontFamily == null && self.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(StorageFilePicker), true) &&
+			return self.FontFamily == null && self.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(IStorageFilePicker), true) &&
 					self.FontAttributes == FontAttributes.None;
 		}
 
@@ -109,4 +109,6 @@ namespace AssetBuilder.Mac
 			return attributed;
 		}
 	}
+
+	*/
 }

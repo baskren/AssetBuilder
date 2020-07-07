@@ -5,7 +5,7 @@ using Xamarin.Forms;
 
 namespace AssetBuilder
 {
-    public class SvgFilePicker : StorageFilePicker
+    public class SvgFilePicker : StorageFilePickerHybridView
     {
         #region Fields
         IStorageFile oldFile;
