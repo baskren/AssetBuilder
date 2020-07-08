@@ -885,6 +885,17 @@ namespace AssetBuilder.Views
                     backgroundColor.SetAttributeValue("alpha", Preferences.Current.SplashBackgroundColor.A);
                 }
             }
+            if (document.Descendants("imageView") is IEnumerable<XElement> imageElements)
+            {
+                if (imageElements.SingleOrDefault() is XElement imageElement)
+                {
+                    imageElement.SetAttributeValue("userInteractionEnabled", "NO");
+                    imageElement.SetAttributeValue("contentMode", "scaleAspectFit");
+                    imageElement.SetAttributeValue("misplaced", "YES");
+                    imageElement.SetAttributeValue("image", "Splash");
+                    imageElement.SetAttributeValue("translatesAutoresizingMaskIntoConstraints", "NO");
+                }
+            }
 
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n";
             var text = xmlHeader + document;

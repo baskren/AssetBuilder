@@ -34,11 +34,12 @@
     <HttpClientHandler>HttpClientHandler</HttpClientHandler>
     <LinkMode>None</LinkMode>
     <XamMacArch>x86_64</XamMacArch>
-    <AOTMode>None</AOTMode>
+    <AOTMode>SDK</AOTMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <CodeSignProvision>AssetBuilder - Development</CodeSignProvision>
     <PackageSigningKey>3rd Party Mac Developer Installer</PackageSigningKey>
     <CodeSignEntitlements>Entitlements.plist</CodeSignEntitlements>
+    <UseHardenedRuntime>true</UseHardenedRuntime>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
