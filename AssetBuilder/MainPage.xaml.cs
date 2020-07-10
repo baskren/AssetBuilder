@@ -525,18 +525,24 @@ namespace AssetBuilder.Views
             { "Square44x44Logo.scale-150.png", 66 },
             { "Square44x44Logo.scale-200.png", 88 },
             { "Square44x44Logo.scale-400.png", 176 },
-
+            /*
             { "Square44x44Logo.altform-unplated_targetsize-16.png", 16 },
             { "Square44x44Logo.altform-unplated_targetsize-24.png", 24 },
             { "Square44x44Logo.altform-unplated_targetsize-32.png", 32 },
             { "Square44x44Logo.altform-unplated_targetsize-48.png", 48 },
             { "Square44x44Logo.altform-unplated_targetsize-256.png", 256 },
-
+            */
             { "Square44x44Logo.targetsize-16.png", 16 },
             { "Square44x44Logo.targetsize-24.png", 24 },
             { "Square44x44Logo.targetsize-32.png", 32 },
             { "Square44x44Logo.targetsize-48.png", 48 },
             { "Square44x44Logo.targetsize-256.png", 256 },
+
+            { "Square44x44Logo.targetsize-16_altform-unplated.png", 16 },
+            { "Square44x44Logo.targetsize-24_altform-unplated.png", 24 },
+            { "Square44x44Logo.targetsize-32_altform-unplated.png", 32 },
+            { "Square44x44Logo.targetsize-48_altform-unplated.png", 48 },
+            { "Square44x44Logo.targetsize-256_altform-unplated.png", 256 },
 
             { "Square71x71Logo.scale-100.png", 71 },
             { "Square71x71Logo.scale-125.png", 89 },
@@ -572,13 +578,13 @@ namespace AssetBuilder.Views
                     var size = kvp.Value;
                     await vector.ToPngAsync(file, Color.Transparent, new System.Drawing.Size(size, size));
                 }
-                await UpdateUwpAppManifestIconColor();
+                await UpdateUwpAppManifestForIcons();
             }
             else
                 await DisplayAlert(null, "Cannot find UWP Assets folder in UWP project folder [" + _uwpProjectFolderPicker.StorageFolder.Path + "]", "ok");
         }
 
-        async Task UpdateUwpAppManifestIconColor()
+        async Task UpdateUwpAppManifestForIcons()
         {
             if (await _uwpProjectFolderPicker.StorageFolder.GetFileAsync("Package.appxmanifest") is IStorageFile manifestFile)
             {
@@ -586,9 +592,20 @@ namespace AssetBuilder.Views
                 {
                     var backgroundColorHex = Preferences.Current.IconBackgroundColor.ToRgbHex();
                     XNamespace uapNs = "http://schemas.microsoft.com/appx/manifest/uap/windows10";
+
                     var visualElements = document.Descendants(uapNs + "VisualElements");
                     foreach (var visualElement in visualElements)
+                    {
                         visualElement.SetAttributeValue("BackgroundColor", backgroundColorHex);
+
+                        if (!(visualElement.Element(uapNs + "DefaultTile") is XElement defaultTile))
+                        {
+                            defaultTile = new XElement(uapNs + "DefaultTile");
+                            visualElement.Add(defaultTile);
+                        }
+                        defaultTile.SetAttributeValue("Square71x71Logo", "Assets\\Square71x71Logo.png");
+                    }
+
                     var text = XmlHeader + document.ToString();
                     await manifestFile.WriteAllTextAsync(text);
                 }
@@ -614,7 +631,7 @@ namespace AssetBuilder.Views
                             found = true;
                             foreach (var kvp in UwpIcons)
                             {
-                                if (!document.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
+                                if (!document.Descendants(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
                                     itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
                             }
 
@@ -626,7 +643,7 @@ namespace AssetBuilder.Views
                     if (!found)
                         await DisplayAlert("UWP Splash Images", "Could not find <ItemGroup>, in UWP's .csproj file, that contains icon, logo, and splash images", "ok");
 
-                    await UpdateUwpAppManifestSplashColor();
+                    await UpdateUwpAppManifestForSplash();
                 }
             }
 
@@ -1072,12 +1089,12 @@ namespace AssetBuilder.Views
                             found = true;
                             foreach (var kvp in UwpRectangularSplashImages)
                             {
-                                if (!itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
+                                if (!document.Descendants(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
                                     itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
                             }
                             foreach (var kvp in UwpSquareLogoImages)
                             {
-                                if (!itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
+                                if (!document.Descendants(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
                                     itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
                             }
 
@@ -1090,7 +1107,7 @@ namespace AssetBuilder.Views
                     if (!found)
                         await DisplayAlert("UWP Splash Images", "Could not find <ItemGroup>, in UWP's .csproj file, that contains icon, logo, and splash images", "ok");
 
-                    await UpdateUwpAppManifestSplashColor();
+                    await UpdateUwpAppManifestForSplash();
                 }
             }
             return mobileVector;
@@ -1161,7 +1178,7 @@ namespace AssetBuilder.Views
             return vector;
         }
 
-        async Task UpdateUwpAppManifestSplashColor()
+        async Task UpdateUwpAppManifestForSplash()
         {
             if (await _uwpProjectFolderPicker.StorageFolder.GetFileAsync("Package.appxmanifest") is IStorageFile manifestFile)
             {
@@ -1169,12 +1186,49 @@ namespace AssetBuilder.Views
                 {
                     var backgroundColorHex = Preferences.Current.SplashBackgroundColor.ToRgbHex();
                     XNamespace uapNs = "http://schemas.microsoft.com/appx/manifest/uap/windows10";
-                    var visualElements = document.Descendants(uapNs + "SplashScreen");
+
+                    var visualElements = document.Descendants(uapNs + "VisualElements");
                     foreach (var visualElement in visualElements)
-                        visualElement.SetAttributeValue("BackgroundColor", backgroundColorHex);
+                    {
+                        if (!(visualElement.Element(uapNs + "SplashScreen") is XElement splashScreen))
+                        {
+                            splashScreen = new XElement(uapNs + "SplashScreen");
+                            visualElement.Add(splashScreen);
+                        }
+                        splashScreen.SetAttributeValue("BackgroundColor", backgroundColorHex);
+
+                        if (!(visualElement.Element(uapNs + "DefaultTile") is XElement defaultTile))
+                        {
+                            defaultTile = new XElement(uapNs + "DefaultTile");
+                            visualElement.Add(defaultTile);
+                        }
+                        defaultTile.SetAttributeValue("Wide310x150Logo", "Assets\\Wide310x150Logo.png");
+                        defaultTile.SetAttributeValue("Square310x310Logo", "Assets\\Square310x310Logo.png");
+                        if (!(defaultTile.Element(uapNs + "ShowNameOnTiles") is XElement showNameOnTiles))
+                        {
+                            showNameOnTiles = new XElement(uapNs + "ShowNameOnTiles");
+                            defaultTile.Add(showNameOnTiles);
+                        }
+                        if (!(showNameOnTiles.Element(uapNs+"ShowOn") is XElement showOn))
+                        {
+                            showOn = new XElement(uapNs + "ShowOn");
+                            showNameOnTiles.Add(showOn);
+                        }
+                        showOn.SetAttributeValue("Tile", "square310x310Logo");
+
+                        if (!(visualElement.Element(uapNs + "LockScreen") is XElement lockScreen))
+                        {
+                            lockScreen = new XElement(uapNs + "LockScreen");
+                            visualElement.Add(lockScreen);
+                        }
+                        lockScreen.SetAttributeValue("BadgeLogo", "Assets\\BadgeLogo.png");
+                        lockScreen.SetAttributeValue("Notification", "badgeAndTileText");
+                    }
+
                     var text = XmlHeader + document.ToString();
                     await manifestFile.WriteAllTextAsync(text);
                 }
+
             }
         }
         #endregion
