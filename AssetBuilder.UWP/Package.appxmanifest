@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities" IgnorableNamespaces="uap mp rescap">
-  <Identity Name="20bd9069-e8f5-4169-bb23-38fce1cfb746" Publisher="CN=ben" Version="1.0.0.0" />
-  <mp:PhoneIdentity PhoneProductId="20bd9069-e8f5-4169-bb23-38fce1cfb746" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
+  <Identity Name="5734742ndParallel.AssetGeneratorforXamarin" Publisher="CN=433858" Version="1.0.0.0" />
+  <mp:PhoneIdentity PhoneProductId="ec3b52ef-3ee9-4586-9a44-80992fb30ecf" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
-    <DisplayName>AssetBuilder.UWP</DisplayName>
+    <DisplayName>Asset Generator for Xamarin</DisplayName>
     <PublisherDisplayName>42nd Parallel</PublisherDisplayName>
     <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
@@ -15,7 +15,7 @@
   </Resources>
   <Applications>
     <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="AssetBuilder.UWP.App">
-      <uap:VisualElements DisplayName="AssetBuilder.UWP" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="AssetBuilder.UWP" BackgroundColor="#A8D9FF">
+      <uap:VisualElements DisplayName="Asset Generator for Xamarin" Square150x150Logo="Assets\Square150x150Logo.png" Square44x44Logo="Assets\Square44x44Logo.png" Description="AssetBuilder.UWP" BackgroundColor="#585858">
         <uap:DefaultTile Wide310x150Logo="Assets\Wide310x150Logo.png" Square71x71Logo="Assets\Square71x71Logo.png" Square310x310Logo="Assets\Square310x310Logo.png">
           <uap:ShowNameOnTiles>
             <uap:ShowOn Tile="square310x310Logo" />
@@ -26,7 +26,4 @@
       </uap:VisualElements>
     </Application>
   </Applications>
-  <Capabilities>
-    <rescap:Capability Name="broadFileSystemAccess" />
-  </Capabilities>
 </Package>

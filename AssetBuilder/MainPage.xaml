@@ -12,7 +12,7 @@
             <Frame
                 Margin="3"
                 BorderColor="#555"
-                CornerRadius="3"
+                CornerRadius="5"
                 BackgroundColor="LightGray"
                 Padding="5"
                 >
@@ -79,7 +79,7 @@
             <Frame
                 Margin="3"
                 BorderColor="#555"
-                CornerRadius="3"
+                CornerRadius="5"
                 BackgroundColor="LightGray"
                 Padding="5"
                 >
@@ -91,6 +91,7 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="30"/>
                         <RowDefinition Height="40"/>
+                        <RowDefinition Height="60"/>
                         <RowDefinition Height="60"/>
                         <RowDefinition Height="50"/>
                     </Grid.RowDefinitions>
@@ -146,6 +147,7 @@
                                 />
                         </Grid>
                     </Frame>
+
                     <Label
                         Text="Icon SVG: "
                         Grid.Row="2"
@@ -160,10 +162,24 @@
                         Grid.Column="1"
                         />
 
+                    <Label
+                        Text="UWP Badge SVG: "
+                        Grid.Row="3"
+                        VerticalOptions="Center"
+                        HorizontalTextAlignment="End"
+                        FontFamily="MaterialIcons"
+                        />
+                    <AB:SvgFilePicker
+                        x:Name="_uwpBadgeSvgFilePicker"
+                        Placeholder="click to select a UWP Badge SVG file (non-transparent colors will be converted to white)"
+                        Grid.Row="3"
+                        Grid.Column="1"
+                        />
+
                     <Button
                         x:Name="_generateIconsButton"
                         Text="Generate Icons"
-                        Grid.Row="3"
+                        Grid.Row="4"
                         Grid.ColumnSpan="2"
                         BackgroundColor="Blue"
                         TextColor="White"
@@ -177,7 +193,7 @@
             <Frame
                 Margin="3"
                 BorderColor="#555"
-                CornerRadius="3"
+                CornerRadius="5"
                 BackgroundColor="LightGray"
                 Padding="5"
                 >

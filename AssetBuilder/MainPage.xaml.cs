@@ -52,6 +52,7 @@ namespace AssetBuilder.Views
             _uwpProjectFolderPicker.StorageFolderChanged += OnUwpProjectFolderChanged;
 
             _iconSvgFilePicker.StorageFileChanged += OnIconSvgFileChanged;
+            _uwpBadgeSvgFilePicker.StorageFileChanged += OnUwpBadgeSvgFileChanged;
             _squareSvgLaunchImagePicker.StorageFileChanged += OnSquareSvgLaunchImageEntryChanged;
             _rect310SvgLaunchImagePicker.StorageFileChanged += OnRect310SvgLaunchImageEntryChanged;
 
@@ -74,6 +75,7 @@ namespace AssetBuilder.Views
                 _iconBackgroundColorEntry.Text = Preferences.Current.IconBackgroundColor.ToHex();
 
                 await _iconSvgFilePicker.SetStorageFileFromPathAsync(Preferences.Current.SvgIconFile);
+                await _uwpBadgeSvgFilePicker.SetStorageFileFromPathAsync(Preferences.Current.SvgUwpBadgeFile);
                 await _squareSvgLaunchImagePicker.SetStorageFileFromPathAsync(Preferences.Current.SquareSvgSplashImageFile);
                 await _rect310SvgLaunchImagePicker.SetStorageFileFromPathAsync(Preferences.Current.Rect310SvgSplashImageFile);
 
@@ -145,6 +147,11 @@ namespace AssetBuilder.Views
         private void OnIconSvgFileChanged(object sender, StorageFileChangedEventArgs e)
         {
             Preferences.Current.SvgIconFile = e.StorageFile?.Path;
+        }
+
+        private void OnUwpBadgeSvgFileChanged(object sender, StorageFileChangedEventArgs e)
+        {
+            Preferences.Current.SvgUwpBadgeFile = e.StorageFile?.Path;
         }
 
         private void OnSquareSvgLaunchImageEntryChanged(object sender, StorageFileChangedEventArgs e)
@@ -296,18 +303,19 @@ namespace AssetBuilder.Views
         async void OnGenerateIconsButtonClicked(object sender, EventArgs e)
         {
             ShowSpinner();
-            if (_iconSvgFilePicker.StorageFile is null)
+            if (_iconSvgFilePicker.StorageFile != null)
             {
-                await DisplayAlert(null, "Cannot open SVG file [" + Preferences.Current.SvgIconFile + "]", "cancel");
-                return;
+                var vector = await GenerateVectorAndroidIcons();
+                await GenerateRasterAndroidIcons(vector);
+                await GenerateIosIcons(vector);
+                await GenerateUwpIcons(vector);
             }
-            var vector = await GenerateVectorAndroidIcons();
-            await GenerateRasterAndroidIcons(vector);
-            await GenerateIosIcons(vector);
-            await GenerateUwpIcons(vector);
 
-            await DisplayAlert("Complete", "App Icons have been generated.", "ok");
+            if (_uwpBadgeSvgFilePicker.StorageFile != null)
+                await GenerateUwpBadgeIcons();
+
             HideSpinner();
+            await DisplayAlert("Complete", "App Icons have been generated.", "ok");
         }
 
         async Task<AndroidVector.Vector> GenerateVectorAndroidIcons()
@@ -512,45 +520,29 @@ namespace AssetBuilder.Views
 
         static readonly Dictionary<string, int> UwpIcons = new Dictionary<string, int>
         {
-            { "BadgeLogo.scale-100.png", 24 },
-            { "BadgeLogo.scale-125.png", 30 },
-            { "BadgeLogo.scale-150.png", 36 },
-            { "BadgeLogo.scale-200.png", 48 },
-            { "BadgeLogo.scale-400.png", 96 },
-
-            { "LockScreenLogo.scale-200.png", 48 },
-
             { "Square44x44Logo.scale-100.png", 44 },
             { "Square44x44Logo.scale-125.png", 55 },
             { "Square44x44Logo.scale-150.png", 66 },
             { "Square44x44Logo.scale-200.png", 88 },
             { "Square44x44Logo.scale-400.png", 176 },
-            /*
+            
             { "Square44x44Logo.altform-unplated_targetsize-16.png", 16 },
             { "Square44x44Logo.altform-unplated_targetsize-24.png", 24 },
             { "Square44x44Logo.altform-unplated_targetsize-32.png", 32 },
             { "Square44x44Logo.altform-unplated_targetsize-48.png", 48 },
             { "Square44x44Logo.altform-unplated_targetsize-256.png", 256 },
-            */
+            
             { "Square44x44Logo.targetsize-16.png", 16 },
             { "Square44x44Logo.targetsize-24.png", 24 },
             { "Square44x44Logo.targetsize-32.png", 32 },
             { "Square44x44Logo.targetsize-48.png", 48 },
             { "Square44x44Logo.targetsize-256.png", 256 },
 
-            { "Square44x44Logo.targetsize-16_altform-unplated.png", 16 },
-            { "Square44x44Logo.targetsize-24_altform-unplated.png", 24 },
-            { "Square44x44Logo.targetsize-32_altform-unplated.png", 32 },
-            { "Square44x44Logo.targetsize-48_altform-unplated.png", 48 },
-            { "Square44x44Logo.targetsize-256_altform-unplated.png", 256 },
-
             { "Square71x71Logo.scale-100.png", 71 },
             { "Square71x71Logo.scale-125.png", 89 },
             { "Square71x71Logo.scale-150.png", 107 },
             { "Square71x71Logo.scale-200.png", 142 },
             { "Square71x71Logo.scale-400.png", 284 },
-
-            { "StoreLogo.png", 50 },
 
             { "StoreLogo.scale-100.png", 50 },
             { "StoreLogo.scale-125.png", 63 },
@@ -563,6 +555,27 @@ namespace AssetBuilder.Views
             { "SmallTile.scale-150.png", 107 },
             { "SmallTile.scale-200.png", 142 },
             { "SmallTile.scale-400.png", 248 },
+        };
+
+        static readonly List<string> ObsoleteUwpIcons = new List<string>
+        {
+            "StoreLogo.png",
+            "Square44x44Logo.targetsize-16_altform-unplated.png",
+            "Square44x44Logo.targetsize-24_altform-unplated.png",
+            "Square44x44Logo.targetsize-32_altform-unplated.png",
+            "Square44x44Logo.targetsize-48_altform-unplated.png",
+            "Square44x44Logo.targetsize-256_altform-unplated.png",
+            "LockScreenLogo.scale-200.png",
+            "LargeTile.scale-100.png",
+        };
+
+        static readonly Dictionary<string, int> UwpBadgeIcons = new Dictionary<string, int>
+        {
+            { "BadgeLogo.scale-100.png", 24 },
+            { "BadgeLogo.scale-125.png", 30 },
+            { "BadgeLogo.scale-150.png", 36 },
+            { "BadgeLogo.scale-200.png", 48 },
+            { "BadgeLogo.scale-400.png", 96 },
         };
 
         async Task GenerateUwpIcons(AndroidVector.Vector vector)
@@ -579,9 +592,36 @@ namespace AssetBuilder.Views
                     await vector.ToPngAsync(file, Color.Transparent, new System.Drawing.Size(size, size));
                 }
                 await UpdateUwpAppManifestForIcons();
+                await UpdateUwpProjectFileForIcons();
             }
             else
                 await DisplayAlert(null, "Cannot find UWP Assets folder in UWP project folder [" + _uwpProjectFolderPicker.StorageFolder.Path + "]", "ok");
+        }
+
+        async Task GenerateUwpBadgeIcons()
+        {
+            if (_uwpProjectFolderPicker.StorageFolder is null)
+                return;
+
+            if (await _uwpProjectFolderPicker.StorageFolder.GetFolderAsync("Assets") is IStorageFolder assetsFolder && _uwpBadgeSvgFilePicker.StorageFile is IStorageFile badgeSvgFile)
+            {
+                if (await Svg2.GenerateAndroidVectorAsync(badgeSvgFile) is (AndroidVector.Vector vector, List<string> warnings))
+                {
+                    foreach (var kvp in UwpBadgeIcons)
+                    {
+                        var file = await assetsFolder.GetOrCreateFileAsync(kvp.Key);
+                        var size = kvp.Value;
+                        await vector.ToPngAsync(file, Color.Transparent, new System.Drawing.Size(size, size), flatten: true);
+                    }
+                    await UpdateUwpAppManifestForBadgeIcons();
+                    await UpdateUwpProjectFileForBadgeIcons();
+                }
+                else
+                {
+                    await DisplayAlert("ERROR", "Failed to generate AndroidVector for unknown reason.", "ok");
+                    vector = null;
+                }
+            }
         }
 
         async Task UpdateUwpAppManifestForIcons()
@@ -606,11 +646,14 @@ namespace AssetBuilder.Views
                         defaultTile.SetAttributeValue("Square71x71Logo", "Assets\\Square71x71Logo.png");
                     }
 
-                    var text = XmlHeader + document.ToString();
-                    await manifestFile.WriteAllTextAsync(text);
+                    var content = XmlHeader + document.ToString();
+                    await manifestFile.WriteAllTextAsync(content);
                 }
             }
+        }
 
+        async Task UpdateUwpProjectFileForIcons()
+        {
             if (_uwpProjectFolderPicker.ProjectFile is IStorageFile projectFile)
             {
                 if (await XDocumentExtensions.LoadAsync(projectFile) is XDocument document)
@@ -625,7 +668,7 @@ namespace AssetBuilder.Views
                             itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Square150x150Logo.scale-200.png") ||
                             itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Square44x44Logo.scale-200.png") ||
                             itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\StoreLogo.png") ||
-                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Wide310x150Logo.scale-200.png") 
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Wide310x150Logo.scale-200.png")
                             )
                         {
                             found = true;
@@ -634,19 +677,88 @@ namespace AssetBuilder.Views
                                 if (!document.Descendants(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
                                     itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
                             }
-
-                            var text = XmlHeader + document;
-                            await projectFile.WriteAllTextAsync(text);
                             break;
                         }
                     }
+                    foreach (var obsoleteIcon in ObsoleteUwpIcons)
+                    {
+                        if (document.Descendants(ns + "Content").Where(e => e.Attribute("Include").Value == "Assets\\" + obsoleteIcon)?.FirstOrDefault() is XElement obsoleteIconElement)
+                            obsoleteIconElement.Remove();
+                    }
+
                     if (!found)
                         await DisplayAlert("UWP Splash Images", "Could not find <ItemGroup>, in UWP's .csproj file, that contains icon, logo, and splash images", "ok");
 
-                    await UpdateUwpAppManifestForSplash();
+                    var content = XmlHeader + document.ToString();
+                    await projectFile.WriteAllTextAsync(content);
                 }
             }
+        }
 
+        async Task UpdateUwpAppManifestForBadgeIcons()
+        {
+            if (_uwpProjectFolderPicker.StorageFolder != null &&
+                await _uwpProjectFolderPicker.StorageFolder.GetFileAsync("Package.appxmanifest") is IStorageFile manifestFile)
+            {
+                if (await XDocumentExtensions.LoadAsync(manifestFile) is XDocument document)
+                {
+                    var backgroundColorHex = Preferences.Current.SplashBackgroundColor.ToRgbHex();
+                    XNamespace uapNs = "http://schemas.microsoft.com/appx/manifest/uap/windows10";
+
+                    var visualElements = document.Descendants(uapNs + "VisualElements");
+                    foreach (var visualElement in visualElements)
+                    {
+                        if (!(visualElement.Element(uapNs + "LockScreen") is XElement lockScreen))
+                        {
+                            lockScreen = new XElement(uapNs + "LockScreen");
+                            visualElement.Add(lockScreen);
+                        }
+                        lockScreen.SetAttributeValue("BadgeLogo", "Assets\\BadgeLogo.png");
+                        lockScreen.SetAttributeValue("Notification", "badgeAndTileText");
+                    }
+
+                    var text = XmlHeader + document.ToString();
+                    await manifestFile.WriteAllTextAsync(text);
+                }
+            }
+        }
+
+        async Task UpdateUwpProjectFileForBadgeIcons()
+        {
+            if (_uwpProjectFolderPicker.ProjectFile is IStorageFile projectFile)
+            {
+                if (await XDocumentExtensions.LoadAsync(projectFile) is XDocument document)
+                {
+                    XNamespace ns = document.Root.Attribute("xmlns").Value;
+                    var found = false;
+                    foreach (var itemGroup in document.Descendants(ns + "ItemGroup"))
+                    {
+                        if (itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LargeTile.scale-100.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LockScreenLogo.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\SplashScreen.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Square150x150Logo.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Square44x44Logo.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\StoreLogo.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Wide310x150Logo.scale-200.png")
+                            )
+                        {
+                            found = true;
+                            foreach (var kvp in UwpBadgeIcons)
+                            {
+                                if (!document.Descendants(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
+                                    itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
+                            }
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                        await DisplayAlert("UWP Splash Images", "Could not find <ItemGroup>, in UWP's .csproj file, that contains icon, logo, and splash images", "ok");
+
+                    var content = XmlHeader + document.ToString();
+                    await projectFile.WriteAllTextAsync(content);
+                }
+            }
         }
 
         #endregion
@@ -664,8 +776,8 @@ namespace AssetBuilder.Views
             else
                 await DisplayAlert(null, "No mobile splash image has been generated.", "ok");
 
-            await DisplayAlert("Complete", "Launch Screens have been generated.", "ok");
             HideSpinner();
+            await DisplayAlert("Complete", "Launch Screens have been generated.", "ok");
         }
 
         #region Android
@@ -1069,47 +1181,9 @@ namespace AssetBuilder.Views
             if (await GenerateUwpSquareSplashAndLogoImages() is AndroidVector.Vector rectVector && Preferences.Current.MobileSplashSource == MobileSplashSource.Square)
                 mobileVector = rectVector;
 
-            if (_uwpProjectFolderPicker.ProjectFile is IStorageFile projectFile)
-            {
-                if (await XDocumentExtensions.LoadAsync(projectFile) is XDocument document)
-                {
-                    XNamespace ns = document.Root.Attribute("xmlns").Value;
-                    var found = false;
-                    foreach (var itemGroup in document.Descendants(ns + "ItemGroup"))
-                    {
-                        if (itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LargeTile.scale-100.png") ||
-                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LockScreenLogo.scale-200.png") ||
-                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\SplashScreen.scale-200.png") ||
-                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Square150x150Logo.scale-200.png") ||
-                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Square44x44Logo.scale-200.png") ||
-                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\StoreLogo.png") ||
-                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Wide310x150Logo.scale-200.png")
-                            )
-                        {
-                            found = true;
-                            foreach (var kvp in UwpRectangularSplashImages)
-                            {
-                                if (!document.Descendants(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
-                                    itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
-                            }
-                            foreach (var kvp in UwpSquareLogoImages)
-                            {
-                                if (!document.Descendants(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
-                                    itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
-                            }
+            await UpdateUwpProjectfileForSpash();
+            await UpdateUwpAppManifestForSplash();
 
-
-                            var text = XmlHeader + document;
-                            await projectFile.WriteAllTextAsync(text);
-                            break;
-                        }
-                    }
-                    if (!found)
-                        await DisplayAlert("UWP Splash Images", "Could not find <ItemGroup>, in UWP's .csproj file, that contains icon, logo, and splash images", "ok");
-
-                    await UpdateUwpAppManifestForSplash();
-                }
-            }
             return mobileVector;
         }
 
@@ -1178,9 +1252,55 @@ namespace AssetBuilder.Views
             return vector;
         }
 
+        async Task UpdateUwpProjectfileForSpash()
+        {
+            if (_uwpProjectFolderPicker.ProjectFile is IStorageFile projectFile)
+            {
+                if (await XDocumentExtensions.LoadAsync(projectFile) is XDocument document)
+                {
+                    XNamespace ns = document.Root.Attribute("xmlns").Value;
+                    var found = false;
+                    foreach (var itemGroup in document.Descendants(ns + "ItemGroup"))
+                    {
+                        if (itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LargeTile.scale-100.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LockScreenLogo.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\SplashScreen.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Square150x150Logo.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Square44x44Logo.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\StoreLogo.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Wide310x150Logo.scale-200.png")
+                            )
+                        {
+                            found = true;
+                            foreach (var kvp in UwpRectangularSplashImages)
+                            {
+                                if (!document.Descendants(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
+                                    itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
+                            }
+                            foreach (var kvp in UwpSquareLogoImages)
+                            {
+                                if (!document.Descendants(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
+                                    itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
+                            }
+
+
+                            var content = XmlHeader + document;
+                            await projectFile.WriteAllTextAsync(content);
+                            break;
+                        }
+                    }
+                    if (!found)
+                        await DisplayAlert("UWP Splash Images", "Could not find <ItemGroup>, in UWP's .csproj file, that contains icon, logo, and splash images", "ok");
+
+                }
+            }
+
+        }
+
         async Task UpdateUwpAppManifestForSplash()
         {
-            if (await _uwpProjectFolderPicker.StorageFolder.GetFileAsync("Package.appxmanifest") is IStorageFile manifestFile)
+            if (_uwpProjectFolderPicker.StorageFolder != null && 
+                await _uwpProjectFolderPicker.StorageFolder.GetFileAsync("Package.appxmanifest") is IStorageFile manifestFile)
             {
                 if (await XDocumentExtensions.LoadAsync(manifestFile) is XDocument document)
                 {
@@ -1204,31 +1324,12 @@ namespace AssetBuilder.Views
                         }
                         defaultTile.SetAttributeValue("Wide310x150Logo", "Assets\\Wide310x150Logo.png");
                         defaultTile.SetAttributeValue("Square310x310Logo", "Assets\\Square310x310Logo.png");
-                        if (!(defaultTile.Element(uapNs + "ShowNameOnTiles") is XElement showNameOnTiles))
-                        {
-                            showNameOnTiles = new XElement(uapNs + "ShowNameOnTiles");
-                            defaultTile.Add(showNameOnTiles);
-                        }
-                        if (!(showNameOnTiles.Element(uapNs+"ShowOn") is XElement showOn))
-                        {
-                            showOn = new XElement(uapNs + "ShowOn");
-                            showNameOnTiles.Add(showOn);
-                        }
-                        showOn.SetAttributeValue("Tile", "square310x310Logo");
 
-                        if (!(visualElement.Element(uapNs + "LockScreen") is XElement lockScreen))
-                        {
-                            lockScreen = new XElement(uapNs + "LockScreen");
-                            visualElement.Add(lockScreen);
-                        }
-                        lockScreen.SetAttributeValue("BadgeLogo", "Assets\\BadgeLogo.png");
-                        lockScreen.SetAttributeValue("Notification", "badgeAndTileText");
                     }
 
                     var text = XmlHeader + document.ToString();
                     await manifestFile.WriteAllTextAsync(text);
                 }
-
             }
         }
         #endregion

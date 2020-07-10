@@ -24,7 +24,7 @@ namespace AssetBuilder.Models
 
         public bool IsDestinationsEnabled => !string.IsNullOrWhiteSpace(IosOProjectFolder) || !string.IsNullOrWhiteSpace(AndroidProjectFolder) || !string.IsNullOrWhiteSpace(UwpProjectFolder);
 
-        public bool IsIconEnabled => !string.IsNullOrWhiteSpace(SvgIconFile) && IsDestinationsEnabled;
+        public bool IsIconEnabled => (!string.IsNullOrWhiteSpace(SvgIconFile) && IsDestinationsEnabled) || (!string.IsNullOrWhiteSpace(SvgUwpBadgeFile) && !string.IsNullOrWhiteSpace(UwpProjectFolder));
 
         public bool IsSplashEnabled => (!string.IsNullOrWhiteSpace(SquareSvgSplashImageFile) || !string.IsNullOrEmpty(Rect310SvgSplashImageFile)) && IsDestinationsEnabled;
 
@@ -39,6 +39,13 @@ namespace AssetBuilder.Models
         {
             get => _svgIconFile;
             set => SetField(ref _svgIconFile, value);
+        }
+
+        string _svgUwpBadgeFile;
+        public string SvgUwpBadgeFile
+        {
+            get => _svgUwpBadgeFile;
+            set => SetField(ref _svgUwpBadgeFile, value);
         }
 
         string _iosProjectFolder;

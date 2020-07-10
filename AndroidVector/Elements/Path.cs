@@ -422,7 +422,7 @@ namespace AndroidVector
 
         }
 
-        public override void AddToSKCanvas(SKCanvas canvas)
+        public override void AddToSKCanvas(SKCanvas canvas, bool antiAlias = true)
         {
             if (PathData?.ToPathList() is List<PathElement.Base> pathList)
             {
@@ -516,14 +516,14 @@ namespace AndroidVector
                                     fillPaint = new SKPaint
                                     {
                                         Style = SKPaintStyle.Fill,
-                                        IsAntialias = true,
+                                        IsAntialias = antiAlias,
                                         Shader = shader,
                                     };
                                 else
                                     strokePaint = new SKPaint
                                     {
                                         Style = SKPaintStyle.Stroke,
-                                        IsAntialias = true,
+                                        IsAntialias = antiAlias,
                                         Shader = shader,
                                         StrokeCap = StrokeLineCap.ToSKStrokeCap(),
                                         StrokeJoin = StrokeLineJoin.ToSKLineJoin(),
@@ -540,7 +540,7 @@ namespace AndroidVector
                     fillPaint = new SKPaint
                     {
                         Style = SKPaintStyle.Fill,
-                        IsAntialias = true,
+                        IsAntialias = antiAlias,
                         Color = FillColor.ToSKColor().WithAlpha((byte)Math.Round(FillAlpha * 255)),
                     };
                 }
@@ -553,7 +553,7 @@ namespace AndroidVector
                     strokePaint = new SKPaint
                     {
                         Style = SKPaintStyle.Stroke,
-                        IsAntialias = true,
+                        IsAntialias = antiAlias,
                         Color = StrokeColor.ToSKColor().WithAlpha((byte)Math.Round(StrokeAlpha * 255)),
                         StrokeCap = StrokeLineCap.ToSKStrokeCap(),
                         StrokeJoin = StrokeLineJoin.ToSKLineJoin(),

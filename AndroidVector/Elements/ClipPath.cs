@@ -54,10 +54,10 @@ namespace AndroidVector
             }
         }
 
-        public override void AddToSKCanvas(SKCanvas canvas)
+        public override void AddToSKCanvas(SKCanvas canvas, bool antiAlias = true)
         {
             var path = SKPath.ParseSvgPathData(PathData);
-            canvas.ClipPath(path, antialias: true);
+            canvas.ClipPath(path, antialias: antiAlias);
         }
     }
 }

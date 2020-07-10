@@ -119,7 +119,7 @@ namespace AndroidVector
         /// <param name="backgroundColor">background color for the PNG</param>
         /// <param name="imageSize">size of vector image (centered) in the PNG</param>
         /// <param name="bitmapSize">size of the PNG</param>
-        public void ToPng(System.IO.Stream stream, Color backgroundColor, Size imageSize = default, Size bitmapSize = default)
+        public void ToPng(System.IO.Stream stream, Color backgroundColor, Size imageSize = default, Size bitmapSize = default, bool flatten = false)
         {
             if (imageSize == default)
                 imageSize = new Size((int)Width.As(Unit.Dp), (int)Height.As(Unit.Dp));
@@ -142,9 +142,23 @@ namespace AndroidVector
                     var scaledHeight = (float)(scale * ViewportHeight);
 
                     canvas.Clear(new SKColor(r, g, b, a));
+
+                    canvas.Save();
                     canvas.Translate(bitmapSize.Width / 2 - scaledWidth / 2, bitmapSize.Height / 2 - scaledHeight / 2);
                     canvas.Scale(scale);
-                    AddToSKCanvas(canvas);
+                    AddToSKCanvas(canvas, !flatten);
+
+                    if (flatten)
+                    {
+                        canvas.Restore();
+                        var whiteBitmap = new SKBitmap(bitmap.Width,bitmap.Height);
+                        whiteBitmap.Erase(SKColors.White);
+                        using (SKPaint paint = new SKPaint())
+                        {
+                            paint.BlendMode = SKBlendMode.SrcIn;
+                            canvas.DrawBitmap(whiteBitmap, 0, 0, paint);
+                        }
+                    }
 
                     using (var image = SKImage.FromBitmap(bitmap))
                     {
@@ -164,11 +178,11 @@ namespace AndroidVector
         /// <param name="backgroundColor">background color for the PNG</param>
         /// <param name="imageSize">size of vector image (centered) in the PNG</param>
         /// <param name="bitmapSize">size of the PNG</param>
-        public async Task ToPngAsync(P42.SandboxedStorage.IStorageFile file, Color backgroundColor, Size imageSize = default, Size bitmapSize = default)
+        public async Task ToPngAsync(P42.SandboxedStorage.IStorageFile file, Color backgroundColor, Size imageSize = default, Size bitmapSize = default, bool flatten = false)
         {
             using (var stream = new System.IO.MemoryStream())
             {
-                ToPng(stream, backgroundColor, imageSize, bitmapSize);
+                ToPng(stream, backgroundColor, imageSize, bitmapSize, flatten);
                 var bytes = stream.ToArray();
                 await file.WriteAllBytesAsync(bytes);
             }
@@ -181,11 +195,11 @@ namespace AndroidVector
         /// <param name="backgroundColor">background color for the PNG</param>
         /// <param name="imageSize">size of vector image (centered) in the PNG</param>
         /// <param name="bitmapSize">size of the PNG</param>
-        public void ToPng(string path, Color backgroundColor,  Size imageSize = default, Size bitmapSize = default)
+        public void ToPng(string path, Color backgroundColor,  Size imageSize = default, Size bitmapSize = default, bool flatten = false)
         {
             using (var stream = System.IO.File.OpenWrite(path))
             {
-                ToPng(stream, backgroundColor, imageSize, bitmapSize);
+                ToPng(stream, backgroundColor, imageSize, bitmapSize, flatten);
             }
         }
 

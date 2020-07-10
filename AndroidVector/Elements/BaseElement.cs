@@ -247,7 +247,7 @@ namespace AndroidVector
             gfx.Restore();
         }
 
-        public virtual void AddToSKCanvas(SkiaSharp.SKCanvas canvas)
+        public virtual void AddToSKCanvas(SkiaSharp.SKCanvas canvas, bool antiAlias = true)
         {
             if (SvgOpacity != 1)
                 throw new Exception("Cannot convert to PDF before ApplySvgOpacity has been called.");
@@ -259,9 +259,10 @@ namespace AndroidVector
             foreach (var element in Elements().ToArray())
             {
                 if (element is BaseElement baseElement)
-                    baseElement.AddToSKCanvas(canvas);
+                    baseElement.AddToSKCanvas(canvas, antiAlias);
             }
             canvas.Restore();
         }
+
     }
 }
