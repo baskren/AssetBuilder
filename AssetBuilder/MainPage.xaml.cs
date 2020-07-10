@@ -544,7 +544,7 @@ namespace AssetBuilder.Views
             { "Square71x71Logo.scale-200.png", 142 },
             { "Square71x71Logo.scale-400.png", 284 },
 
-            { "StoreLogo.backup.png", 50 },
+            { "StoreLogo.png", 50 },
 
             { "StoreLogo.scale-100.png", 50 },
             { "StoreLogo.scale-125.png", 63 },
@@ -602,12 +602,19 @@ namespace AssetBuilder.Views
                     var found = false;
                     foreach (var itemGroup in document.Descendants(ns + "ItemGroup"))
                     {
-                        if (itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LargeTile.scale-100.png"))
+                        if (itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LargeTile.scale-100.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LockScreenLogo.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\SplashScreen.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Square150x150Logo.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Square44x44Logo.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\StoreLogo.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Wide310x150Logo.scale-200.png") 
+                            )
                         {
                             found = true;
                             foreach (var kvp in UwpIcons)
                             {
-                                if (!itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
+                                if (!document.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
                                     itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
                             }
 
@@ -1053,7 +1060,14 @@ namespace AssetBuilder.Views
                     var found = false;
                     foreach (var itemGroup in document.Descendants(ns + "ItemGroup"))
                     {
-                        if (itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LargeTile.scale-100.png"))
+                        if (itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LargeTile.scale-100.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LockScreenLogo.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\SplashScreen.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Square150x150Logo.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Square44x44Logo.scale-200.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\StoreLogo.png") ||
+                            itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\Wide310x150Logo.scale-200.png")
+                            )
                         {
                             found = true;
                             foreach (var kvp in UwpRectangularSplashImages)
