@@ -186,9 +186,9 @@ namespace AssetBuilder.Views
             if (sender is Frame frame)
             {
                 if (frame == _splashPageBackgroundColorFrame)
-                    Preferences.Current.SplashBackgroundColor = await ColorPickerDialog.Show(Content as Grid, "Splash Screen Background", Preferences.Current.SplashBackgroundColor, null);
+                    Preferences.Current.SplashBackgroundColor = await ColorPickerDialog.Show(Content as Grid, "Splash Screen Background", Preferences.Current.SplashBackgroundColor, new ColorDialogSettings { EditAlfa = false });
                 else if (frame == _iconBackgroundColorFrame)
-                    Preferences.Current.IconBackgroundColor = await ColorPickerDialog.Show(Content as Grid, "Icon Background", Preferences.Current.IconBackgroundColor, null);
+                    Preferences.Current.IconBackgroundColor = await ColorPickerDialog.Show(Content as Grid, "Icon Background", Preferences.Current.IconBackgroundColor, new ColorDialogSettings { EditAlfa=false });
             }
         }
 
@@ -274,7 +274,7 @@ namespace AssetBuilder.Views
         #region File Helpers
         async Task<IStorageFile> CopyEmbeddedResourceToFolder(string embeddedResourceId, string fileName, IStorageFolder folder)
         {
-            if (!folder.FileExists(fileName))
+            if (!await folder.FileExists(fileName))
             {
                 if (await folder.CreateFileAsync(fileName) is IStorageFile file)
                 {
@@ -517,33 +517,41 @@ namespace AssetBuilder.Views
             { "BadgeLogo.scale-150.png", 36 },
             { "BadgeLogo.scale-200.png", 48 },
             { "BadgeLogo.scale-400.png", 96 },
+
             { "LockScreenLogo.scale-200.png", 48 },
+
             { "Square44x44Logo.scale-100.png", 44 },
             { "Square44x44Logo.scale-125.png", 55 },
             { "Square44x44Logo.scale-150.png", 66 },
             { "Square44x44Logo.scale-200.png", 88 },
             { "Square44x44Logo.scale-400.png", 176 },
+
             { "Square44x44Logo.altform-unplated_targetsize-16.png", 16 },
             { "Square44x44Logo.altform-unplated_targetsize-24.png", 24 },
             { "Square44x44Logo.altform-unplated_targetsize-32.png", 32 },
             { "Square44x44Logo.altform-unplated_targetsize-48.png", 48 },
             { "Square44x44Logo.altform-unplated_targetsize-256.png", 256 },
+
             { "Square44x44Logo.targetsize-16.png", 16 },
             { "Square44x44Logo.targetsize-24.png", 24 },
             { "Square44x44Logo.targetsize-32.png", 32 },
             { "Square44x44Logo.targetsize-48.png", 48 },
             { "Square44x44Logo.targetsize-256.png", 256 },
+
             { "Square71x71Logo.scale-100.png", 71 },
             { "Square71x71Logo.scale-125.png", 89 },
             { "Square71x71Logo.scale-150.png", 107 },
             { "Square71x71Logo.scale-200.png", 142 },
             { "Square71x71Logo.scale-400.png", 284 },
+
             { "StoreLogo.backup.png", 50 },
+
             { "StoreLogo.scale-100.png", 50 },
             { "StoreLogo.scale-125.png", 63 },
             { "StoreLogo.scale-150.png", 75 },
             { "StoreLogo.scale-200.png", 100 },
             { "StoreLogo.scale-400.png", 200 },
+
             { "SmallTile.scale-100.png", 71 },
             { "SmallTile.scale-125.png", 89 },
             { "SmallTile.scale-150.png", 107 },
@@ -562,11 +570,59 @@ namespace AssetBuilder.Views
                 {
                     var file = await assetsFolder.GetOrCreateFileAsync(kvp.Key);
                     var size = kvp.Value;
-                    await vector.ToPngAsync(file, Preferences.Current.IconBackgroundColor, new System.Drawing.Size(size, size));
+                    await vector.ToPngAsync(file, Color.Transparent, new System.Drawing.Size(size, size));
                 }
+                await UpdateUwpAppManifestIconColor();
             }
             else
                 await DisplayAlert(null, "Cannot find UWP Assets folder in UWP project folder [" + _uwpProjectFolderPicker.StorageFolder.Path + "]", "ok");
+        }
+
+        async Task UpdateUwpAppManifestIconColor()
+        {
+            if (await _uwpProjectFolderPicker.StorageFolder.GetFileAsync("Package.appxmanifest") is IStorageFile manifestFile)
+            {
+                if (await XDocumentExtensions.LoadAsync(manifestFile) is XDocument document)
+                {
+                    var backgroundColorHex = Preferences.Current.IconBackgroundColor.ToRgbHex();
+                    XNamespace uapNs = "http://schemas.microsoft.com/appx/manifest/uap/windows10";
+                    var visualElements = document.Descendants(uapNs + "VisualElements");
+                    foreach (var visualElement in visualElements)
+                        visualElement.SetAttributeValue("BackgroundColor", backgroundColorHex);
+                    var text = XmlHeader + document.ToString();
+                    await manifestFile.WriteAllTextAsync(text);
+                }
+            }
+
+            if (_uwpProjectFolderPicker.ProjectFile is IStorageFile projectFile)
+            {
+                if (await XDocumentExtensions.LoadAsync(projectFile) is XDocument document)
+                {
+                    XNamespace ns = document.Root.Attribute("xmlns").Value;
+                    var found = false;
+                    foreach (var itemGroup in document.Descendants(ns + "ItemGroup"))
+                    {
+                        if (itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\LargeTile.scale-100.png"))
+                        {
+                            found = true;
+                            foreach (var kvp in UwpIcons)
+                            {
+                                if (!itemGroup.Elements(ns + "Content").Any(e => e.Attribute("Include").Value == "Assets\\" + kvp.Key))
+                                    itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Assets\\" + kvp.Key)));
+                            }
+
+                            var text = XmlHeader + document;
+                            await projectFile.WriteAllTextAsync(text);
+                            break;
+                        }
+                    }
+                    if (!found)
+                        await DisplayAlert("UWP Splash Images", "Could not find <ItemGroup>, in UWP's .csproj file, that contains icon, logo, and splash images", "ok");
+
+                    await UpdateUwpAppManifestSplashColor();
+                }
+            }
+
         }
 
         #endregion
@@ -950,12 +1006,12 @@ namespace AssetBuilder.Views
         static readonly Dictionary<string, System.Drawing.Size> UwpRectangularSplashImages = new Dictionary<string, System.Drawing.Size>
         {
             { "SplashScreen.scale-100.png", new System.Drawing.Size(620, 300) },
-            { "SplashScreen.scale-120.png", new System.Drawing.Size(775, 375) },
+            { "SplashScreen.scale-125.png", new System.Drawing.Size(775, 375) },
             { "SplashScreen.scale-150.png", new System.Drawing.Size(930, 450) },
             { "SplashScreen.scale-200.png", new System.Drawing.Size(1240, 600) },
             { "SplashScreen.scale-400.png", new System.Drawing.Size(2480, 1200) },
             { "Wide310x150Logo.scale-100.png", new System.Drawing.Size(310, 150) },
-            { "Wide310x150Logo.scale-120.png", new System.Drawing.Size(388, 188) },
+            { "Wide310x150Logo.scale-125.png", new System.Drawing.Size(388, 188) },
             { "Wide310x150Logo.scale-150.png", new System.Drawing.Size(465, 225) },
             { "Wide310x150Logo.scale-200.png", new System.Drawing.Size(620, 300) },
             { "Wide310x150Logo.scale-400.png", new System.Drawing.Size(1240, 600) },
@@ -967,11 +1023,13 @@ namespace AssetBuilder.Views
             { "Square150x150Logo.scale-150.png", 225 },
             { "Square150x150Logo.scale-200.png", 300 },
             { "Square150x150Logo.scale-400.png", 600 },
+
             { "Square310x310Logo.scale-100.png", 310 },
             { "Square310x310Logo.scale-125.png", 388 },
             { "Square310x310Logo.scale-150.png", 465 },
             { "Square310x310Logo.scale-200.png", 620 },
             { "Square310x310Logo.scale-400.png", 1240 },
+
             { "LargeTile.scale-100.png", 310 },
             { "LargeTile.scale-125.png", 388 },
             { "LargeTile.scale-150.png", 465 },
@@ -1017,6 +1075,8 @@ namespace AssetBuilder.Views
                     }
                     if (!found)
                         await DisplayAlert("UWP Splash Images", "Could not find <ItemGroup>, in UWP's .csproj file, that contains icon, logo, and splash images", "ok");
+
+                    await UpdateUwpAppManifestSplashColor();
                 }
             }
             return mobileVector;
@@ -1059,7 +1119,6 @@ namespace AssetBuilder.Views
             if (_rect310SvgLaunchImagePicker.StorageFile is null)
                 return null;
 
-
             if (await Svg2.GenerateAndroidVectorAsync(_rect310SvgLaunchImagePicker.StorageFile) is (AndroidVector.Vector vector, List<string> warnings))
             {
                 if (warnings.Count > 0 && Preferences.Current.MobileSplashSource != MobileSplashSource.Square)
@@ -1086,6 +1145,23 @@ namespace AssetBuilder.Views
                 vector = null;
             }
             return vector;
+        }
+
+        async Task UpdateUwpAppManifestSplashColor()
+        {
+            if (await _uwpProjectFolderPicker.StorageFolder.GetFileAsync("Package.appxmanifest") is IStorageFile manifestFile)
+            {
+                if (await XDocumentExtensions.LoadAsync(manifestFile) is XDocument document)
+                {
+                    var backgroundColorHex = Preferences.Current.SplashBackgroundColor.ToRgbHex();
+                    XNamespace uapNs = "http://schemas.microsoft.com/appx/manifest/uap/windows10";
+                    var visualElements = document.Descendants(uapNs + "SplashScreen");
+                    foreach (var visualElement in visualElements)
+                        visualElement.SetAttributeValue("BackgroundColor", backgroundColorHex);
+                    var text = XmlHeader + document.ToString();
+                    await manifestFile.WriteAllTextAsync(text);
+                }
+            }
         }
         #endregion
 
