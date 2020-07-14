@@ -24,7 +24,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <EnableCodeSigning>true</EnableCodeSigning>
-    <CodeSigningKey>Mac Developer: Benjamin Askren (9Y3W8XBH64)</CodeSigningKey>
+    <CodeSigningKey>Mac Developer</CodeSigningKey>
     <CreatePackage>false</CreatePackage>
     <EnablePackageSigning>false</EnablePackageSigning>
     <IncludeMonoRuntime>false</IncludeMonoRuntime>
@@ -34,23 +34,23 @@
     <HttpClientHandler>HttpClientHandler</HttpClientHandler>
     <LinkMode>None</LinkMode>
     <XamMacArch>x86_64</XamMacArch>
-    <AOTMode>SDK</AOTMode>
+    <AOTMode>All</AOTMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <CodeSignProvision>AssetBuilder - Development</CodeSignProvision>
+    <CodeSignProvision>Automatic</CodeSignProvision>
     <PackageSigningKey>3rd Party Mac Developer Installer</PackageSigningKey>
     <CodeSignEntitlements>Entitlements.plist</CodeSignEntitlements>
     <UseHardenedRuntime>true</UseHardenedRuntime>
+    <HybridAOT>true</HybridAOT>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release</OutputPath>
     <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <EnableCodeSigning>false</EnableCodeSigning>
+    <EnableCodeSigning>true</EnableCodeSigning>
     <CreatePackage>true</CreatePackage>
-    <EnablePackageSigning>false</EnablePackageSigning>
+    <EnablePackageSigning>true</EnablePackageSigning>
     <IncludeMonoRuntime>true</IncludeMonoRuntime>
     <UseSGen>true</UseSGen>
     <UseRefCounting>true</UseRefCounting>
@@ -58,9 +58,13 @@
     <LinkMode>SdkOnly</LinkMode>
     <HttpClientHandler>HttpClientHandler</HttpClientHandler>
     <XamMacArch></XamMacArch>
-    <AOTMode>None</AOTMode>
+    <AOTMode>All</AOTMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseHardenedRuntime>true</UseHardenedRuntime>
+    <CodeSigningKey>3rd Party Mac Developer Application: 42nd Parallel (KKD88FVWF5)</CodeSigningKey>
+    <CodeSignProvision>AssetBuilder - AppStore</CodeSignProvision>
+    <PackageSigningKey>3rd Party Mac Developer Installer: 42nd Parallel (KKD88FVWF5)</PackageSigningKey>
+    <HybridAOT>true</HybridAOT>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
