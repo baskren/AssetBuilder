@@ -12,29 +12,29 @@ And thus, once I had some free time, I started working on this project.
 
 ## Usage
 
-![fresh launch](Assets/ScreenShots/Screen Shot 2020-07-13 at 7.23.30 AM.png)
+![fresh launch](./Assets/ScreenShots/ScreenShot1.png)
 
 After launching **AssetBuilder**, start by selecting the **Xamarin.Forms** platform project folders for which you wish to generate icons and splash screens.  If you tap on the **Android** field in **Platform Project Folders**, you will get a folder picker dialog:
 
-![folder picker dialog](Assets/ScreenShots/Screen Shot 2020-07-13 at 7.26.32 AM.png)
+![folder picker dialog](Assets/ScreenShots/ScreenShot2.png)
 
 Note that **AssetBuilder** will inspect the `.csproj` file in the folder you choose to verify it is a Xamarin platform project for the type of platform (Android, iOS, UWP) choosen.  If it isn't, it will present to you an alert describing what it couldn't verify.
 
 Once you have choosen the folder(s) for the platform project(s) for which you want to generate assets, next, choose the SVG files for the assets (icons and/or splash screens) you want to generate.  In this example, we'll tap on the **Icon SVG** field in the **App Icons** section to get a file picker.
 
-![file picker](Assets/ScreenShots/Screen Shot 2020-07-13 at 7.27.46 AM.png)
+![file picker](Assets/ScreenShots/ScreenShot4.png)
 
 In the above screen shot, the file picker layout was changed to **Icons** in order to view thumbnails of each SVG.
 
 You can also click on the color swaths to edit the **Background Color** for the **App Icons** and the **Splash Screens / UWP Logos**.  
 
-![color editor](Assets/ScreenShots/Screen Shot 2020-07-13 at 7.27.01 AM.png)
+![color editor](Assets/ScreenShots/ScreenShot3.png)
 
 Use the ***use for iOS/Droid*** check box to choose which **Splash Screen** SVG file will be used to generate the iOS and Android splash screen images.
 
 Once a minimal combination of platform project folders and SVG files has been choosen, the **[Generate Icons]** and/or **[Generate Splash Screens]** buttons will be enabled.
 
-![ready to generate assets](Assets/ScreenShots/Screen Shot 2020-07-13 at 7.22.57 AM.png)
+![ready to generate assets](Assets/ScreenShots/ScreenShot5.png)
 
 ## What happens under the covers
 
