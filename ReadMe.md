@@ -1,12 +1,13 @@
+![icon](Assets/Icons/Icon64.png)
 # AssetBuilder
 
 A tool to automate the process of creating Xamarin.Forms icons and splash screens from SVGs.
 
-If you've come here, it is likely you've at least once spent a good part of a day generating all of the icon images and splash screen images for a Xamarin project.  More than once I've tweaked a script to do this and still felt the process could be easier and faster.  
+If you've come here, it is likely you've at least once spent a good part of a day generating all of the icon images and splash screen images for a Xamarin project.  More than once I've tweaked a script to do this and still felt the process could have been easier and faster.  
 
 The **Visual Assets** tab of the **AppXManifest** editor of **VisualStudio 2019** is easier and faster.  It's nice having an tool to generate all of your icons and splash images from one (or two) files. But it only works for UWP apps.
 
-And then, for me, the straw that broke the camel's back was introduction of vector icons and splash images for Android. With Android API 26, the rendering quality of icons and splash images improved dramatically - but it also became nearly impossible to do this in a script.  
+And then, for me, the straw that broke the camel's back was the introduction of vector icons and splash images for Android. With Android API 26, the rendering quality of icons and splash images improved dramatically - but it also became nearly impossible to do this in a script.  
 
 And thus, once I had some free time, I started working on this project.
 
@@ -20,17 +21,21 @@ After launching **AssetBuilder**, start by selecting the **Xamarin.Forms** platf
 
 Note that **AssetBuilder** will inspect the `.csproj` file in the folder you choose to verify it is a Xamarin platform project for the type of platform (Android, iOS, UWP) choosen.  If it isn't, it will present to you an alert describing what it couldn't verify.
 
+Also, you don't have to pick all three platforms.  If you only want to generate assets for your Android project, then just pick the Android project folder.
+
 Once you have choosen the folder(s) for the platform project(s) for which you want to generate assets, next, choose the SVG files for the assets (icons and/or splash screens) you want to generate.  In this example, we'll tap on the **Icon SVG** field in the **App Icons** section to get a file picker.
 
 ![file picker](Assets/ScreenShots/ScreenShot4.png)
 
-In the above screen shot, the file picker layout was changed to **Icons** in order to view thumbnails of each SVG.
+In the above screen shot, the file picker layout was changed to an icon view in order to be able to see thumbnails of each SVG.
+
+Like the project folders, you don't have to pick SVG files for both types of icons and splash screens.  If you just want to generate icons, you can leave the other SVGs fields empty and it won't generate them.
 
 You can also click on the color swaths to edit the **Background Color** for the **App Icons** and the **Splash Screens / UWP Logos**.  
 
 ![color editor](Assets/ScreenShots/ScreenShot3.png)
 
-Use the ***use for iOS/Droid*** check box to choose which **Splash Screen** SVG file will be used to generate the iOS and Android splash screen images.
+If you have both a square and a rectangular splash screen SVG, you can use the ***use for iOS/Droid*** check box to choose which of those SVG files will be used to generate the iOS and Android splash screen images.
 
 Once a minimal combination of platform project folders and SVG files has been choosen, the **[Generate Icons]** and/or **[Generate Splash Screens]** buttons will be enabled.
 
@@ -38,7 +43,7 @@ Once a minimal combination of platform project folders and SVG files has been ch
 
 ## What happens under the covers
 
-When you tap on either **Generate** button, **AssetBuilder** will perform a series of transformations.  The first is from SVG to AndroidVector.  This is because AndroidVector (in this context) is the lowest common denominator format for all of the assets.  This is meant to assure that all generated assets will appear identical.  
+When you tap on either **Generate** button, **AssetBuilder** will perform a series of transformations.  The first is to convert your image from SVG to AndroidVector format.  This is because AndroidVector (in this context) is the lowest common denominator format for all of the assets.  This is meant to assure that all generated assets will appear identical.  
 
 **NOTE**: AndroidVector is little limited in what it can and cannot do.  For example, text and radial gradients with different start and end center points are not supported.  If you're like me, it is likely, at some point in time, you are going to want text in a generated asset.  To do that, I suggest you use a vector editor (like [Inkscape]( https://inkscape.org)) and [convert the text to paths](https://www.youtube.com/watch?v=_01Jdvr7eXI).
 
