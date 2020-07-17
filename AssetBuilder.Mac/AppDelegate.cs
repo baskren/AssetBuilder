@@ -3,6 +3,10 @@ using Foundation;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.MacOS;
 
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
+using Microsoft.AppCenter.Distribute;
+
 namespace AssetBuilder.Mac
 {
     [Register("AppDelegate")]
@@ -23,6 +27,8 @@ namespace AssetBuilder.Mac
 
         public override void DidFinishLaunching(NSNotification notification)
         {
+            Microsoft.AppCenter.AppCenter.Start("e2fc0aad-b432-4dd8-872c-13b10b69a1f4", typeof(Microsoft.AppCenter.Analytics.Analytics), typeof(Microsoft.AppCenter.Crashes.Crashes), typeof(Microsoft.AppCenter.Distribute.Distribute));
+
             Forms.Init();
             P42.Utils.MacOS.Settings.Init();
             P42.SandboxedStorage.Platform.Init();

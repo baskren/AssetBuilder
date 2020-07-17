@@ -49,8 +49,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <EnableCodeSigning>true</EnableCodeSigning>
-    <CreatePackage>true</CreatePackage>
-    <EnablePackageSigning>true</EnablePackageSigning>
+    <CreatePackage>false</CreatePackage>
+    <EnablePackageSigning>false</EnablePackageSigning>
     <IncludeMonoRuntime>true</IncludeMonoRuntime>
     <UseSGen>true</UseSGen>
     <UseRefCounting>true</UseRefCounting>
@@ -60,9 +60,8 @@
     <XamMacArch></XamMacArch>
     <AOTMode>All</AOTMode>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <UseHardenedRuntime>true</UseHardenedRuntime>
-    <CodeSigningKey>3rd Party Mac Developer Application: 42nd Parallel (KKD88FVWF5)</CodeSigningKey>
-    <CodeSignProvision>AssetBuilder - AppStore</CodeSignProvision>
+    <CodeSigningKey>3rd Party Mac Developer Application</CodeSigningKey>
+    <CodeSignProvision>Automatic</CodeSignProvision>
     <PackageSigningKey>3rd Party Mac Developer Installer: 42nd Parallel (KKD88FVWF5)</PackageSigningKey>
     <HybridAOT>true</HybridAOT>
   </PropertyGroup>
@@ -98,6 +97,18 @@
     <Reference Include="System.Drawing.Common.dll" />
     <Reference Include="Microsoft.Bcl.HashCode">
       <HintPath>..\packages\Microsoft.Bcl.HashCode.1.1.0\lib\netstandard2.1\Microsoft.Bcl.HashCode.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AppCenter">
+      <HintPath>..\packages\Microsoft.AppCenter.3.3.0\lib\netstandard1.0\Microsoft.AppCenter.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AppCenter.Crashes">
+      <HintPath>..\packages\Microsoft.AppCenter.Crashes.3.3.0\lib\netstandard1.0\Microsoft.AppCenter.Crashes.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AppCenter.Analytics">
+      <HintPath>..\packages\Microsoft.AppCenter.Analytics.3.3.0\lib\netstandard1.0\Microsoft.AppCenter.Analytics.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AppCenter.Distribute">
+      <HintPath>..\packages\Microsoft.AppCenter.Distribute.3.3.0\lib\netstandard1.0\Microsoft.AppCenter.Distribute.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
