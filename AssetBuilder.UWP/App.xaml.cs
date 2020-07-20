@@ -14,6 +14,10 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
+using Microsoft.AppCenter.Distribute;
 
 namespace AssetBuilder.UWP
 {
@@ -30,6 +34,9 @@ namespace AssetBuilder.UWP
         {
             this.InitializeComponent();
             this.Suspending += OnSuspending;
+
+            AppCenter.Start("d85e0090-58a9-4870-814c-b45131ab3ab6",
+                   typeof(Analytics), typeof(Crashes));
         }
 
         /// <summary>
