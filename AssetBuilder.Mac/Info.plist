@@ -5,7 +5,7 @@
 	<key>CFBundleName</key>
 	<string>AssetBuilder</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.p42.AssetBuilder</string>
+	<string>com.p42.AssetBuilder.Mac</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
@@ -30,5 +30,9 @@
 	<string>Assets.xcassets/AppIcon.appiconset</string>
 	<key>CFBundleDisplayName</key>
 	<string>AssetBuilder</string>
+	<key></key>
+	<string></string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.developer-tools</string>
 </dict>
 </plist>

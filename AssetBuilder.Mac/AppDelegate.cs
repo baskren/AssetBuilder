@@ -27,7 +27,7 @@ namespace AssetBuilder.Mac
 
         public override void DidFinishLaunching(NSNotification notification)
         {
-            Microsoft.AppCenter.AppCenter.Start("e2fc0aad-b432-4dd8-872c-13b10b69a1f4", typeof(Microsoft.AppCenter.Analytics.Analytics), typeof(Microsoft.AppCenter.Crashes.Crashes), typeof(Microsoft.AppCenter.Distribute.Distribute));
+            Microsoft.AppCenter.AppCenter.Start("e2fc0aad-b432-4dd8-872c-13b10b69a1f4", typeof(Microsoft.AppCenter.Analytics.Analytics), typeof(Microsoft.AppCenter.Crashes.Crashes));
 
             Forms.Init();
             P42.Utils.MacOS.Settings.Init();
