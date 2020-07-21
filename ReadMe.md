@@ -13,6 +13,10 @@ And then, for me, the straw that broke the camel's back was the introduction of 
 
 And thus, once I had some free time, I started working on this project.
 
+## Support
+
+Support is available [here](https://github.com/baskren/AssetBuilder/issues)
+
 ## Usage
 
 ![fresh launch](Assets/ScreenShots/ScreenShot1.png)
