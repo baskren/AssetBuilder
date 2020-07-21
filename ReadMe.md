@@ -3,7 +3,7 @@
 
 A tool to automate the process of creating Xamarin.Forms icons and splash screens from SVGs.
 
-![Assets/English_get-it-from-MS.png](http://www.microsoft.com/store/apps/9NTJZ6RR4XCP?cid=storebadge&ocid=badge)
+[![Microsoft App Store](Assets/English_get-it-from-MS.png)](http://www.microsoft.com/store/apps/9NTJZ6RR4XCP?cid=storebadge&ocid=badge)
 
 If you've come here, it is likely you've at least once spent a good part of a day generating all of the icon images and splash screen images for a Xamarin project.  More than once I've tweaked a script to do this and still felt the process could have been easier and faster.  
 
@@ -15,7 +15,7 @@ And thus, once I had some free time, I started working on this project.
 
 ## Usage
 
-![fresh launch](./Assets/ScreenShots/ScreenShot1.png)
+![fresh launch](Assets/ScreenShots/ScreenShot1.png)
 
 After launching **AssetBuilder**, start by selecting the **Xamarin.Forms** platform project folders for which you wish to generate icons and splash screens.  If you tap on the **Android** field in **Platform Project Folders**, you will get a folder picker dialog:
 
