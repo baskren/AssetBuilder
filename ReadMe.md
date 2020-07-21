@@ -3,6 +3,9 @@
 
 A tool to automate the process of creating Xamarin.Forms icons and splash screens from SVGs.
 
+<a href='//www.microsoft.com/store/apps/9NTJZ6RR4XCP?cid=storebadge&ocid=badge'><img src='images/English_get-it-from-MS.png' alt='English badge' style='width: 284px; height: 104px;'/></a>
+
+
 If you've come here, it is likely you've at least once spent a good part of a day generating all of the icon images and splash screen images for a Xamarin project.  More than once I've tweaked a script to do this and still felt the process could have been easier and faster.  
 
 The **Visual Assets** tab of the **AppXManifest** editor of **VisualStudio 2019** is easier and faster.  It's nice having an tool to generate all of your icons and splash images from one (or two) files. But it only works for UWP apps.
