@@ -3,7 +3,7 @@
 
 A tool to automate the process of creating Xamarin.Forms icons and splash screens from SVGs.
 
-[<img src='Assets/English_get-it-from-MS.png' alt='English badge' style='width: 142px; height: 52px;'/>](http://www.microsoft.com/store/apps/9NTJZ6RR4XCP?cid=storebadge&ocid=badge)
+[![Get it from the Micrsoft App Store](Assets/English_git-it-from-MS.png)](http://www.microsoft.com/store/apps/9NTJZ6RR4XCP?cid=storebadge&ocid=badge){ width: 142px;}
 
 If you've come here, it is likely you've at least once spent a good part of a day generating all of the icon images and splash screen images for a Xamarin project.  More than once I've tweaked a script to do this and still felt the process could have been easier and faster.  
 
