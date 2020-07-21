@@ -5,6 +5,7 @@
     x:Class="AssetBuilder.Views.MainPage"
     xmlns:AB="clr-namespace:AssetBuilder"
     BackgroundColor="Gray"
+    Title="AssetBuilder for Xamarin"
     >
     <Grid>
         <ScrollView>

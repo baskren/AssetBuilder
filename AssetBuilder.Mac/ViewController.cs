@@ -30,5 +30,7 @@ namespace AssetBuilder.Mac
                 // Update the view, if already loaded.
             }
         }
+
+
     }
 }

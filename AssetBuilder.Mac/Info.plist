@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>AssetBuilder</string>
+	<string>AssetBuilder for Xamarin</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.p42.AssetBuilder.Mac</string>
 	<key>CFBundleShortVersionString</key>
@@ -29,7 +29,7 @@
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/AppIcon.appiconset</string>
 	<key>CFBundleDisplayName</key>
-	<string>AssetBuilder</string>
+	<string>AssetBuilder for Xamarin</string>
 	<key></key>
 	<string></string>
 	<key>LSApplicationCategoryType</key>
