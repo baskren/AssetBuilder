@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
-  <Identity Name="5734742ndParallel.AssetGeneratorforXamarin" Publisher="CN=6C0982E4-7FDD-43EB-8344-4797261F8F23" Version="1.0.1.0" />
+  <Identity Name="5734742ndParallel.AssetGeneratorforXamarin" Publisher="CN=6C0982E4-7FDD-43EB-8344-4797261F8F23" Version="1.0.2.0" />
   <mp:PhoneIdentity PhoneProductId="16d4598b-0094-4652-9912-9d6468cc3273" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>Asset Generator for Xamarin</DisplayName>

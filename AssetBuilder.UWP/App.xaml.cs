@@ -35,8 +35,6 @@ namespace AssetBuilder.UWP
             this.InitializeComponent();
             this.Suspending += OnSuspending;
 
-            AppCenter.Start("d85e0090-58a9-4870-814c-b45131ab3ab6",
-                   typeof(Analytics), typeof(Crashes));
         }
 
         /// <summary>
@@ -46,6 +44,9 @@ namespace AssetBuilder.UWP
         /// <param name="e">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
+            AppCenter.Start("d85e0090-58a9-4870-814c-b45131ab3ab6",
+               typeof(Analytics), typeof(Crashes));
+
             Frame rootFrame = Window.Current.Content as Frame;
 
             // Do not repeat app initialization when the Window already has content,
