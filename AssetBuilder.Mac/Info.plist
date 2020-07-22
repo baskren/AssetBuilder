@@ -9,7 +9,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
-	<string>2007210</string>
+	<string>2007221</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.14</string>
 	<key>CFBundleDevelopmentRegion</key>
@@ -30,8 +30,8 @@
 	<string>Assets.xcassets/AppIcon.appiconset</string>
 	<key>CFBundleDisplayName</key>
 	<string>AssetBuilder for Xamarin</string>
-	<key></key>
-	<string></string>
+	<key>CFBundleExecutable</key>
+	<string>AssetBuilder for Xamarin</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.developer-tools</string>
 </dict>

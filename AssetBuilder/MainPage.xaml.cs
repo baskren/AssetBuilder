@@ -26,6 +26,9 @@ namespace AssetBuilder.Views
         public MainPage()
         {
             InitializeComponent();
+
+            ButtonEffect.ApplyTo(_generateIconsButton);
+            ButtonEffect.ApplyTo(_generateLaunchImagesButton);
         }
 
         protected override void OnAppearing()
